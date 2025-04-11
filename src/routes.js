@@ -32,11 +32,26 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/icons",
     name: "Membership",
     icon: "ni ni-paper-diploma text-yellow",
-    component: <Icons />,
-    layout: "/admin",
+    collapse: true,
+    state: "adminCollapse",
+    views: [
+      {
+        path: "/user-profile",
+        name: "Set up Membership",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/tables",
+        name: "Reports",
+        icon: "ni ni-archive-2",
+        layout: "/admin",
+        component: <Tables />,
+      },
+    ],
   },
   {
     path: "/maps",

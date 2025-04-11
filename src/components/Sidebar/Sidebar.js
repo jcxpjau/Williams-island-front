@@ -68,21 +68,67 @@ const Sidebar = (props) => {
   const closeCollapse = () => {
     setCollapseOpen(false);
   };
-  // creates the links that appear in the left menu / Sidebar
+
+  const [collapseStates, setCollapseStates] = useState({});
+
+  const toggleCollapseItem = (stateKey) => {
+    setCollapseStates((prev) => ({
+      ...prev,
+      [stateKey]: !prev[stateKey],
+    }));
+  };
+
   const createLinks = (routes) => {
-    return routes.map((prop, key) => {
-      return (
-        <NavItem key={key}>
-          <NavLink
-            to={prop.layout + prop.path}
-            tag={NavLinkRRD}
-            onClick={closeCollapse}
-          >
-            <i className={prop.icon} />
-            {prop.name}
-          </NavLink>
-        </NavItem>
-      );
+    return routes.map((route, key) => {
+      if (route.collapse && route.views) {
+        return (
+          <div key={key}>
+            <NavItem>
+              <NavLink
+                href="#!"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleCollapseItem(route.state);
+                }}
+              >
+                <i className={route.icon} />
+                {route.name}
+              </NavLink>
+            </NavItem>
+            <Collapse isOpen={collapseStates[route.state]}>
+              <Nav className="nav-sm flex-column">
+                {route.views.map((subRoute, idx) => (
+                  <NavItem key={idx}>
+                    <NavLink
+                      to={subRoute.layout + subRoute.path}
+                      tag={NavLinkRRD}
+                      onClick={closeCollapse}
+                      className=""
+                      style={{ marginLeft: "-1.5rem"}}
+                    >
+                      <i className={subRoute.icon} />
+                      {subRoute.name}
+                    </NavLink>
+                  </NavItem>
+                ))}
+              </Nav>
+            </Collapse>
+          </div>
+        );
+      } else {
+        return (
+          <NavItem key={key}>
+            <NavLink
+              to={route.layout + route.path}
+              tag={NavLinkRRD}
+              onClick={closeCollapse}
+            >
+              <i className={route.icon} />
+              {route.name}
+            </NavLink>
+          </NavItem>
+        );
+      }
     });
   };
 
