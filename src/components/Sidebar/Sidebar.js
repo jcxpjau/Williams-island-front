@@ -280,19 +280,19 @@ const Sidebar = (props) => {
           <h6 className="navbar-heading text-muted">System Administration</h6>
           <Nav className="mb-md-3" navbar>
             <NavItem>
-              <NavLink href="#">
+              <NavLink href="/admin/membership/list">
                 <i className="ni ni-single-02" />
                 Users
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink href="#">
+              <NavLink href="/admin/membership/list">
                 <i className="ni ni-settings-gear-65" />
                 Settings
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink href="/admin/tables">
+            <NavLink href="/admin/membership/list">
                 <i className="ni ni-single-copy-04" />
                 Logs
               </NavLink>

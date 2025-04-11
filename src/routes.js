@@ -63,14 +63,14 @@ var routes = [
         name: "Members Passes",
         icon: "ni ni-button-play",
         layout: "/admin",
-        component: <Profile />,
+        component: <Tables />,
       },
       {
         path: "/membership/report",
         name: "Report",
         icon: "ni ni-button-play",
         layout: "/admin",
-        component: <Profile />,
+        component: <Tables />,
       }
     ],
   },
@@ -80,11 +80,39 @@ var routes = [
     collapse: true,
     state: "accountingCollapse",
     views: [
+      {
+        path: "/accounting/fees",
+        name: "Membership Fees",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Tables />,
+      },
+      {
+        path: "/accounting/poa",
+        name: "POA Fees",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Tables />,
+      },
+      {
+        path: "/accounting/spending",
+        name: "Spending Minimus",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Tables />,
+      },
+      {
+        path: "/accounting/estoppel",
+        name: "Estoppel",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Tables />,
+      },
     ]
   },
   {
     name: "Inventory",
-    icon: "ni ni-collection",
+    icon: "ni ni-building",
     collapse: true,
     state: "invetoryCollapse",
     views: [
@@ -309,6 +337,48 @@ var routes = [
     collapse: true,
     state: "communitcationCollapse",
     views: [
+      {
+        path: "/communication/event/management",
+        name: "Event management",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/communication/builder",
+        name: "Form Builder",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/communication/Emails",
+        name: "Emails",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/communication/group",
+        name: "Group Messaging",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/communication/geomarketing",
+        name: "Geo-marketing",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/communication/demographic/reports",
+        name: "Demographic Reports",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      }
     ]
   },
   {
@@ -317,6 +387,27 @@ var routes = [
     collapse: true,
     state: "adminCollapse",
     views: [
+      {
+        path: "/administrations/demographic/add",
+        name: "Add Demographic",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/administrations/demographic/add",
+        name: "Add Demographic",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/administrations/delivery",
+        name: "Delivery",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
     ]
   },
   {
