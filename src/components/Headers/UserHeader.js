@@ -27,7 +27,7 @@ const UserHeader = () => {
         style={{
           minHeight: "600px",
           backgroundImage:
-            "url(" + require("../../assets/img/theme/profile-cover.jpg") + ")",
+            "url(" + require("../../assets/img/theme/WI2.png") + ")",
           backgroundSize: "cover",
           backgroundPosition: "center top",
         }}
@@ -38,17 +38,16 @@ const UserHeader = () => {
         <Container className="d-flex align-items-center" fluid>
           <Row>
             <Col lg="7" md="10">
-              <h1 className="display-2 text-white">Hello Jesse</h1>
+              <h1 className="display-2 text-white">Add Member</h1>
               <p className="text-white mt-0 mb-5">
-                This is your profile page. You can see the progress you've made
-                with your work and manage your projects or assigned tasks
+                In this page you can you add a new member or change his informations.
               </p>
               <Button
                 color="info"
                 href="#pablo"
                 onClick={(e) => e.preventDefault()}
               >
-                Edit profile
+                Add Member
               </Button>
             </Col>
           </Row>
