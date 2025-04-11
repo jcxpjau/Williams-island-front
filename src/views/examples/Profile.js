@@ -35,7 +35,9 @@ import UserHeader from "components/Headers/UserHeader.js";
 const Profile = () => {
   return (
     <>
-      <UserHeader />
+      <UserHeader title = 'Add Member' 
+        description="In this page you can you add a new member or change his informations."
+        buttonText="Add Member"/>
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
@@ -114,11 +116,19 @@ const Profile = () => {
                   </div>
                   <hr className="my-4" />
                   <p>
-                    Needs Shuttle 3 times a week
+                    Message History
                   </p>
                   <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                    Show more
+                    Guest Passes
                   </a>
+                  <div
+                    style={{
+                      minHeight: "400px",
+                      backgroundImage:
+                        "url(" + require("../../assets/img/theme/qr_code_PNG6.png") + ")",
+                      backgroundSize: "cover",
+                  }}
+                  />
                 </div>
               </CardBody>
             </Card>
@@ -300,10 +310,93 @@ const Profile = () => {
                   </div>
                   <hr className="my-4" />
                   {/* Description */}
-                  <h6 className="heading-small text-muted mb-4">Other informations</h6>
+                  <h6 className="heading-small text-muted mb-4">Member Family</h6>
                   <div className="pl-lg-4">
                     <FormGroup>
-                      <label>Observations</label>
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-username"
+                            >
+                              Name
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              defaultValue="lucky.jesse"
+                              id="input-username"
+                              placeholder="Username"
+                              type="text"
+                            />
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-email"
+                            >
+                              Email address
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              id="input-email"
+                              placeholder="jesse@example.com"
+                              type="email"
+                            />
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-first-name"
+                            >
+                              First name
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              defaultValue="Lucky"
+                              id="input-first-name"
+                              placeholder="First name"
+                              type="text"
+                            />
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <label
+                              className="form-control-label"
+                              htmlFor="input-last-name"
+                            >
+                              Last name
+                            </label>
+                            <Input
+                              className="form-control-alternative"
+                              defaultValue="Jesse"
+                              id="input-last-name"
+                              placeholder="Last name"
+                              type="text"
+                            />
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Button 
+                        color="info"
+                        href="#pablo"
+                        onClick={(e) => e.preventDefault()}> 
+                        Add member
+                      </Button>
+                    </FormGroup>
+                    <hr className="my-4" />
+                  </div>
+                  <h6 className="heading-small text-muted mb-4">Billing Info</h6>
+                  <div className="pl-lg-4">
+                    <FormGroup>
+                      <label></label>
                       <Input
                         className="form-control-alternative"
                         placeholder="A few words about you ..."
@@ -313,8 +406,31 @@ const Profile = () => {
                         type="textarea"
                       />
                     </FormGroup>
+                    <hr className="my-4" />
                   </div>
-                </Form>
+                  <h6 className="heading-small text-muted mb-4">Interests</h6>
+                  <div className="pl-lg-4">
+                    <FormGroup>
+                        <label></label>
+                        <Input
+                          className="form-control-alternative"
+                          placeholder="Guitar, Tennis"
+                          rows="4"
+                          defaultValue="Guitar, Tennis"
+                          type="textarea"
+                        />
+                      </FormGroup>
+                  </div>
+                  <h6 className="heading-small text-muted mb-4">Documents</h6>
+                  <div className="pl-lg-4">
+                  <Button 
+                        color="info"
+                        href="#pablo"
+                        onClick={(e) => e.preventDefault()}> 
+                        Add Files
+                      </Button>
+                  </div>
+                </Form> 
               </CardBody>
             </Card>
           </Col>
