@@ -19,7 +19,7 @@
 // reactstrap components
 import { Button, Container, Row, Col } from "reactstrap";
 
-const UserHeader = () => {
+const UserHeader = ({ title, description, buttonText = "info" }) => {
   return (
     <>
       <div
@@ -38,16 +38,16 @@ const UserHeader = () => {
         <Container className="d-flex align-items-center" fluid>
           <Row>
             <Col lg="7" md="10">
-              <h1 className="display-2 text-white">Add Member</h1>
+              <h1 className="display-2 text-white">{title}</h1>
               <p className="text-white mt-0 mb-5">
-                In this page you can you add a new member or change his informations.
+                {description}
               </p>
               <Button
                 color="info"
                 href="#pablo"
                 onClick={(e) => e.preventDefault()}
               >
-                Add Member
+                {buttonText}
               </Button>
             </Col>
           </Row>
