@@ -63,7 +63,7 @@ const Index = (props) => {
   };
   return (
     <>
-      <Header />
+      <Header cards={true}/>
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
