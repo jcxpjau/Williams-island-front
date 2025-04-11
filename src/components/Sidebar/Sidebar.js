@@ -91,7 +91,7 @@ const Sidebar = (props) => {
                   toggleCollapseItem(route.state);
                 }}
               >
-                <i className={route.icon} />
+                <i className={route.icon} style={{ color: "#1a174d" }} />
                 {route.name}
               </NavLink>
             </NavItem>
@@ -287,16 +287,14 @@ const Sidebar = (props) => {
             </NavItem>
             <NavItem>
               <NavLink href="#">
-                <i className="ni ni-single-copy-04" />
-                Logs
+                <i className="ni ni-settings-gear-65" />
+                Settings
               </NavLink>
             </NavItem>
-          </Nav>
-          <Nav className="mb-md-3" navbar>
-            <NavItem className="active-pro active">
-              <NavLink href="https://www.avent7.com.br">
-                <i className="ni ni-support-16" />
-                Support
+            <NavItem>
+              <NavLink href="/admin/tables">
+                <i className="ni ni-single-copy-04" />
+                Logs
               </NavLink>
             </NavItem>
           </Nav>

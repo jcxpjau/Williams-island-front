@@ -37,14 +37,18 @@ const Admin = (props) => {
   }, [location]);
 
   const getRoutes = (routes) => {
-    return routes.map((prop, key) => {
+    return routes.flatMap((prop, key) => {
+      if (prop.collapse && prop.views) {
+        return getRoutes(prop.views);
+      }
+  
       if (prop.layout === "/admin") {
         return (
-          <Route path={prop.path} element={prop.component} key={key} exact />
+          <Route path={prop.path} element={prop.component} key={key} />
         );
-      } else {
-        return null;
       }
+  
+      return [];
     });
   };
 
