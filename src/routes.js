@@ -75,11 +75,12 @@ var routes = [
     ],
   },
   {
-    path: "/maps",
-    name: "Management",
-    icon: "ni ni-building",
-    component: <Maps />,
-    layout: "/admin",
+    name: "Accounting",
+    icon: "ni ni-collection",
+    collapse: true,
+    state: "accountingCollapse",
+    views: [
+    ]
   },
   {
     name: "Inventory",
@@ -306,7 +307,7 @@ var routes = [
     name: "Communications",
     icon: "ni ni-notification-70",
     collapse: true,
-    state: "adminCollapse",
+    state: "communitcationCollapse",
     views: [
     ]
   },
@@ -322,8 +323,36 @@ var routes = [
     name: "Security",
     icon: "ni ni-lock-circle-open",
     collapse: true,
-    state: "adminCollapse",
+    state: "securityCollapse",
     views: [
+      {
+        path: "/security/parking/passes",
+        name: "Parking Passes",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/security/guest/access",
+        name: "Guest Access",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/security/incidents",
+        name: "Incident Reporting",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      },
+      {
+        path: "/security/emergency",
+        name: "Emergency Numbers",
+        icon: "ni ni-button-play",
+        layout: "/admin",
+        component: <Profile />,
+      }
     ]
   }
 ];
