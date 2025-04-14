@@ -24,6 +24,10 @@ import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import EditMember from "views/examples/EditMember";
 import MemberPasses from "views/examples/MemberPasses";
+import AddActivity from "views/examples/AddActivity";
+import Tennis from "views/examples/Tennis";
+import Spa from "views/examples/Spa";
+import Fitness from "views/examples/Fitness";
 
 
 var routes = [
@@ -152,25 +156,25 @@ var routes = [
         path: "/activity/add",
         name: "Add Activity",
         layout: "/admin",
-        component: <Profile />,
+        component: <AddActivity />,
       },
       {
         path: "/activity/tennis",
         name: "Tennis",
         layout: "/admin",
-        component: <Profile />,
+        component: <Tennis />,
       },
       {
         path: "/activity/spa",
         name: "SPA",
         layout: "/admin",
-        component: <Profile />,
+        component: <Spa />,
       },
       {
         path: "/activity/fitness",
         name: "Fitness",
         layout: "/admin",
-        component: <Profile />,
+        component: <Fitness />,
       },
       {
         path: "/activity/fb",
