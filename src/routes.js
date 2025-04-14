@@ -23,6 +23,7 @@ import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import EditMember from "views/examples/EditMember";
+import MemberPasses from "views/examples/MemberPasses";
 
 
 var routes = [
@@ -65,7 +66,7 @@ var routes = [
         name: "Members Passes",
         icon: "ni ni-button-play",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberPasses />,
       },
       {
         path: "/membership/report",

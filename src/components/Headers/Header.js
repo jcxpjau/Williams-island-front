@@ -22,7 +22,15 @@ import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 const Header = ({ cards }) => {
   return (
     <>
-      <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
+      <div className="header pb-8 pt-5 pt-lg-8 d-flex align-items-center"
+      style={{
+        backgroundImage:
+          "url(" + require("../../assets/img/theme/WI2.png") + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
+      }}
+      >
+         <span className="mask bg-gradient-default opacity-8" />
         <Container fluid>
           <div className="header-body">
             {cards &&
