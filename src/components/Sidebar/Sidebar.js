@@ -137,7 +137,6 @@ const Sidebar = (props) => {
         };
     }
 
-    console.log(activeRoute('admin/index'));
 
     return (
         <Navbar
@@ -279,9 +278,9 @@ const Sidebar = (props) => {
                     <Nav className="mb-md-3" navbar>
                         <NavItem>
                             <NavLink
-                                href="/admin/membership/list"
+                                href="/users/list"
                                 style={{
-                                    ...(activeRoute('/admin/index') ===
+                                    ...(activeRoute('/admin/users/list') ===
                                         "active" && {
                                         backgroundColor: "#f6f9fc",
                                         color: "#1a174d",

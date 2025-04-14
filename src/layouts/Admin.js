@@ -6,6 +6,7 @@ import AdminFooter from "components/Footers/AdminFooter.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 
 import routes from "routes.js";
+import hiddenRoutes from "hiddenRoutes.js";
 
 const Admin = (props) => {
   const mainContent = React.useRef(null);
@@ -64,6 +65,13 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
+          {hiddenRoutes.map((route, key) => (
+            <Route
+              path={route.layout + route.path}
+              element={route.component}
+              key={key}
+            />
+          ))}
           <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>
