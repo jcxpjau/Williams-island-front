@@ -65,13 +65,9 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
-          {hiddenRoutes.map((route, key) => (
-            <Route
-              path={route.layout + route.path}
-              element={route.component}
-              key={key}
-            />
-          ))}
+          {hiddenRoutes.map( (route , key ) => 
+            <Route path={route.layout + route.path } component={route.component} key={key} /> 
+          ) }
           <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>

@@ -278,7 +278,8 @@ const Sidebar = (props) => {
                     <Nav className="mb-md-3" navbar>
                         <NavItem>
                             <NavLink
-                                href="/users/list"
+                                to="/users/list"
+                                tag={NavLinkRRD}
                                 style={{
                                     ...(activeRoute('/admin/users/list') ===
                                         "active" && {
