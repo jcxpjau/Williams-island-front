@@ -23,13 +23,13 @@ const Admin = (props) => {
       if (prop.collapse && prop.views) {
         return getRoutes(prop.views);
       }
-  
+
       if (prop.layout === "/admin") {
         return (
           <Route path={prop.path} element={prop.component} key={key} />
         );
       }
-  
+
       return [];
     });
   };
@@ -65,9 +65,6 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
-          {hiddenRoutes.map( (route , key ) => 
-            <Route path={route.layout + route.path } component={route.component} key={key} /> 
-          ) }
           <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>

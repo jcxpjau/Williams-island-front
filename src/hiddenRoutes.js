@@ -3,7 +3,7 @@ import Tables from "views/examples/Tables";
 
 const hiddenRoutes = [
     {
-      path: "/users/list",
+      path: "/admin/users/list",
       component: <Tables />,
       layout: "/admin",
     }
