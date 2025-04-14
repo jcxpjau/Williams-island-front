@@ -22,6 +22,8 @@ import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
+import EditMember from "views/examples/EditMember";
+
 
 var routes = [
   {
@@ -56,7 +58,7 @@ var routes = [
         name: "Edit Member",
         icon: "ni ni-button-play",
         layout: "/admin",
-        component: <Profile />,
+        component: <EditMember />,
       },
       {
         path: "/membership/passes",
