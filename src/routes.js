@@ -28,6 +28,8 @@ import AddActivity from "views/examples/AddActivity";
 import Tennis from "views/examples/Tennis";
 import Spa from "views/examples/Spa";
 import Fitness from "views/examples/Fitness";
+import Eventlist from "views/examples/EventList";
+import AddEvent from "views/examples/AddEvent";
 
 
 var routes = [
@@ -200,19 +202,19 @@ var routes = [
         path: "/events/list",
         name: "Events List",
         layout: "/admin",
-        component: <Profile />,
+        component: <Eventlist />,
       },
       {
         path: "/events/add",
         name: "Add Event",
         layout: "/admin",
-        component: <Profile />,
+        component: <AddEvent />,
       },
       {
         path: "/events/builder",
         name: "Builder Forms",
         layout: "/admin",
-        component: <Profile />,
+        component: <AddEvent />,
       },
       {
         path: "/events/opration",
