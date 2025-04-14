@@ -37,7 +37,7 @@ const UserHeader = ({ title, description, buttonText = "info" }) => {
         {/* Header container */}
         <Container className="d-flex align-items-center" fluid>
           <Row>
-            <Col lg="7" md="10">
+            <Col lg="12" md="20">
               <h1 className="display-2 text-white">{title}</h1>
               <p className="text-white mt-0 mb-5">
                 {description}
