@@ -99,7 +99,7 @@ const Profile = () => {
                 </Row>
                 <div className="text-center">
                   <h3>
-                    Jessica Jones
+                    Jessica Williams
                     <span className="font-weight-light">, 27</span>
                   </h3>
                   <div className="h5 font-weight-300">
@@ -123,10 +123,15 @@ const Profile = () => {
                   </a>
                   <div
                     style={{
-                      minHeight: "400px",
+                      display: "flex",
+                      height: "250px",
+                      width: "250px",
+                      justifyContent: "center",
+                      alignItems: "center",
                       backgroundImage:
-                        "url(" + require("../../assets/img/theme/qr_code_PNG6.png") + ")",
+                      "url(" + require("../../assets/img/theme/qr_code_PNG6.png") + ")",
                       backgroundSize: "cover",
+                      margin: "0 auto", 
                   }}
                   />
                 </div>
