@@ -22,6 +22,9 @@ import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
+import EditMember from "views/examples/EditMember";
+import MemberPasses from "views/examples/MemberPasses";
+
 
 var routes = [
   {
@@ -53,13 +56,13 @@ var routes = [
         path: "/membership/edit",
         name: "Edit Member",
         layout: "/admin",
-        component: <Profile />,
+        component: <EditMember />,
       },
       {
         path: "/membership/passes",
         name: "Members Passes",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberPasses />,
       },
       {
         path: "/membership/report",
