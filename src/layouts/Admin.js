@@ -69,7 +69,7 @@ const Admin = (props) => {
         location={location}
         logo={{
           innerLink: "/admin/index",
-          imgSrc: require("../assets/img/brand/avent7.png"),
+          imgSrc: require("../assets/img/brand/WI_Logo.png"),
           imgAlt: "...",
         }}
       />

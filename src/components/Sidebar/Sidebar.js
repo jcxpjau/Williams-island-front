@@ -164,7 +164,6 @@ const Sidebar = (props) => {
                         <img
                             alt={logo.imgAlt}
                             className="navbar-brand-img"
-                            style={{ padding: "5px" }}
                             src={logo.imgSrc}
                         />
                     </NavbarBrand>
