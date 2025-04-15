@@ -30,6 +30,7 @@ import Spa from "views/examples/Spa";
 import Fitness from "views/examples/Fitness";
 import Eventlist from "views/examples/EventList";
 import AddEvent from "views/examples/AddEvent";
+import Report from "views/examples/Report";
 
 
 var routes = [
@@ -74,7 +75,7 @@ var routes = [
         path: "/membership/report",
         name: "Report",
         layout: "/admin",
-        component: <Tables />,
+        component: <Report />,
       }
     ],
   },
@@ -144,7 +145,7 @@ var routes = [
         path: "/inventory/report",
         name: "Report",
         layout: "/admin",
-        component: <Tables />,
+        component: <Report />,
       },
     ]
   },
@@ -188,7 +189,7 @@ var routes = [
         path: "/activity",
         name: "Report",
         layout: "/admin",
-        component: <Profile />,
+        component: <Report />,
       },
     ]
   },
@@ -238,7 +239,7 @@ var routes = [
         path: "/events/report",
         name: "Report",
         layout: "/admin",
-        component: <Profile />,
+        component: <Report />,
       },
     ]
   },
@@ -344,7 +345,7 @@ var routes = [
         path: "/communication/demographic/reports",
         name: "Demographic Reports",
         layout: "/admin",
-        component: <Profile />,
+        component: <Report />,
       }
     ]
   },

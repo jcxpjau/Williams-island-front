@@ -1,5 +1,3 @@
-// src/views/examples/Autorizacoes.jsx
-
 import React from "react";
 import {
   Card,
@@ -13,7 +11,7 @@ import {
 } from "reactstrap";
 
 import Header from "components/Headers/Header.js";
-
+import SimpleFilterDropdown from "components/Filter/Filter";
 
 const Autorizacoes = () => {
   const autorizacoes = [
@@ -35,17 +33,25 @@ const Autorizacoes = () => {
     },
   ];
 
-  
-
   return (
     <>
-    <Header/>
+      <Header />
       <Container className="mt--7" fluid>
         <Row>
           <Col>
             <Card className="shadow">
               <CardHeader className="border-0">
-                <h3 className="mb-0">Member Passes</h3>
+                <Row className="align-items-center">
+                  <Col xs="6">
+                    <h3 className="mb-0">Member Passes</h3>
+                  </Col>
+                  <Col xs="6" className="text-right">
+                    <SimpleFilterDropdown
+                      label="Filter"
+                      options={["Waiting", "Authorized", "Denied"]}
+                    />
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody>
                 <Table className="align-items-center table-flush" responsive>
@@ -72,14 +78,18 @@ const Autorizacoes = () => {
                             color="success"
                             size="sm"
                             className="mr-2"
-                            onClick={() => alert(`Autorizado: ${autorizacao.visitante}`)}
+                            onClick={() =>
+                              alert(`Autorizado: ${autorizacao.visitante}`)
+                            }
                           >
                             Authorize
                           </Button>
                           <Button
                             color="danger"
                             size="sm"
-                            onClick={() => alert(`Negado: ${autorizacao.visitante}`)}
+                            onClick={() =>
+                              alert(`Negado: ${autorizacao.visitante}`)
+                            }
                           >
                             Refuse
                           </Button>

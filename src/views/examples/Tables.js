@@ -34,9 +34,11 @@ import {
   Container,
   Row,
   UncontrolledTooltip,
+  Col,
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
+import SimpleFilterDropdown from "components/Filter/Filter";
 
 const Tables = () => {
   return (
@@ -48,9 +50,19 @@ const Tables = () => {
         <Row>
           <div className="col">
             <Card className="shadow">
-              <CardHeader className="border-0">
-                <h3 className="mb-0">Members List</h3>
-              </CardHeader>
+            <CardHeader className="border-0">
+                  <Row className="align-items-center">
+                    <Col xs="6">
+                      <h3 className="mb-0">Members List</h3>
+                    </Col>
+                    <Col xs="6" className="text-right">
+                      <SimpleFilterDropdown
+                        label="Filter"
+                        options={["Pending", "In day", "Schedule"]}
+                      />
+                    </Col>
+                  </Row>
+                </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>

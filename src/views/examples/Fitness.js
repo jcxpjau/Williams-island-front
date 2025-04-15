@@ -11,6 +11,7 @@ import {
 } from "reactstrap";
 
 import Header from "components/Headers/Header.js";
+import SimpleFilterDropdown from "components/Filter/Filter";
 
 const sportStats = [
   { name: "Weightlifting", count: 42 },
@@ -32,7 +33,17 @@ const FitnessArea = () => {
           <Col md="12">
             <Card className="shadow">
               <CardHeader className="border-0">
-                <h3 className="mb-0">Fitness Area Overview</h3>
+                  <Row className="align-items-center">
+                    <Col xs="6">
+                        <h3 className="mb-0">Fitness Area Overview</h3>
+                    </Col>
+                    <Col xs="6" className="text-right">
+                      <SimpleFilterDropdown
+                        label="Filter"
+                        options={["All", "Top", "Moderate"]}
+                      />
+                    </Col>
+                  </Row>
               </CardHeader>
               <CardBody>
                 <p className="mb-2">

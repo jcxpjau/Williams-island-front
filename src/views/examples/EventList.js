@@ -11,6 +11,7 @@ import {
 } from "reactstrap";
 
 import Header from "components/Headers/Header.js";
+import SimpleFilterDropdown from "components/Filter/Filter";
 
 const condoEvents = [
   {
@@ -67,7 +68,17 @@ const CondoEventList = () => {
           <Col>
             <Card className="shadow">
               <CardHeader className="border-0">
-                <h3 className="mb-0">Condominium Events</h3>
+                <Row className="align-items-center">
+                  <Col xs="6">
+                      <h3 className="mb-0">Fitness Area Overview</h3>
+                  </Col>
+                  <Col xs="6" className="text-right">
+                    <SimpleFilterDropdown
+                      label="Filter"
+                      options={["All", "Active", "Schedule", "Completed"]}
+                    />
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody>
                 <Table className="align-items-center table-flush" responsive>
