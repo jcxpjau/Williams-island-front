@@ -164,7 +164,6 @@ const Sidebar = (props) => {
                         <img
                             alt={logo.imgAlt}
                             className="navbar-brand-img"
-                            style={{ padding: "5px" }}
                             src={logo.imgSrc}
                         />
                     </NavbarBrand>
@@ -278,7 +277,7 @@ const Sidebar = (props) => {
                     <Nav className="mb-md-3" navbar>
                         <NavItem>
                             <NavLink
-                                to="/users/list"
+                                to="/admin/users/list"
                                 tag={NavLinkRRD}
                                 style={{
                                     ...(activeRoute('/admin/users/list') ===

@@ -25,6 +25,7 @@ const Admin = (props) => {
       }
 
       if (prop.layout === "/admin") {
+        
         return (
           <Route path={prop.path} element={prop.component} key={key} />
         );
@@ -33,6 +34,20 @@ const Admin = (props) => {
       return [];
     });
   };
+
+  const getHiddenRoutes = ( routes ) => {
+    return routes.flatMap((prop, key) => {
+
+      if (prop.layout === "/admin") {
+        console.log( prop.path );
+        return (
+          <Route path={prop.path} element={prop.component} key={key} />
+        );
+      }
+
+      return [];
+    });
+  }
 
   const getBrandText = (path) => {
     for (let i = 0; i < routes.length; i++) {
@@ -54,7 +69,7 @@ const Admin = (props) => {
         location={location}
         logo={{
           innerLink: "/admin/index",
-          imgSrc: require("../assets/img/brand/avent7.png"),
+          imgSrc: require("../assets/img/brand/WI_Logo.png"),
           imgAlt: "...",
         }}
       />
@@ -65,6 +80,7 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
+          {getHiddenRoutes( hiddenRoutes ) }
           <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>
