@@ -361,12 +361,6 @@ var routes = [
         component: <Profile />,
       },
       {
-        path: "/administrations/demographic/add",
-        name: "Add Demographic",
-        layout: "/admin",
-        component: <Profile />,
-      },
-      {
         path: "/administrations/delivery",
         name: "Delivery",
         layout: "/admin",

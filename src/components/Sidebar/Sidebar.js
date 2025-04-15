@@ -286,6 +286,7 @@ const Sidebar = (props) => {
                                         fontWeight: "bold"
                                     }),
                                 }}
+                                onClick={closeCollapse}
                             >
                                 <i className="ni ni-single-02" />
                                 Users
@@ -302,6 +303,7 @@ const Sidebar = (props) => {
                                         fontWeight: "bold"
                                     }),
                                 }}
+                                onClick={closeCollapse}
                             >
                                 <i className="ni ni-settings-gear-65" />
                                 Settings
@@ -309,7 +311,8 @@ const Sidebar = (props) => {
                         </NavItem>
                         <NavItem>
                             <NavLink
-                                href="/admin/membership/list"
+                                to="/admin/logs"
+                                tag={NavLinkRRD}
                                 style={{
                                     ...(activeRoute('/admin/logs') ===
                                         "active" && {
@@ -318,6 +321,7 @@ const Sidebar = (props) => {
                                         fontWeight: "bold"
                                     }),
                                 }}
+                                onClick={closeCollapse}
                             >
                                 <i className="ni ni-single-copy-04" />
                                 Logs
