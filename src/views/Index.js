@@ -13,7 +13,6 @@ import Header from "components/Headers/Header";
 const Dashboard = () => {
   const reservations = [
     { date: "May 5, 2024", time: "10:00 AM", facility: "Tennis Court 1" },
-    { date: "Apr 20, 2024", time: "4:00 PM", facility: "Pool" },
     { date: "Apr 20, 2024", time: "4:00 PM", facility: "Fitness Center" },
     { date: "Apr 21, 2024", time: "4:00 PM", facility: "Clubhouse" },
     { date: "Apr 12, 2024", time: "1:00 PM", facility: "Tennis Court 2" },

@@ -31,7 +31,10 @@ import Fitness from "views/examples/Fitness";
 import Eventlist from "views/examples/EventList";
 import AddEvent from "views/examples/AddEvent";
 import Report from "views/examples/Report";
-
+import Food from "views/examples/Food";
+import EmployeeList from "views/examples/EmployeeList";
+import AddEmployee from "views/examples/AddEmployee";
+import EditEmployee from "views/examples/EditEmployee";
 
 var routes = [
   {
@@ -183,7 +186,7 @@ var routes = [
         path: "/activity/fb",
         name: "Food & Beverage",
         layout: "/admin",
-        component: <Profile />,
+        component: <Food />,
       },
       {
         path: "/activity",
@@ -253,19 +256,19 @@ var routes = [
         path: "/administration/employees/list",
         name: "Employees List",
         layout: "/admin",
-        component: <Profile />,
+        component: <EmployeeList />,
       },
       {
         path: "/administration/employees/add",
         name: "Add Employee",
         layout: "/admin",
-        component: <Profile />,
+        component: <AddEmployee />,
       },
       {
         path: "/administration/employees/edit",
         name: "Edit Employee",
         layout: "/admin",
-        component: <Profile />,
+        component: <EditEmployee />,
       },
       {
         path: "/administration/employees/access",
