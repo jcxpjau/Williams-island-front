@@ -4,6 +4,7 @@ import { Container } from "reactstrap";
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import AdminFooter from "components/Footers/AdminFooter.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
+import ChatbaseWidget from "components/Chatboot/chatbot";
 
 import routes from "routes.js";
 import hiddenRoutes from "hiddenRoutes.js";
@@ -85,6 +86,7 @@ const Admin = (props) => {
         </Routes>
         <Container fluid>
           <AdminFooter />
+          <ChatbaseWidget />
         </Container>
       </div>
     </>
