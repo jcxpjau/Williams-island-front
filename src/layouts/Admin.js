@@ -20,6 +20,7 @@ const Admin = (props) => {
 
   const getRoutes = (routes) => {
     return routes.flatMap((prop, key) => {
+
       if (prop.collapse && prop.views) {
         return getRoutes(prop.views);
       }
@@ -39,7 +40,6 @@ const Admin = (props) => {
     return routes.flatMap((prop, key) => {
 
       if (prop.layout === "/admin") {
-        console.log( prop.path );
         return (
           <Route path={prop.path} element={prop.component} key={key} />
         );
