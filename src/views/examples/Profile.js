@@ -118,9 +118,6 @@ const Profile = () => {
                   <p>
                     Message History
                   </p>
-                  <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                    Guest Passes
-                  </a>
                   <div
                     style={{
                       display: "flex",
