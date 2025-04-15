@@ -144,7 +144,6 @@ const Sidebar = (props) => {
             expand="md"
             id="sidenav-main"
             style={{
-                overflowY: 'auto',
                 scrollbarWidth: 'none',
                 WebkitOverflowScrolling: 'touch'
             }}
