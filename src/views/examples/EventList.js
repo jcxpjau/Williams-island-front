@@ -70,7 +70,7 @@ const CondoEventList = () => {
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <Col xs="6">
-                      <h3 className="mb-0">Fitness Area Overview</h3>
+                      <h3 className="mb-0">Events List</h3>
                   </Col>
                   <Col xs="6" className="text-right">
                     <SimpleFilterDropdown
