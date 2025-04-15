@@ -10,6 +10,7 @@ import {
 } from "reactstrap";
 
 import Header from "components/Headers/Header.js";
+import SimpleFilterDropdown from "components/Filter/Filter";
 
 const TennisBookings = () => {
   const bookings = [
@@ -43,9 +44,19 @@ const TennisBookings = () => {
         <Row>
           <Col>
             <Card className="shadow">
-              <CardHeader className="border-0">
-                <h3 className="mb-0">Recent Tennis Court Bookings</h3>
-              </CardHeader>
+            <CardHeader className="border-0">
+              <Row className="align-items-center">
+                <Col xs="6">
+                  <h3 className="mb-0">Recent Tennis Court Bookings</h3>
+                </Col>
+                <Col xs="6" className="text-right">
+                  <SimpleFilterDropdown
+                    label="Filter"
+                    options={["All", "30 min", "1 hour", "2 hours"]}
+                  />
+                </Col>
+              </Row>
+            </CardHeader>
               <CardBody>
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="thead-light">
