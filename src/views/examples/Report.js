@@ -15,32 +15,13 @@ import {
 
 import Header from "components/Headers/Header.js";
 
-const ReportProblem = () => {
-  const [formData, setFormData] = useState({
+const Reports = () => {
+  const [reportData, setReportData] = useState({
     title: "",
-    description: "",
     category: "General",
+    description: "",
+    date: "",
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Problem submitted:", formData);
-    alert("Problem reported successfully!");
-    setFormData({
-      title: "",
-      description: "",
-      category: "General",
-    });
-  };
-
   return (
     <>
       <Header />
@@ -49,33 +30,18 @@ const ReportProblem = () => {
           <Col lg="8" md="10">
             <Card className="shadow">
               <CardHeader className="border-0">
-                <h3 className="mb-0">Report a Problem</h3>
+                <h3 className="mb-0">Reports</h3>
               </CardHeader>
               <CardBody>
-                <Form onSubmit={handleSubmit}>
+                <Form >
                   <FormGroup>
-                    <Label for="title">Title</Label>
+                    <Label for="title">Report Title</Label>
                     <Input
                       type="text"
                       name="title"
                       id="title"
-                      placeholder="Enter a brief title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label for="description">Description</Label>
-                    <Input
-                      type="textarea"
-                      name="description"
-                      id="description"
-                      placeholder="Describe the problem in detail"
-                      rows="5"
-                      value={formData.description}
-                      onChange={handleChange}
+                      placeholder="Enter the report title"
+                      value={reportData.title}
                       required
                     />
                   </FormGroup>
@@ -86,21 +52,44 @@ const ReportProblem = () => {
                       type="select"
                       name="category"
                       id="category"
-                      value={formData.category}
-                      onChange={handleChange}
+                      value={reportData.category}
                     >
                       <option>General</option>
-                      <option>Facilities</option>
+                      <option>Maintenance</option>
+                      <option>Inspection</option>
                       <option>Security</option>
-                      <option>Noise</option>
-                      <option>Cleaning</option>
+                      <option>Incident</option>
                       <option>Other</option>
                     </Input>
                   </FormGroup>
 
+                  <FormGroup>
+                    <Label for="description">Description</Label>
+                    <Input
+                      type="textarea"
+                      name="description"
+                      id="description"
+                      rows="5"
+                      placeholder="Describe the report in detail"
+                      value={reportData.description}
+                      required
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label for="date">Date</Label>
+                    <Input
+                      type="date"
+                      name="date"
+                      id="date"
+                      value={reportData.date}
+                      required
+                    />
+                  </FormGroup>
+
                   <div className="text-right">
                     <Button color="primary" type="submit">
-                      Submit
+                      Submit Report
                     </Button>
                   </div>
                 </Form>
@@ -113,4 +102,4 @@ const ReportProblem = () => {
   );
 };
 
-export default ReportProblem;
+export default Reports;
