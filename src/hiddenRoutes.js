@@ -1,6 +1,6 @@
 import Login from "views/examples/Login";
 import Logs from "views/examples/Logs";
-import Tables from "views/examples/Tables";
+import Profile from "views/examples/Profile";
 import UsersList from "views/examples/UsersList";
 
 const hiddenRoutes = [
@@ -12,6 +12,11 @@ const hiddenRoutes = [
     {
       path: "/logs",
       component: <Logs />,
+      layout: "/admin",
+    },
+    {
+      path: "/profile",
+      component: <Profile />,
       layout: "/admin",
     }
   ];
