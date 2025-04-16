@@ -35,6 +35,7 @@ import Food from "views/examples/Food";
 import EmployeeList from "views/examples/EmployeeList";
 import AddEmployee from "views/examples/AddEmployee";
 import EditEmployee from "views/examples/EditEmployee";
+import EmployeeAcess from "views/examples/EmployeeAcess";
 
 var routes = [
   {
@@ -274,7 +275,7 @@ var routes = [
         path: "/administration/employees/access",
         name: "Employee Access",
         layout: "/admin",
-        component: <Profile />,
+        component: <EmployeeAcess />,
       },
       {
         path: "/administration/employees/rules",

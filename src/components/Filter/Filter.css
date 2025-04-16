@@ -1,0 +1,6 @@
+.custom-dropdown .dropdown-menu.dropdown-left {
+    left: auto !important;
+    right: 0; 
+    transform: translateX(-100%); 
+  }
+  
