@@ -36,6 +36,7 @@ import EmployeeList from "views/examples/EmployeeList";
 import AddEmployee from "views/examples/AddEmployee";
 import EditEmployee from "views/examples/EditEmployee";
 import EmployeeAcess from "views/examples/EmployeeAcess";
+import Ads from "./components/Ads/Ads";
 
 var routes = [
   {
@@ -317,9 +318,9 @@ var routes = [
     views: [
       {
         path: "/communication/event/management",
-        name: "Event management",
+        name: "Ads",
         layout: "/admin",
-        component: <Profile />,
+        component: <Ads />,
       },
       {
         path: "/communication/builder",
