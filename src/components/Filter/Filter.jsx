@@ -1,5 +1,3 @@
-// src/components/Custom/SimpleFilterDropdown.jsx
-
 import React, { useState } from "react";
 import {
   Dropdown,
@@ -7,6 +5,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "reactstrap";
+import "../Filter/Filter.css";
 
 const SimpleFilterDropdown = ({ label = "Filter", options = [] }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -20,11 +19,11 @@ const SimpleFilterDropdown = ({ label = "Filter", options = [] }) => {
   };
 
   return (
-    <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+    <Dropdown isOpen={dropdownOpen} toggle={toggle} className="custom-dropdown" direction="down">
       <DropdownToggle color="secondary" caret>
         {selected || label}
       </DropdownToggle>
-      <DropdownMenu>
+      <DropdownMenu className="dropdown-left">
         {options.map((opt, index) => (
           <DropdownItem key={index} onClick={() => Select(opt)}>
             {opt}
