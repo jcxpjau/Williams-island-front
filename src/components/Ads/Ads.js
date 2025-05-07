@@ -5,6 +5,7 @@ import template1 from "./template1.png";
 import template2 from "./template2.png";
 import template3 from "./template3.png";
 import Header from "components/Headers/Header.js";
+import { postToSocialMedia } from "./postToSocialMedia";
 
 export default function AdEditor() {
   const [title, setTitle] = useState("Special Offer!");
@@ -18,17 +19,28 @@ export default function AdEditor() {
   const [logoUrl, setLogoUrl] = useState(null);
   const [previewFormat, setPreviewFormat] = useState("feed");
 
-  const [textPosition, setTextPosition] = useState({ x: 50, y: 50 });
+  const [titlePosition, setTitlePosition] = useState({ x: 50, y: 50 });
+  const [subtitlePosition, setSubtitlePosition] = useState({ x: 50, y: 100 });
+  const [subtitle2Position, setSubtitle2Position] = useState({ x: 50, y: 140 });
   const [logoPosition, setLogoPosition] = useState({ x: 10, y: 10 });
-  const textRef = useRef(null);
-  const logoRef = useRef(null);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [caption, setCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
+
   const dragData = useRef({ isDragging: false, offsetX: 0, offsetY: 0, type: null });
 
   const handleDragStart = (e, type) => {
+    let pos;
+    if (type === "title") pos = titlePosition;
+    else if (type === "subtitle") pos = subtitlePosition;
+    else if (type === "subtitle2") pos = subtitle2Position;
+    else if (type === "logo") pos = logoPosition;
+
     dragData.current = {
       isDragging: true,
-      offsetX: e.clientX - (type === "text" ? textPosition.x : logoPosition.x),
-      offsetY: e.clientY - (type === "text" ? textPosition.y : logoPosition.y),
+      offsetX: e.clientX - pos.x,
+      offsetY: e.clientY - pos.y,
       type,
     };
   };
@@ -39,11 +51,10 @@ export default function AdEditor() {
     const x = e.clientX - offsetX;
     const y = e.clientY - offsetY;
 
-    if (type === "text") {
-      setTextPosition({ x, y });
-    } else if (type === "logo") {
-      setLogoPosition({ x, y });
-    }
+    if (type === "title") setTitlePosition({ x, y });
+    else if (type === "subtitle") setSubtitlePosition({ x, y });
+    else if (type === "subtitle2") setSubtitle2Position({ x, y });
+    else if (type === "logo") setLogoPosition({ x, y });
   };
 
   const handleDragEnd = () => {
@@ -70,16 +81,26 @@ export default function AdEditor() {
     });
   };
 
+  const handlePostToInstagram = async () => {
+    setUploading(true);
+    try {
+      const element = document.getElementById("ad-preview");
+      await postToSocialMedia(element, caption, "YOUR_IMGBB_API_KEY");
+      alert("Post enviado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao postar o anúncio.");
+    } finally {
+      setUploading(false);
+      setShowPopup(false);
+    }
+  };
+
   return (
     <div>
-      <Header/>
+      <Header />
       <div className={styles.teste}>
-        <div 
-          className={styles.container}
-          onMouseMove={handleDrag}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={handleDragEnd}
-        >
+        <div className={styles.container}>
           <div className={styles.leftPanel}>
             <div className={styles.header}>
               <h2>Creating Ads with A.N.A</h2>
@@ -177,43 +198,63 @@ export default function AdEditor() {
             <button onClick={downloadImage} className={styles.downloadButton}>
               Download
             </button>
+
+            <button onClick={() => setShowPopup(true)} className={styles.downloadButton}>
+              Postar no Instagram
+            </button>
+
+              {showPopup && (
+                <div className={styles.popupOverlay}>
+                  <div className={styles.popup}>
+                    <h3>Escreva a legenda do post:</h3>
+                    <textarea
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      className={styles.textarea}
+                      placeholder="Digite sua legenda aqui..."
+                    />
+                    <div className={styles.popupButtons}>
+                      <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
+                        Cancelar
+                      </button>
+                      <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
+                        {uploading ? "Postando..." : "Postar"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                  )}
           </div>
 
           <div className={styles.rightPanel}>
             <h3>Preview</h3>
             <div className={styles.previewDevice}>Mobile ▼</div>
-            <div className={styles.formatSelector}>
-                <label>Formato:</label>
-                <select
-                  value={previewFormat}
-                  onChange={(e) => setPreviewFormat(e.target.value)}
-                  className={styles.input}
-                >
-                  <option value="feed">Feed (1:1)</option>
-                  <option value="stories">Stories (9:16)</option>
-                </select>
-              </div>
-              <div
-                id="ad-preview"
-                className={styles.adPreview}
-                style={{
-                  backgroundImage: `url(${imageUrl})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  color: textColor,
-                  backgroundColor: bgColor,
-                  fontFamily,
-                  width: previewFormat === "stories" ? "360px" : "360px",
-                  height: previewFormat === "stories" ? "640px" : "360px",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
+
+            <div
+              id="ad-preview"
+              className={styles.adPreview}
+              style={{
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                color: textColor,
+                backgroundColor: bgColor,
+                fontFamily,
+                width: previewFormat === "stories" ? "360px" : "360px",
+                height: previewFormat === "stories" ? "640px" : "360px",
+                position: "relative",
+                overflow: "hidden",
+                margin: "0 auto",
+              }}
+              onMouseMove={handleDrag}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={handleDragEnd}
+            >
               {logoUrl && (
                 <img
                   src={logoUrl}
                   alt="Logo"
-                  ref={logoRef}
+                  draggable={false}
                   onMouseDown={(e) => handleDragStart(e, "logo")}
                   style={{
                     position: "absolute",
@@ -225,25 +266,59 @@ export default function AdEditor() {
                 />
               )}
 
-              <div
-                ref={textRef}
-                onMouseDown={(e) => handleDragStart(e, "text")}
+              <h1
                 style={{
                   position: "absolute",
-                  left: `${textPosition.x}px`,
-                  top: `${textPosition.y}px`,
+                  left: `${titlePosition.x}px`,
+                  top: `${titlePosition.y}px`,
                   cursor: "grab",
                 }}
+                onMouseDown={(e) => handleDragStart(e, "title")}
               >
-                <h1>{title}</h1>
-                <p>{subtitle}</p>
-                <p style={{ color: secondaryColor }}>{subtitle2}</p>
-              </div>
+                {title}
+              </h1>
+
+              <p
+                style={{
+                  position: "absolute",
+                  left: `${subtitlePosition.x}px`,
+                  top: `${subtitlePosition.y}px`,
+                  cursor: "grab",
+                }}
+                onMouseDown={(e) => handleDragStart(e, "subtitle")}
+              >
+                {subtitle}
+              </p>
+
+              <p
+                style={{
+                  position: "absolute",
+                  left: `${subtitle2Position.x}px`,
+                  top: `${subtitle2Position.y}px`,
+                  cursor: "grab",
+                  color: secondaryColor,
+                }}
+                onMouseDown={(e) => handleDragStart(e, "subtitle2")}
+              >
+                {subtitle2}
+              </p>
+            </div>
+
+            <div className={styles.formatSelector} style={{ marginTop: "10px", textAlign: "center" }}>
+              <label style={{ marginRight: "8px" }}>Formato:</label>
+              <select
+                value={previewFormat}
+                onChange={(e) => setPreviewFormat(e.target.value)}
+                style={{ width: "150px" }}
+                className={styles.input}
+              >
+                <option value="feed">Feed (1:1)</option>
+                <option value="stories">Stories (9:16)</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
-      </div>
-      
+    </div>
   );
 }
