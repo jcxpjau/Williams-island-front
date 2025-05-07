@@ -35,6 +35,7 @@ import Food from "views/examples/Food";
 import EmployeeList from "views/examples/EmployeeList";
 import AddEmployee from "views/examples/AddEmployee";
 import EditEmployee from "views/examples/EditEmployee";
+import AddVenue from "views/examples/AddVenue";
 
 var routes = [
   {
@@ -162,7 +163,7 @@ var routes = [
         path: "/activity/add",
         name: "Add Activity",
         layout: "/admin",
-        component: <AddActivity />,
+        component: <AddVenue />,
       },
       {
         path: "/activity/tennis",
