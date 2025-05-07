@@ -85,7 +85,7 @@ export default function AdEditor() {
     setUploading(true);
     try {
       const element = document.getElementById("ad-preview");
-      await postToSocialMedia(element, caption, "YOUR_IMGBB_API_KEY");
+      await postToSocialMedia(element, caption);
       alert("Post enviado com sucesso!");
     } catch (error) {
       console.error(error);
@@ -200,30 +200,30 @@ export default function AdEditor() {
             </button>
 
             <button onClick={() => setShowPopup(true)} className={styles.downloadButton}>
-              Postar no Instagram
+              Instagram
             </button>
 
-              {showPopup && (
-                <div className={styles.popupOverlay}>
-                  <div className={styles.popup}>
-                    <h3>Escreva a legenda do post:</h3>
-                    <textarea
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      className={styles.textarea}
-                      placeholder="Digite sua legenda aqui..."
-                    />
-                    <div className={styles.popupButtons}>
-                      <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
-                        Cancelar
-                      </button>
-                      <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
-                        {uploading ? "Postando..." : "Postar"}
-                      </button>
-                    </div>
+            {showPopup && (
+              <div className={styles.popupOverlay}>
+                <div className={styles.popup}>
+                  <h3>Escreva a legenda do post:</h3>
+                  <textarea
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    className={styles.textarea}
+                    placeholder="Digite sua legenda aqui..."
+                  />
+                  <div className={styles.popupButtons}>
+                    <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
+                      Cancelar
+                    </button>
+                    <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
+                      {uploading ? "Postando..." : "Postar"}
+                    </button>
                   </div>
                 </div>
-                  )}
+              </div>
+            )}
           </div>
 
           <div className={styles.rightPanel}>
@@ -240,7 +240,7 @@ export default function AdEditor() {
                 color: textColor,
                 backgroundColor: bgColor,
                 fontFamily,
-                width: previewFormat === "stories" ? "360px" : "360px",
+                width: previewFormat === "stories" ? "400px" : "500px",
                 height: previewFormat === "stories" ? "640px" : "360px",
                 position: "relative",
                 overflow: "hidden",
