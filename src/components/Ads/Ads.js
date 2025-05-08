@@ -6,11 +6,14 @@ import template2 from "./template2.png";
 import template3 from "./template3.png";
 import Header from "components/Headers/Header.js";
 import { postToSocialMedia } from "./postToSocialMedia";
+import { FaCheckCircle, FaInstagram, FaDownload } from "react-icons/fa";
+import { getCaptionFromAI } from "./captionAI";
+
 
 export default function AdEditor() {
   const [title, setTitle] = useState("Special Offer!");
-  const [subtitle, setSubtitle] = useState("Schedule your ");
-  const [subtitle2, setSubtitle2] = useState("Vagas limitadas!");
+  const [subtitle, setSubtitle] = useState("Schedule your time");
+  const [subtitle2, setSubtitle2] = useState("Limited!");
   const [bgColor, setBgColor] = useState("#f0f0f0");
   const [textColor, setTextColor] = useState("#ffffff");
   const [secondaryColor, setSecondaryColor] = useState("#eeeeee");
@@ -27,8 +30,28 @@ export default function AdEditor() {
   const [showPopup, setShowPopup] = useState(false);
   const [caption, setCaption] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  const [generating, setGenerating] = useState(false);
+  const [typingIndex, setTypingIndex] = useState(0);
 
   const dragData = useRef({ isDragging: false, offsetX: 0, offsetY: 0, type: null });
+
+  const generateCaptionWithAI = async () => {
+    setGenerating(true);
+    setCaption(""); 
+    const suggestion = await getCaptionFromAI({ title, subtitle, subtitle2 });
+  
+    let i = 0;
+    const typingInterval = setInterval(() => {
+      setCaption((prev) => prev + suggestion[i]);
+      i++;
+      if (i >= suggestion.length) {
+        clearInterval(typingInterval);
+        setGenerating(false);
+      }
+    }, 40);
+  };
 
   const handleDragStart = (e, type) => {
     let pos;
@@ -73,11 +96,24 @@ export default function AdEditor() {
 
   const downloadImage = () => {
     const element = document.getElementById("ad-preview");
+  
+    const originalBorderRadius = element.style.borderRadius;
+    const originalBoxShadow = element.style.boxShadow;
+    const originalFilter = element.style.filter;
+  
+    element.style.borderRadius = "0";
+    element.style.boxShadow = "none";
+    element.style.filter = "none";
+  
     html2canvas(element).then((canvas) => {
       const link = document.createElement("a");
       link.download = "anuncio.png";
       link.href = canvas.toDataURL();
       link.click();
+  
+      element.style.borderRadius = originalBorderRadius;
+      element.style.boxShadow = originalBoxShadow;
+      element.style.filter = originalFilter;
     });
   };
 
@@ -85,8 +121,9 @@ export default function AdEditor() {
     setUploading(true);
     try {
       const element = document.getElementById("ad-preview");
-      await postToSocialMedia(element, caption);
-      alert("Post enviado com sucesso!");
+      await postToSocialMedia(element, caption, previewFormat);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
     } catch (error) {
       console.error(error);
       alert("Erro ao postar o anúncio.");
@@ -195,13 +232,15 @@ export default function AdEditor() {
             <label className={styles.label}>Logo (topo):</label>
             <input type="file" accept="image/*" onChange={handleLogoUpload} className={styles.input} />
 
-            <button onClick={downloadImage} className={styles.downloadButton}>
-              Download
-            </button>
+            <div className={styles.botoes}>
+              <button onClick={downloadImage} className={styles.iconButton}>
+                <FaDownload size={20} />
+              </button>
 
-            <button onClick={() => setShowPopup(true)} className={styles.downloadButton}>
-              Instagram
-            </button>
+              <button onClick={() => setShowPopup(true)} className={styles.iconButton}>
+                <FaInstagram size={20} color="#C13584" />
+              </button>
+            </div>
 
             {showPopup && (
               <div className={styles.popupOverlay}>
@@ -214,11 +253,14 @@ export default function AdEditor() {
                     placeholder="Digite sua legenda aqui..."
                   />
                   <div className={styles.popupButtons}>
+                    <button onClick={generateCaptionWithAI} disabled={generating} className={styles.aiButton}>
+                      {generating ? "Generating..." : "Sugerir com IA 🤖"}
+                    </button>
                     <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
-                      Cancelar
+                      Close
                     </button>
                     <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
-                      {uploading ? "Postando..." : "Postar"}
+                      {uploading ? "Posting..." : "Post"}
                     </button>
                   </div>
                 </div>
@@ -266,8 +308,9 @@ export default function AdEditor() {
                 />
               )}
 
-              <h1
+              <p
                 style={{
+                  fontSize: '32px',
                   position: "absolute",
                   left: `${titlePosition.x}px`,
                   top: `${titlePosition.y}px`,
@@ -276,7 +319,7 @@ export default function AdEditor() {
                 onMouseDown={(e) => handleDragStart(e, "title")}
               >
                 {title}
-              </h1>
+              </p>
 
               <p
                 style={{
@@ -316,6 +359,14 @@ export default function AdEditor() {
                 <option value="stories">Stories (9:16)</option>
               </select>
             </div>
+              {showSuccessMessage && (
+              <div className={styles.successOverlay}>
+                <div className={styles.successPopup}>
+                  <FaCheckCircle size={50} color="#2ecc71" />
+                  <p>Post enviado com sucesso!</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

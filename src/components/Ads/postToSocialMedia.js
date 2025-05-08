@@ -1,13 +1,25 @@
 import html2canvas from "html2canvas";
 
-export async function postToSocialMedia(element, caption) {
-  const canvas = await html2canvas(element);
+export async function postToSocialMedia(element, caption, format = "feed") {
+  const computedStyles = window.getComputedStyle(element);
+  const originalBorderRadius = computedStyles.borderRadius;
+  const originalBoxShadow = computedStyles.boxShadow;
+  const originalFilter = computedStyles.filter;
+
+  element.style.borderRadius = "0";
+  element.style.boxShadow = "none";
+  element.style.filter = "none";
+
+  const canvas = await html2canvas(element, { useCORS: true, scale: 1 });
+
+  element.style.borderRadius = originalBorderRadius;
+  element.style.boxShadow = originalBoxShadow;
+  element.style.filter = originalFilter;
 
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 
   if (!blob) throw new Error("Erro ao gerar imagem");
 
-  // 3. Prepare o FormData para o Cloudinary
   const formData = new FormData();
   formData.append("file", blob);
   formData.append("upload_preset", "teste-ads");
@@ -18,7 +30,6 @@ export async function postToSocialMedia(element, caption) {
     console.log(`${key}:`, value);
   }
 
-  // 4. Envie para Cloudinary
   const cloudinaryUrl = "https://api.cloudinary.com/v1_1/djota6kqp/image/upload";
 
   const response = await fetch(cloudinaryUrl, {
@@ -32,16 +43,15 @@ export async function postToSocialMedia(element, caption) {
 
   if (!response.ok) throw new Error("Erro ao enviar para o Cloudinary: " + data.error?.message);
 
-  // 5. Envie a URL para o n8n com os dados corretos
   const payload = {
-    social_media: ["instagram"],
+    social_media: [format === "stories" ? "instagramstory" : "instagram"],
     image_url: data.secure_url,
     caption,
   };
 
   console.log("[n8n] Enviando dados para n8n:", payload);
 
-  const n8nResponse = await fetch("https://valmirborges.app.n8n.cloud/webhook-test/4237f72f-703a-49de-bd04-6fbfb503aeca", {
+  const n8nResponse = await fetch("https://valmirborges.app.n8n.cloud/webhook/4237f72f-703a-49de-bd04-6fbfb503aeca", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

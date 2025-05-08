@@ -82,7 +82,6 @@ const Admin = (props) => {
           <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>
-          {location.pathname !== "../components/Ads/Ads" && <AdminFooter />}
           <ChatbaseWidget />
         </Container>
       </div>
