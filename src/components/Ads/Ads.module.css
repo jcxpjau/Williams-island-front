@@ -2,7 +2,6 @@
 
 .container {
   display: flex;
-  background: #f4f4f4;
   border-radius: 12px;
   padding: 16px;
   gap: 24px;
