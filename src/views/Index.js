@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Card,
     CardHeader,
@@ -11,12 +11,29 @@ import {
 import Header from "components/Headers/Header";
 
 const Dashboard = () => {
-    const reservations = [
-        { date: "May 5, 2024", time: "10:00 AM", facility: "Tennis Court 1" },
-        { date: "Apr 20, 2024", time: "4:00 PM", facility: "Fitness Center" },
-        { date: "Apr 21, 2024", time: "4:00 PM", facility: "Clubhouse" },
-        { date: "Apr 12, 2024", time: "1:00 PM", facility: "Tennis Court 2" },
-    ];
+
+    const [bookings, setBookings] = useState([]);
+
+
+
+    async function getBookings() {
+        try {
+            const res = await fetch( process.env.REACT_APP_API_URL + "bookings?limit=5", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
+            const json = await res.json();
+            if (json.error) {
+                console.log(json.error);
+            } else {
+                setBookings(json);
+            }
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+        }
+    }
 
     const maintenanceRequests = [
         { date: "Apr 22, 2024", resident: "John Smith", status: "In Progress" },
@@ -52,15 +69,18 @@ const Dashboard = () => {
 
             })
         })
-        .then( res => res.json() )
-        .then( json => console.log( json ) )
-        .catch( err => console.log( err ) )
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.log(err))
     }
 
 
     useEffect(() => {
+        getBookings();
         updateChatBaseSource();
     }, [])
+
+
 
     return (
         <>
@@ -70,7 +90,7 @@ const Dashboard = () => {
                     <Col md="6" xl="6">
                         <Card className="shadow mb-4">
                             <CardHeader className="border-0">
-                                <h3 className="mb-0">Reservations</h3>
+                                <h3 className="mb-0">Bookings</h3>
                             </CardHeader>
                             <CardBody>
                                 <Table className="table-flush" responsive>
@@ -78,15 +98,20 @@ const Dashboard = () => {
                                         <tr>
                                             <th>Date</th>
                                             <th>Time</th>
-                                            <th>Facility</th>
+                                            <th>Venue</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {reservations.map((res, index) => (
+                                        {bookings.map((booking, index) => (
                                             <tr key={index}>
-                                                <td>{res.date}</td>
-                                                <td>{res.time}</td>
-                                                <td>{res.facility}</td>
+                                                <td>
+                                                    {new Date(booking.date).toLocaleDateString('en-US', {
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        year: 'numeric'
+                                                    })}</td>
+                                                <td>{booking.startTime} - {booking.endTime}</td>
+                                                <td>{booking.venueId.name}</td>
                                             </tr>
                                         ))}
                                     </tbody>

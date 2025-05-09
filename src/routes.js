@@ -38,6 +38,8 @@ import EditEmployee from "views/examples/EditEmployee";
 import AddVenue from "views/examples/AddVenue";
 import EmployeeAcess from "views/examples/EmployeeAcess";
 import Ads from "./components/Ads/Ads";
+import VenueList from "views/examples/VenueList";
+import Booking from "views/examples/Booking";
 
 
 var routes = [
@@ -162,42 +164,25 @@ var routes = [
     collapse: true,
     state: "activitiesCollapse",
     views: [
+
       {
-        path: "/activity/add",
-        name: "Add Activity",
+        path: "/booking",
+        name: "Bookings",
+        layout: "/admin",
+        component: <Booking />,
+      },
+      {
+        path: "/venue/list",
+        name: "Venues List",
+        layout: "/admin",
+        component: <VenueList />,
+      },
+      {
+        path: "/venue/add",
+        name: "Add Venue",
         layout: "/admin",
         component: <AddVenue />,
-      },
-      {
-        path: "/activity/tennis",
-        name: "Tennis",
-        layout: "/admin",
-        component: <Tennis />,
-      },
-      {
-        path: "/activity/spa",
-        name: "SPA",
-        layout: "/admin",
-        component: <Spa />,
-      },
-      {
-        path: "/activity/fitness",
-        name: "Fitness",
-        layout: "/admin",
-        component: <Fitness />,
-      },
-      {
-        path: "/activity/fb",
-        name: "Food & Beverage",
-        layout: "/admin",
-        component: <Food />,
-      },
-      {
-        path: "/activity",
-        name: "Report",
-        layout: "/admin",
-        component: <Report />,
-      },
+      }
     ]
   },
   {

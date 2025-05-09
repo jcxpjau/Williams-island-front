@@ -7,7 +7,7 @@ import {
 } from "reactstrap";
 import "../Filter/Filter.css";
 
-const SimpleFilterDropdown = ({ label = "Filter", options = [] }) => {
+const SimpleFilterDropdown = ({ label = "Filter", options = [], onChange }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -15,6 +15,7 @@ const SimpleFilterDropdown = ({ label = "Filter", options = [] }) => {
 
   const Select = (option) => {
     setSelected(option);
+    onChange( option );
     setDropdownOpen(false);
   };
 
