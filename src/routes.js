@@ -308,6 +308,7 @@ var routes = [
         name: "Ads",
         layout: "/admin",
         component: <Ads />,
+        hideFooter: true,
       },
       {
         path: "/communication/builder",

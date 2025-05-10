@@ -1,57 +1,69 @@
 import html2canvas from "html2canvas";
 
-export async function postToSocialMedia(adElement, caption, callback) {
-  try {
-    console.log("Iniciando captura da imagem...");
+export async function postToSocialMedia(element, caption, format = "feed") {
+  const computedStyles = window.getComputedStyle(element);
+  const originalBorderRadius = computedStyles.borderRadius;
+  const originalBoxShadow = computedStyles.boxShadow;
+  const originalFilter = computedStyles.filter;
 
-    const canvas = await html2canvas(adElement);
-    const imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-    if (!imageBlob) throw new Error("Falha ao converter canvas em blob");
+  element.style.borderRadius = "0";
+  element.style.boxShadow = "none";
+  element.style.filter = "none";
 
-    console.log("Imagem capturada, iniciando upload para ImgBB...");
+  const canvas = await html2canvas(element, { useCORS: true, scale: 1 });
 
-    const formData = new FormData();
-    formData.append("image", imageBlob);
+  element.style.borderRadius = originalBorderRadius;
+  element.style.boxShadow = originalBoxShadow;
+  element.style.filter = originalFilter;
 
-    const imgbbApiKey = "9606f49b7b684608780c6a5ff147be15"; // Substitua por sua chave real
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 
-    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-      method: "POST",
-      body: formData,
-    });
+  if (!blob) throw new Error("Erro ao gerar imagem");
 
-    const imgbbResult = await imgbbResponse.json();
-    console.log("Resposta do ImgBB:", imgbbResult);
+  const formData = new FormData();
+  formData.append("file", blob);
+  formData.append("upload_preset", "teste-ads");
+  formData.append("folder", "ads");
 
-    if (!imgbbResult.success) throw new Error("Erro no upload da imagem para ImgBB");
-
-    const imageUrl = imgbbResult.data.url;
-    console.log("Imagem hospedada em:", imageUrl);
-
-    const postData = {
-      social_media: ["instagram"],
-      image_url: imageUrl,
-      caption,
-    };
-
-    console.log("Dados que serão enviados ao n8n:", postData);
-
-    const webhookUrl = "https://valmirborges.app.n8n.cloud/webhook-test/4237f72f-703a-49de-bd04-6fbfb503aeca";
-
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(postData),
-    });
-
-    const result = await response.json();
-    console.log("Resposta do webhook n8n:", result);
-
-    if (callback) callback(null, result);
-  } catch (error) {
-    console.error("Erro ao postar no Instagram:", error);
-    if (callback) callback(error);
+  console.log("[Cloudinary] FormData preparado:");
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
   }
+
+  const cloudinaryUrl = "https://api.cloudinary.com/v1_1/djota6kqp/image/upload";
+
+  const response = await fetch(cloudinaryUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  console.log("[Cloudinary] Resposta recebida:", data);
+
+  if (!response.ok) throw new Error("Erro ao enviar para o Cloudinary: " + data.error?.message);
+
+  const payload = {
+    social_media: [format === "stories" ? "instagramstory" : "instagram"],
+    image_url: data.secure_url,
+    caption,
+  };
+
+  console.log("[n8n] Enviando dados para n8n:", payload);
+
+  const n8nResponse = await fetch("https://valmirborges.app.n8n.cloud/webhook/4237f72f-703a-49de-bd04-6fbfb503aeca", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!n8nResponse.ok) {
+    const errorText = await n8nResponse.text();
+    console.error("[n8n] Erro na resposta:", errorText);
+    throw new Error("Erro ao enviar para o n8n");
+  }
+
+  console.log("[n8n] Envio para n8n concluído com sucesso");
+
+  return true;
 }

@@ -5,9 +5,11 @@ import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import AdminFooter from "components/Footers/AdminFooter.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import ChatbaseWidget from "components/Chatboot/chatbot";
+import Ads from "../components/Ads/Ads"
 
 import routes from "routes.js";
 import hiddenRoutes from "hiddenRoutes.js";
+import Footer from "components/Footers/AdminFooter";
 
 const Admin = (props) => {
   const mainContent = React.useRef(null);
@@ -21,13 +23,11 @@ const Admin = (props) => {
 
   const getRoutes = (routes) => {
     return routes.flatMap((prop, key) => {
-
       if (prop.collapse && prop.views) {
         return getRoutes(prop.views);
       }
 
       if (prop.layout === "/admin") {
-        
         return (
           <Route path={prop.path} element={prop.component} key={key} />
         );
@@ -37,9 +37,8 @@ const Admin = (props) => {
     });
   };
 
-  const getHiddenRoutes = ( routes ) => {
+  const getHiddenRoutes = (routes) => {
     return routes.flatMap((prop, key) => {
-
       if (prop.layout === "/admin") {
         return (
           <Route path={prop.path} element={prop.component} key={key} />
@@ -48,13 +47,12 @@ const Admin = (props) => {
 
       return [];
     });
-  }
+  };
 
   const getBrandText = (path) => {
     for (let i = 0; i < routes.length; i++) {
       if (
-        props?.location?.pathname.indexOf(routes[i].layout + routes[i].path) !==
-        -1
+        props?.location?.pathname.indexOf(routes[i].layout + routes[i].path) !== -1
       ) {
         return routes[i].name;
       }
@@ -81,12 +79,10 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
-          {getHiddenRoutes( hiddenRoutes ) }
-          <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>
-          <AdminFooter />
           <ChatbaseWidget />
+          <Footer/>
         </Container>
       </div>
     </>
