@@ -9,6 +9,7 @@ import Ads from "../components/Ads/Ads"
 
 import routes from "routes.js";
 import hiddenRoutes from "hiddenRoutes.js";
+import Footer from "components/Footers/AdminFooter";
 
 const Admin = (props) => {
   const mainContent = React.useRef(null);
@@ -78,11 +79,10 @@ const Admin = (props) => {
         />
         <Routes>
           {getRoutes(routes)}
-          {getHiddenRoutes(hiddenRoutes)}
-          <Route path="*" element={<Navigate to="/admin/index" replace />} />
         </Routes>
         <Container fluid>
           <ChatbaseWidget />
+          <Footer/>
         </Container>
       </div>
     </>
