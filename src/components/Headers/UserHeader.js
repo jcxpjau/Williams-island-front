@@ -1,25 +1,6 @@
-/*!
-
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// reactstrap components
 import { Button, Container, Row, Col } from "reactstrap";
 
-const UserHeader = ({ title, description, buttonText = "info" }) => {
+const UserHeader = ({ title, description, buttonText }) => {
   return (
     <>
       <div
@@ -39,16 +20,20 @@ const UserHeader = ({ title, description, buttonText = "info" }) => {
           <Row>
             <Col lg="12" md="20">
               <h1 className="display-2 text-white">{title}</h1>
-              <p className="text-white mt-0 mb-5">
-                {description}
-              </p>
-              <Button
-                color="info"
-                href="#pablo"
-                onClick={(e) => e.preventDefault()}
-              >
-                {buttonText}
-              </Button>
+              {description &&
+                <p className="text-white mt-0 mb-5">
+                  {description}
+                </p>
+              }
+              {buttonText &&
+                <Button
+                  color="info"
+                  href=""
+                  onClick={(e) => e.preventDefault()}
+                >
+                  {buttonText}
+                </Button>
+              }
             </Col>
           </Row>
         </Container>
