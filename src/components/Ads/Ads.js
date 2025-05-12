@@ -177,15 +177,16 @@ export default function AdEditor() {
                     id="ad-preview"
                     className={styles.adPreview}
                     style={{
-                      position: "relative",
-                      overflow: "hidden",
                       color: textColor,
                       backgroundColor: bgColor,
                       fontFamily,
-                      width: "100%",  
-                      maxWidth: previewFormat === "stories" ? "400px" : "500px",
+                      width: "90%",
+                      maxWidth: previewFormat === "stories" ? "360px" : "500px",
                       aspectRatio: previewFormat === "stories" ? "9 / 16" : "1 / 1",
+                      position: "relative",
+                      overflow: "hidden",
                       margin: "0 auto",
+                      borderRadius: "12px",
                     }}
                     onMouseMove={handleDrag}
                     onMouseUp={handleDragEnd}
@@ -202,69 +203,72 @@ export default function AdEditor() {
                       />
                     )}
 
-                    {logoUrl && (
-                      <img
-                        src={logoUrl}
-                        alt="Logo"
-                        draggable={false}
-                        onMouseDown={(e) => handleDragStart(e, "logo")}
-                        onTouchStart={(e) => handleDragStart(e, "logo")}
+                    <div className={styles.adPreviewContent}>
+                      {logoUrl && (
+                        <img
+                          src={logoUrl}
+                          alt="Logo"
+                          draggable={false}
+                          onMouseDown={(e) => handleDragStart(e, "logo")}
+                          onTouchStart={(e) => handleDragStart(e, "logo")}
+                          style={{
+                            position: "absolute",
+                            left: `${logoPosition.x}px`,
+                            top: `${logoPosition.y}px`,
+                            cursor: "grab",
+                            maxWidth: "150px",
+                            zIndex: 2,
+                          }}
+                        />
+                      )}
+
+                      <p
                         style={{
+                          fontSize: '32px',
                           position: "absolute",
-                          left: `${logoPosition.x}px`,
-                          top: `${logoPosition.y}px`,
+                          left: `${titlePosition.x}px`,
+                          top: `${titlePosition.y}px`,
                           cursor: "grab",
-                          maxWidth: "150px",
                           zIndex: 2,
                         }}
-                      />
-                    )}
+                        onMouseDown={(e) => handleDragStart(e, "title")}
+                        onTouchStart={(e) => handleDragStart(e, "title")}
+                      >
+                        {title}
+                      </p>
 
-                    <p
-                      style={{
-                        fontSize: '32px',
-                        position: "absolute",
-                        left: `${titlePosition.x}px`,
-                        top: `${titlePosition.y}px`,
-                        cursor: "grab",
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "title")}
-                      onTouchStart={(e) => handleDragStart(e, "title")}
-                    >
-                      {title}
-                    </p>
+                      <p
+                        style={{
+                          position: "absolute",
+                          left: `${subtitlePosition.x}px`,
+                          top: `${subtitlePosition.y}px`,
+                          cursor: "grab",
+                          zIndex: 2,
+                        }}
+                        onMouseDown={(e) => handleDragStart(e, "subtitle")}
+                        onTouchStart={(e) => handleDragStart(e, "subtitle")}
+                      >
+                        {subtitle}
+                      </p>
 
-                    <p
-                      style={{
-                        position: "absolute",
-                        left: `${subtitlePosition.x}px`,
-                        top: `${subtitlePosition.y}px`,
-                        cursor: "grab",
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "subtitle")}
-                      onTouchStart={(e) => handleDragStart(e, "subtitle")}
-                    >
-                      {subtitle}
-                    </p>
-
-                    <p
-                      style={{
-                        position: "absolute",
-                        left: `${subtitle2Position.x}px`,
-                        top: `${subtitle2Position.y}px`,
-                        cursor: "grab",
-                        color: secondaryColor,
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "subtitle2")}
-                      onTouchStart={(e) => handleDragStart(e, "subtitle2")}
-                    >
-                      {subtitle2}
-                    </p>
+                      <p
+                        style={{
+                          position: "absolute",
+                          left: `${subtitle2Position.x}px`,
+                          top: `${subtitle2Position.y}px`,
+                          cursor: "grab",
+                          color: secondaryColor,
+                          zIndex: 2,
+                        }}
+                        onMouseDown={(e) => handleDragStart(e, "subtitle2")}
+                        onTouchStart={(e) => handleDragStart(e, "subtitle2")}
+                      >
+                        {subtitle2}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
               <Col>
                 <Row className="justify-content-center" style={{ marginTop: "10px"}}>
                     <label style={{ marginRight: "8px" }}>Formato:</label>
@@ -303,34 +307,38 @@ export default function AdEditor() {
                 </CardHeader>
 
                 <CardBody>
-                  <div className={styles.subHeader}>
-                    <strong>Tennis Templates</strong>
-                    <p>Based in your business</p>
-                  </div>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                          <FormGroup>
+                              <div className={styles.subHeader}>
+                              <strong>Tennis Templates</strong>
+                              <p>Based in your business</p>
+                            </div>
 
-                  <div className={styles.templateOptions}>
-                    {[template1, template2, template3].map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`Template ${index + 1}`}
-                        className={styles.templateImage}
-                        onClick={() => setImageUrl(img)}
-                      />
-                    ))}
-                    {imageUrl && typeof imageUrl === "string" && !imageUrl.includes("template") && (
-                      <img
-                        src={imageUrl}
-                        alt="Custom Background"
-                        className={styles.templateImage}
-                        onClick={() => setImageUrl(imageUrl)}
-                      />
-                    )}
+                            <div className={styles.templateOptions}>
+                              {[template1, template2, template3].map((img, index) => (
+                                <img
+                                  key={index}
+                                  src={img}
+                                  alt={`Template ${index + 1}`}
+                                  className={styles.templateImage}
+                                  onClick={() => setImageUrl(img)}
+                                />
+                              ))}
+                              {imageUrl && typeof imageUrl === "string" && !imageUrl.includes("template") && (
+                                <img
+                                  src={imageUrl}
+                                  alt="Custom Background"
+                                  className={styles.templateImage}
+                                  onClick={() => setImageUrl(imageUrl)}
+                                />
+                              )}
+                            </div>
+                          </FormGroup>
+                      </Col>
+                    </Row>
                   </div>
-                  
-                    <h6 className="heading-small text-muted mb-4">
-                      Ad Information
-                    </h6>
                     <div className="pl-lg-4">
                       <Row>
                         <Col lg="6">
@@ -414,7 +422,7 @@ export default function AdEditor() {
                               </FormGroup>
                             </Col>
 
-                            <Col lg="6">
+                            <Col lg="10">
                               <FormGroup>
                                   <div className={styles.colorRow}>
                                     <label className="form-control-label">
@@ -424,7 +432,7 @@ export default function AdEditor() {
                                         value={textColor}
                                         onChange={(e) => setTextColor(e.target.value)}
                                         className={styles.colorInput}
-                                      />
+                                        />
                                     </label>
                                     <label className="form-control-label">
                                       Secondary:
@@ -440,17 +448,24 @@ export default function AdEditor() {
                               </FormGroup>
                             </Col>
                             <Col lg="6">
-                            <FormGroup>
+                              <FormGroup>
                                 <label className={styles.label}>Background:</label>
-                                <Input type="file" accept="image/*" onChange={handleBackgroundUpload}/>
-                            </FormGroup>
+                                <label className={styles.customFile}>
+                                  Choose
+                                  <input type="file" accept="image/*" onChange={handleBackgroundUpload} />
+                                </label>
+                              </FormGroup>
                             </Col>
+
                             <Col lg="6">
                               <FormGroup>
                                 <label className={styles.label}>Logo (Top):</label>
-                                <Input type="file" accept="image/*" onChange={handleLogoUpload}/>
+                                <label className={styles.customFile}>
+                                  Choose
+                                  <input type="file" accept="image/*" onChange={handleLogoUpload} />
+                                </label>
                               </FormGroup>
-                            </Col>
+                              </Col>
                             <Col lg="6">
                               <FormGroup>
                                   <div className={styles.botoes}>
