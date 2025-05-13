@@ -51,7 +51,7 @@ export async function postToSocialMedia(element, caption, format = "feed") {
 
   console.log("[n8n] Enviando dados para n8n:", payload);
 
-  const n8nResponse = await fetch("https://valmirborges.app.n8n.cloud/webhook/4237f72f-703a-49de-bd04-6fbfb503aeca", {
+  const n8nResponse = await fetch("https://avent7.app.n8n.cloud/webhook/automatic-post", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
