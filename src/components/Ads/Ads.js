@@ -4,7 +4,8 @@ import styles from "./Ads.module.css";
 import template1 from "./template1.png";
 import template2 from "./template2.png";
 import template3 from "./template3.png";
-import Header from "components/Headers/Header.js";
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { postToSocialMedia } from "./postToSocialMedia";
 import { FaCheckCircle, FaInstagram, FaDownload } from "react-icons/fa";
 import { getCaptionFromAI } from "./captionAI";
@@ -46,26 +47,36 @@ export default function AdEditor() {
   const [uploading, setUploading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  const [useAI, setUseAI] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [typingIndex, setTypingIndex] = useState(0);
 
   const dragData = useRef({ isDragging: false, offsetX: 0, offsetY: 0, type: null });
 
-  const generateCaptionWithAI = async () => {
-    setGenerating(true);
-    setCaption(""); 
-    const suggestion = await getCaptionFromAI({ title, subtitle, subtitle2 });
-  
-    let i = 0;
-    const typingInterval = setInterval(() => {
-      setCaption((prev) => prev + suggestion[i]);
-      i++;
-      if (i >= suggestion.length) {
-        clearInterval(typingInterval);
-        setGenerating(false);
+      const generateCaptionWithAI = async () => {
+        setGenerating(true);
+        setCaption(""); 
+        const suggestion = await getCaptionFromAI({ title, subtitle, subtitle2 });
+
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < suggestion.length) {
+            setCaption((prev) => prev + (suggestion?.[i] || ""));
+            i++;
+          } else {
+            clearInterval(typingInterval);
+            setGenerating(false);
+          }
+        }, 40);
+    };
+
+      const handleToggleAI = (event) => {
+      const checked = event.target.checked;
+      setUseAI(checked);
+      if (checked && !generating) {
+        generateCaptionWithAI();
       }
-    }, 40);
-  };
+};
 
     const handleDragStart = (e, type) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
@@ -424,27 +435,32 @@ export default function AdEditor() {
 
                             <Col lg="10">
                               <FormGroup>
-                                  <div className={styles.colorRow}>
-                                    <label className="form-control-label">
+                                <div className={styles.colorRow}>
+                                  <div className={styles.colordiv}>
+                                    <label className="form-control-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       Main Color:
                                       <input
                                         type="color"
                                         value={textColor}
                                         onChange={(e) => setTextColor(e.target.value)}
                                         className={styles.colorInput}
-                                        />
+                                        style={{ marginTop: '8px' }} 
+                                      />
                                     </label>
-                                    <label className="form-control-label">
+                                  </div>
+                                  <div className={styles.colordiv}>
+                                    <label className="form-control-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       Secondary:
                                       <input
                                         type="color"
                                         value={secondaryColor}
                                         onChange={(e) => setSecondaryColor(e.target.value)}
                                         className={styles.colorInput}
+                                        style={{ marginTop: '8px' }} 
                                       />
-                                      </label>
+                                    </label>
                                   </div>
-                                
+                                </div>
                               </FormGroup>
                             </Col>
                             <Col lg="6">
@@ -466,43 +482,42 @@ export default function AdEditor() {
                                 </label>
                               </FormGroup>
                               </Col>
-                            <Col lg="6">
-                              <FormGroup>
-                                  <div className={styles.botoes}>
-                                      <button onClick={downloadImage} className={styles.iconButton}>
-                                        <FaDownload size={20} />
-                                      </button>
+                                  <Col lg="8">
+                                    <FormGroup>
+                                            {previewFormat === "feed" && (
+                                                <>
+                                                  <FormGroup>
+                                                    <label className="form-control-label">Caption:</label>
+                                                    <textarea
+                                                      value={caption}
+                                                      onChange={(e) => setCaption(e.target.value)}
+                                                      disabled={generating}
+                                                      className={styles.captionTextarea}
+                                                      rows={3} 
+                                                  />
+                                                  </FormGroup>
 
-                                      <button onClick={() => setShowPopup(true)} className={styles.iconButton}>
-                                        <FaInstagram size={20} color="#C13584" />
-                                        </button>
-                                  </div>
-                                  {showPopup && (
-                                      <div className={styles.popupOverlay}>
-                                        <div className={styles.popup}>
-                                          <h3>Escreva a legenda do post:</h3>
-                                          <textarea
-                                            value={caption}
-                                            onChange={(e) => setCaption(e.target.value)}
-                                            className={styles.textarea}
-                                            placeholder="Digite sua legenda aqui..."
-                                          />
-                                          <div className={styles.popupButtons}>
-                                            <button onClick={generateCaptionWithAI} disabled={generating} className={styles.aiButton}>
-                                              {generating ? "Generating..." : "AI's suggestion? 🤖"}
-                                            </button>
-                                            <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
-                                              Close
-                                            </button>
-                                            <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
+                                                  <FormControlLabel
+                                                    control={
+                                                      <Switch
+                                                        checked={generating}
+                                                        onChange={(e) => {
+                                                          if (e.target.checked) {
+                                                            generateCaptionWithAI();
+                                                          }
+                                                        }}
+                                                        disabled={generating}
+                                                      />
+                                                    }
+                                                    label="Gerar com IA 🤖"
+                                                  />
+                                                </>
+                                              )}
+                                            <button onClick={handlePostToInstagram} disabled={uploading} className={styles.postButton}>
                                               {uploading ? "Posting..." : "Post"}
                                             </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                              </FormGroup>
-                            </Col>
+                                      </FormGroup>
+                                  </Col>
                         </Row>
                       </div> 
                 </CardBody>
