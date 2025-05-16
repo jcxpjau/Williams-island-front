@@ -4,7 +4,8 @@ import styles from "./Ads.module.css";
 import template1 from "./template1.png";
 import template2 from "./template2.png";
 import template3 from "./template3.png";
-import Header from "components/Headers/Header.js";
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { postToSocialMedia } from "./postToSocialMedia";
 import { FaCheckCircle, FaInstagram, FaDownload } from "react-icons/fa";
 import { getCaptionFromAI } from "./captionAI";
@@ -46,30 +47,42 @@ export default function AdEditor() {
   const [uploading, setUploading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  const [useAI, setUseAI] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [typingIndex, setTypingIndex] = useState(0);
+  const [locked, setLocked] = useState(false);
 
   const dragData = useRef({ isDragging: false, offsetX: 0, offsetY: 0, type: null });
 
-  const generateCaptionWithAI = async () => {
-    setGenerating(true);
-    setCaption(""); 
-    const suggestion = await getCaptionFromAI({ title, subtitle, subtitle2 });
-  
-    let i = 0;
-    const typingInterval = setInterval(() => {
-      setCaption((prev) => prev + suggestion[i]);
-      i++;
-      if (i >= suggestion.length) {
-        clearInterval(typingInterval);
-        setGenerating(false);
+      const generateCaptionWithAI = async () => {
+        setGenerating(true);
+        setCaption(""); 
+        const suggestion = await getCaptionFromAI({ title, subtitle, subtitle2 });
+
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < suggestion.length) {
+            setCaption((prev) => prev + (suggestion?.[i] || ""));
+            i++;
+          } else {
+            clearInterval(typingInterval);
+            setGenerating(false);
+          }
+        }, 40);
+    };
+
+      const handleToggleAI = (event) => {
+      const checked = event.target.checked;
+      setUseAI(checked);
+      if (checked && !generating) {
+        generateCaptionWithAI();
       }
-    }, 40);
-  };
+};
 
     const handleDragStart = (e, type) => {
-    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
-    const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+      if (locked) return;
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY;
 
     let pos;
     if (type === "title") pos = titlePosition;
@@ -86,6 +99,7 @@ export default function AdEditor() {
   };
 
   const handleDrag = (e) => {
+  if (locked || !dragData.current.isDragging) return;
   if (!dragData.current.isDragging) return;
 
   const clientX = e.clientX ?? e.touches?.[0]?.clientX;
@@ -141,6 +155,7 @@ export default function AdEditor() {
 
   const handlePostToInstagram = async () => {
     setUploading(true);
+    setLocked(true);
     try {
       const element = document.getElementById("ad-preview");
       await postToSocialMedia(element, caption, previewFormat);
@@ -151,16 +166,18 @@ export default function AdEditor() {
       alert("Erro ao postar o anúncio.");
     } finally {
       setUploading(false);
+      setLocked(false);
       setShowPopup(false);
     }
   };
+
 
 
   return (
     <>
       <UserHeader title = 'Creating Ads' 
           description="In this page you can create an ad"
-          buttonText="Create"/>
+          />
       <Container className="mt--7" fluid>
         <Row>
 
@@ -177,15 +194,16 @@ export default function AdEditor() {
                     id="ad-preview"
                     className={styles.adPreview}
                     style={{
-                      position: "relative",
-                      overflow: "hidden",
                       color: textColor,
                       backgroundColor: bgColor,
                       fontFamily,
-                      width: "100%",  
-                      maxWidth: previewFormat === "stories" ? "400px" : "500px",
+                      width: "90%",
+                      maxWidth: previewFormat === "stories" ? "360px" : "500px",
                       aspectRatio: previewFormat === "stories" ? "9 / 16" : "1 / 1",
+                      position: "relative",
+                      overflow: "hidden",
                       margin: "0 auto",
+                      borderRadius: "12px",
                     }}
                     onMouseMove={handleDrag}
                     onMouseUp={handleDragEnd}
@@ -202,69 +220,72 @@ export default function AdEditor() {
                       />
                     )}
 
-                    {logoUrl && (
-                      <img
-                        src={logoUrl}
-                        alt="Logo"
-                        draggable={false}
-                        onMouseDown={(e) => handleDragStart(e, "logo")}
-                        onTouchStart={(e) => handleDragStart(e, "logo")}
+                    <div className={styles.adPreviewContent}>
+                      {logoUrl && (
+                        <img
+                          src={logoUrl}
+                          alt="Logo"
+                          draggable={false}
+                          onMouseDown={(e) => handleDragStart(e, "logo")}
+                          onTouchStart={(e) => handleDragStart(e, "logo")}
+                          style={{
+                            position: "absolute",
+                            left: `${logoPosition.x}px`,
+                            top: `${logoPosition.y}px`,
+                            cursor: "grab",
+                            maxWidth: "150px",
+                            zIndex: 2,
+                          }}
+                        />
+                      )}
+
+                      <p
                         style={{
+                          fontSize: '32px',
                           position: "absolute",
-                          left: `${logoPosition.x}px`,
-                          top: `${logoPosition.y}px`,
+                          left: `${titlePosition.x}px`,
+                          top: `${titlePosition.y}px`,
                           cursor: "grab",
-                          maxWidth: "150px",
                           zIndex: 2,
                         }}
-                      />
-                    )}
+                        onMouseDown={(e) => handleDragStart(e, "title")}
+                        onTouchStart={(e) => handleDragStart(e, "title")}
+                      >
+                        {title}
+                      </p>
 
-                    <p
-                      style={{
-                        fontSize: '32px',
-                        position: "absolute",
-                        left: `${titlePosition.x}px`,
-                        top: `${titlePosition.y}px`,
-                        cursor: "grab",
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "title")}
-                      onTouchStart={(e) => handleDragStart(e, "title")}
-                    >
-                      {title}
-                    </p>
+                      <p
+                        style={{
+                          position: "absolute",
+                          left: `${subtitlePosition.x}px`,
+                          top: `${subtitlePosition.y}px`,
+                          cursor: "grab",
+                          zIndex: 2,
+                        }}
+                        onMouseDown={(e) => handleDragStart(e, "subtitle")}
+                        onTouchStart={(e) => handleDragStart(e, "subtitle")}
+                      >
+                        {subtitle}
+                      </p>
 
-                    <p
-                      style={{
-                        position: "absolute",
-                        left: `${subtitlePosition.x}px`,
-                        top: `${subtitlePosition.y}px`,
-                        cursor: "grab",
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "subtitle")}
-                      onTouchStart={(e) => handleDragStart(e, "subtitle")}
-                    >
-                      {subtitle}
-                    </p>
-
-                    <p
-                      style={{
-                        position: "absolute",
-                        left: `${subtitle2Position.x}px`,
-                        top: `${subtitle2Position.y}px`,
-                        cursor: "grab",
-                        color: secondaryColor,
-                        zIndex: 2,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, "subtitle2")}
-                      onTouchStart={(e) => handleDragStart(e, "subtitle2")}
-                    >
-                      {subtitle2}
-                    </p>
+                      <p
+                        style={{
+                          position: "absolute",
+                          left: `${subtitle2Position.x}px`,
+                          top: `${subtitle2Position.y}px`,
+                          cursor: "grab",
+                          color: secondaryColor,
+                          zIndex: 2,
+                        }}
+                        onMouseDown={(e) => handleDragStart(e, "subtitle2")}
+                        onTouchStart={(e) => handleDragStart(e, "subtitle2")}
+                      >
+                        {subtitle2}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
               <Col>
                 <Row className="justify-content-center" style={{ marginTop: "10px"}}>
                     <label style={{ marginRight: "8px" }}>Formato:</label>
@@ -285,7 +306,7 @@ export default function AdEditor() {
                 <div className={styles.successOverlay}>
                   <div className={styles.successPopup}>
                     <FaCheckCircle size={50} color="#2ecc71" />
-                    <p>Post enviado com sucesso!</p>
+                    <p>Post sent successfully!</p>
                   </div>
                 </div>
               )}
@@ -303,34 +324,38 @@ export default function AdEditor() {
                 </CardHeader>
 
                 <CardBody>
-                  <div className={styles.subHeader}>
-                    <strong>Tennis Templates</strong>
-                    <p>Based in your business</p>
-                  </div>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                          <FormGroup>
+                              <div className={styles.subHeader}>
+                              <strong>Tennis Templates</strong>
+                              <p>Based in your business</p>
+                            </div>
 
-                  <div className={styles.templateOptions}>
-                    {[template1, template2, template3].map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`Template ${index + 1}`}
-                        className={styles.templateImage}
-                        onClick={() => setImageUrl(img)}
-                      />
-                    ))}
-                    {imageUrl && typeof imageUrl === "string" && !imageUrl.includes("template") && (
-                      <img
-                        src={imageUrl}
-                        alt="Custom Background"
-                        className={styles.templateImage}
-                        onClick={() => setImageUrl(imageUrl)}
-                      />
-                    )}
+                            <div className={styles.templateOptions}>
+                              {[template1, template2, template3].map((img, index) => (
+                                <img
+                                  key={index}
+                                  src={img}
+                                  alt={`Template ${index + 1}`}
+                                  className={styles.templateImage}
+                                  onClick={() => setImageUrl(img)}
+                                />
+                              ))}
+                              {imageUrl && typeof imageUrl === "string" && !imageUrl.includes("template") && (
+                                <img
+                                  src={imageUrl}
+                                  alt="Custom Background"
+                                  className={styles.templateImage}
+                                  onClick={() => setImageUrl(imageUrl)}
+                                />
+                              )}
+                            </div>
+                          </FormGroup>
+                      </Col>
+                    </Row>
                   </div>
-                  
-                    <h6 className="heading-small text-muted mb-4">
-                      Ad Information
-                    </h6>
                     <div className="pl-lg-4">
                       <Row>
                         <Col lg="6">
@@ -414,80 +439,91 @@ export default function AdEditor() {
                               </FormGroup>
                             </Col>
 
-                            <Col lg="6">
+                            <Col lg="10">
                               <FormGroup>
-                                  <div className={styles.colorRow}>
-                                    <label className="form-control-label">
+                                <div className={styles.colorRow}>
+                                  <div className={styles.colordiv}>
+                                    <label className="form-control-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       Main Color:
                                       <input
                                         type="color"
                                         value={textColor}
                                         onChange={(e) => setTextColor(e.target.value)}
                                         className={styles.colorInput}
+                                        style={{ marginTop: '8px' }} 
                                       />
                                     </label>
-                                    <label className="form-control-label">
+                                  </div>
+                                  <div className={styles.colordiv}>
+                                    <label className="form-control-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       Secondary:
                                       <input
                                         type="color"
                                         value={secondaryColor}
                                         onChange={(e) => setSecondaryColor(e.target.value)}
                                         className={styles.colorInput}
+                                        style={{ marginTop: '8px' }} 
                                       />
-                                      </label>
+                                    </label>
                                   </div>
-                                
+                                </div>
                               </FormGroup>
                             </Col>
                             <Col lg="6">
-                            <FormGroup>
+                              <FormGroup>
                                 <label className={styles.label}>Background:</label>
-                                <Input type="file" accept="image/*" onChange={handleBackgroundUpload}/>
-                            </FormGroup>
+                                <label className={styles.customFile}>
+                                  Choose
+                                  <input type="file" accept="image/*" onChange={handleBackgroundUpload} />
+                                </label>
+                              </FormGroup>
                             </Col>
+
                             <Col lg="6">
                               <FormGroup>
                                 <label className={styles.label}>Logo (Top):</label>
-                                <Input type="file" accept="image/*" onChange={handleLogoUpload}/>
+                                <label className={styles.customFile}>
+                                  Choose
+                                  <input type="file" accept="image/*" onChange={handleLogoUpload} />
+                                </label>
                               </FormGroup>
-                            </Col>
-                            <Col lg="6">
-                              <FormGroup>
-                                  <div className={styles.botoes}>
-                                      <button onClick={downloadImage} className={styles.iconButton}>
-                                        <FaDownload size={20} />
-                                      </button>
+                              </Col>
+                                  <Col lg="8">
+                                    <FormGroup>
+                                            {previewFormat === "feed" && (
+                                                <>
+                                                  <FormGroup>
+                                                    <label className="form-control-label">Caption:</label>
+                                                    <textarea
+                                                      value={caption}
+                                                      onChange={(e) => setCaption(e.target.value)}
+                                                      disabled={generating}
+                                                      className={styles.captionTextarea}
+                                                      rows={3} 
+                                                  />
+                                                  </FormGroup>
 
-                                      <button onClick={() => setShowPopup(true)} className={styles.iconButton}>
-                                        <FaInstagram size={20} color="#C13584" />
-                                        </button>
-                                  </div>
-                                  {showPopup && (
-                                      <div className={styles.popupOverlay}>
-                                        <div className={styles.popup}>
-                                          <h3>Escreva a legenda do post:</h3>
-                                          <textarea
-                                            value={caption}
-                                            onChange={(e) => setCaption(e.target.value)}
-                                            className={styles.textarea}
-                                            placeholder="Digite sua legenda aqui..."
-                                          />
-                                          <div className={styles.popupButtons}>
-                                            <button onClick={generateCaptionWithAI} disabled={generating} className={styles.aiButton}>
-                                              {generating ? "Generating..." : "AI's suggestion? 🤖"}
-                                            </button>
-                                            <button onClick={() => setShowPopup(false)} className={styles.cancelButton}>
-                                              Close
-                                            </button>
-                                            <button onClick={handlePostToInstagram} disabled={uploading} className={styles.confirmButton}>
+                                                  <FormControlLabel
+                                                    control={
+                                                      <Switch
+                                                        checked={generating}
+                                                        onChange={(e) => {
+                                                          if (e.target.checked) {
+                                                            generateCaptionWithAI();
+                                                          }
+                                                        }}
+                                                        disabled={generating}
+                                                      />
+                                                    }
+                                                    label="Generate with AI 🤖"
+                                                  />
+                                                </>
+                                              )}
+                                            <button onClick={handlePostToInstagram} disabled={uploading} className={styles.postButton}>
                                               {uploading ? "Posting..." : "Post"}
                                             </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                              </FormGroup>
-                            </Col>
+                                      </FormGroup>
+                                  </Col>
                         </Row>
                       </div> 
                 </CardBody>

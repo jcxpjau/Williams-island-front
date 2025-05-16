@@ -144,13 +144,25 @@
   }
   
   .colorInput {
-    width: 100%;
-    height: 32px;
-    border: none;
-    background: transparent;
-    margin-top: 4px;
-    cursor: pointer;
-  }
+  width: 32px;
+  height: 32px;
+  border: 0.1px solid grey;
+  border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.colorInput::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
   .teste {
     height: 2rem;
   }
@@ -315,7 +327,6 @@
   .aiButton:hover {
     background-color: #357bd8;
   }
-  /* Exemplo CSS (ajuste nos seus arquivos) */
 
 .pageWrapper {
   display: flex;
@@ -365,10 +376,73 @@
 
 .backgroundImage {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   z-index: 1;
 }
+
+.colorRow {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.customFile {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #5e72e4;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease-in-out;
+  margin-top: 6px;
+  margin-bottom: 12px; 
+  margin-left: 12px;    
+}
+
+.customFile:hover {
+  background-color: #324cdd;
+}
+
+.customFile input[type="file"] {
+  display: none;
+}
+.captionTextarea {
+  width: 100%;
+  min-height: 80px;
+  resize: none;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.5;
+  color: #525f7f;
+  background-color: #fff;
+  border: 1px solid #cad1d7;
+  border-radius: 4px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  overflow: hidden;
+}
+.postButton {
+  background-color: #667eea;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.postButton:hover {
+  background-color: #5a67d8;
+}
+
+.postButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
