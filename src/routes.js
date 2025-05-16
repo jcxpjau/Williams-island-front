@@ -172,14 +172,14 @@ var routes = [
         component: <Booking />,
       },
       {
-        path: "/venue/list",
-        name: "Venues List",
+        path: "/experience/list",
+        name: "Experience List",
         layout: "/admin",
         component: <VenueList />,
       },
       {
-        path: "/venue/add",
-        name: "Add Venue",
+        path: "/experience/add",
+        name: "Add Experience",
         layout: "/admin",
         component: <AddVenue />,
       }

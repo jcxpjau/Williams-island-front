@@ -13,6 +13,11 @@ import {
 import UserHeader from "components/Headers/UserHeader.js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import moment from "moment";
 
 const AddVenue = () => {
     const [name, setName] = useState("");
@@ -30,7 +35,7 @@ const AddVenue = () => {
     const [venueIndice, setVenueIndice] = useState(0);
     const [startTimeOperation, setStartTimeOperation] = useState('');
     const [endTimeOperation, setEndTimeOperation] = useState('');
-    const [price, setPrice ] = useState(0);
+    const [price, setPrice] = useState(0);
 
     const navigate = useNavigate();
 
@@ -38,7 +43,7 @@ const AddVenue = () => {
 
     const getVenue = async () => {
         try {
-            const res = await fetch( process.env.REACT_APP_API_URL + "venues/" + id, {
+            const res = await fetch(process.env.REACT_APP_API_URL + "venues/" + id, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +67,7 @@ const AddVenue = () => {
                 setPostalCode(json.postalCode || "");
                 setStartTimeOperation(json.startTimeOperation || "");
                 setEndTimeOperation(json.endTimeOperation || "");
-                setPrice( json.price || 0 );
+                setPrice(json.price || 0);
             }
         } catch (err) {
             console.error("Erro na requisição:", err);
@@ -89,7 +94,7 @@ const AddVenue = () => {
             price: price
         };
         try {
-            const res = await fetch( process.env.REACT_APP_API_URL + "venues", {
+            const res = await fetch(process.env.REACT_APP_API_URL + "venues", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -100,7 +105,7 @@ const AddVenue = () => {
             if (json.error) {
                 console.log(json.error);
             } else {
-                navigate("/admin/venue/list");
+                navigate("/admin/experience/list");
             }
         } catch (err) {
             console.error("Erro na requisição:", err);
@@ -139,7 +144,7 @@ const AddVenue = () => {
             if (json.error) {
                 console.log(json.error);
             } else {
-                navigate("/admin/venue/list");
+                navigate("/admin/experience/list");
             }
         } catch (err) {
             console.error("Erro na requisição:", err);
@@ -176,14 +181,14 @@ const AddVenue = () => {
             setPostalCode("");
             setStartTimeOperation("");
             setEndTimeOperation("");
-            setPrice( 0 );
+            setPrice(0);
         }
     }, [id]);
 
     return (
         <>
-            <UserHeader title={ ( id ) ? 'Update Venue' : 'Add Venue'}
-                description={ ( id ) ? 'In this page you can update a venue.' : 'In this page you can add a new venue.'}  />
+            <UserHeader title={(id) ? 'Update Experience' : 'Add Experience'}
+                description={(id) ? 'In this page you can update a experience.' : 'In this page you can add a new experience.'} />
             <Container className="mt--7" fluid>
                 <Row>
                     <Col className="order-xl-1" xl="8">
@@ -191,13 +196,13 @@ const AddVenue = () => {
                             <CardHeader className="bg-white border-0">
                                 <Row className="align-items-center">
                                     <Col xs="8">
-                                        <h3 className="mb-0">{ ( id ) ? 'Update' : 'Create' } Venue</h3>
+                                        <h3 className="mb-0">{(id) ? 'Update' : 'Create'} Experience</h3>
                                     </Col>
                                 </Row>
                             </CardHeader>
                             <CardBody>
                                 <Form>
-                                    <h6 className="heading-small text-muted mb-4">Venue information</h6>
+                                    <h6 className="heading-small text-muted mb-4">Experience information</h6>
                                     <div className="pl-lg-4">
                                         <Row>
                                             <Col lg="6">
@@ -205,7 +210,7 @@ const AddVenue = () => {
                                                     <label className="form-control-label" htmlFor="input-name">Name</label>
                                                     <Input
                                                         id="input-name"
-                                                        placeholder="Venue name"
+                                                        placeholder="Experience name"
                                                         type="text"
                                                         value={name}
                                                         onChange={(e) => setName(e.target.value)}
@@ -258,7 +263,7 @@ const AddVenue = () => {
                                     </div>
                                     <hr className="my-4" />
 
-                                    <h6 className="heading-small text-muted mb-4">Venue Location</h6>
+                                    <h6 className="heading-small text-muted mb-4">Experience Location</h6>
                                     <div className="pl-lg-4">
                                         <Row>
                                             <Col md="8">
@@ -355,12 +360,12 @@ const AddVenue = () => {
                                 </div>
                             </CardHeader>
                             <CardBody className="pt-0 pt-md-3">
-                                <h6 className="heading-small text-muted mb-4 mt-4">Venue Details</h6>
+                                <h6 className="heading-small text-muted mb-4 mt-4">Experience Details</h6>
                                 <div className="pl-lg-2">
                                     <Row>
                                         <Col lg="12">
                                             <FormGroup>
-                                            <label className="form-control-label" htmlFor="input-price">Service Price US$</label>
+                                                <label className="form-control-label" htmlFor="input-price">Service Price US$</label>
                                                 <Input
                                                     id="input-price"
                                                     placeholder="00.00"
@@ -375,28 +380,36 @@ const AddVenue = () => {
                                     <Row>
                                         <Col lg="6">
                                             <FormGroup>
-                                                <label className="form-control-label" htmlFor="input-startTime">Start Time Operation</label>
-                                                <Input
-                                                    id="input-startTime"
-                                                    placeholder="00:00"
-                                                    type="time"
-                                                    value={startTimeOperation}
-                                                    onChange={(e) => setStartTimeOperation(e.target.value)}
-                                                    className="form-control-alternative"
-                                                />
+                                                <label className="form-control-label" htmlFor="input-endTime">Start Time Operation</label>
+                                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                    <TimePicker
+                                                        slotProps={{ textField: { fullWidth: true } }}
+                                                        value={
+                                                            startTimeOperation ? new Date( "1970-01-01T"+startTimeOperation) : null
+                                                        }
+                                                        onChange={(newValue) => {
+                                                            setStartTimeOperation(moment( newValue ).format( "HH:mm"));
+                                                        }
+                                                        }
+                                                    />
+                                                </LocalizationProvider>
                                             </FormGroup>
                                         </Col>
                                         <Col lg="6">
                                             <FormGroup>
                                                 <label className="form-control-label" htmlFor="input-endTime">End Time Operation</label>
-                                                <Input
-                                                    id="input-endTime"
-                                                    placeholder="00:00"
-                                                    type="time"
-                                                    value={endTimeOperation}
-                                                    onChange={(e) => setEndTimeOperation(e.target.value)}
-                                                    className="form-control-alternative"
-                                                />
+                                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                    <TimePicker
+                                                        slotProps={{ textField: { fullWidth: true } }}
+                                                        value={
+                                                            endTimeOperation ? new Date( '1970-01-01T'+endTimeOperation ) : null
+                                                        }
+                                                        onChange={(newValue) => {
+                                                            setEndTimeOperation( moment( newValue ).format( "HH:mm") );
+                                                        }
+                                                        }
+                                                    />
+                                                </LocalizationProvider>
                                             </FormGroup>
                                         </Col>
                                     </Row>
@@ -440,7 +453,7 @@ const AddVenue = () => {
                                     </Row>
                                 </div>
                                 <hr className="my-4" />
-                                <h6 className="heading-small text-muted mb-4">Venue Contact</h6>
+                                <h6 className="heading-small text-muted mb-4">Experience Contact</h6>
                                 <div className="pl-lg-2">
                                     <Row>
                                         <Col lg="12">

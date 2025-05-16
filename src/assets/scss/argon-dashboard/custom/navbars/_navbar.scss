@@ -5,6 +5,12 @@
 
 // Navbar links
 
+.custom-navbar-toggler-icon {
+    position: relative;
+    right: -30px !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%2332325d' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
 .navbar-horizontal {
     .navbar-nav {
         .nav-link {
@@ -48,11 +54,11 @@
     }
 
     .navbar-nav {
-      .nav-item {
-        .media:not(:last-child){
-          margin-bottom: 1.5rem;
+        .nav-item {
+            .media:not(:last-child) {
+                margin-bottom: 1.5rem;
+            }
         }
-      }
     }
 
     @include media-breakpoint-up(lg) {
@@ -70,6 +76,7 @@
                     }
                 }
             }
+
             .nav-link {
                 padding-top: $navbar-nav-link-padding-y;
                 padding-bottom: $navbar-nav-link-padding-y;
@@ -116,6 +123,8 @@
         .navbar-toggler-icon {
             background-image: $navbar-dark-toggler-icon-bg;
         }
+
+
     }
 
     @include media-breakpoint-up(md) {
@@ -133,8 +142,8 @@
                     }
                 }
 
-                .show > .nav-link,
-                .active > .nav-link,
+                .show>.nav-link,
+                .active>.nav-link,
                 .nav-link.show,
                 .nav-link.active {
                     color: $navbar-dark-active-color;

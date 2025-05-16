@@ -1,5 +1,4 @@
 import AddVenue from "views/examples/AddVenue";
-import Login from "views/examples/Login";
 import Logs from "views/examples/Logs";
 import Profile from "views/examples/Profile";
 import UsersList from "views/examples/UsersList";
@@ -21,8 +20,8 @@ const hiddenRoutes = [
     layout: "/admin",
   },
   {
-    path: "/venue/edit/:id",
-    name: "Edit Venue",
+    path: "/experience/edit/:id",
+    name: "Edit Experience",
     layout: "/admin",
     component: <AddVenue />
   }

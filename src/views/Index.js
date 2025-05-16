@@ -9,6 +9,7 @@ import {
     Table,
 } from "reactstrap";
 import Header from "components/Headers/Header";
+import moment from "moment";
 
 const Dashboard = () => {
 
@@ -104,13 +105,8 @@ const Dashboard = () => {
                                     <tbody>
                                         {bookings.map((booking, index) => (
                                             <tr key={index}>
-                                                <td>
-                                                    {new Date(booking.date).toLocaleDateString('en-US', {
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        year: 'numeric'
-                                                    })}</td>
-                                                <td>{booking.startTime} - {booking.endTime}</td>
+                                                <td>{moment( booking.date ).format( "l")}</td>
+                                                <td>{ moment( "1900-01-01T"+booking.startTime ).format( "LT" ) } - { moment( "1900-01-01T"+booking.endTime).format( "LT" )}</td>
                                                 <td>{booking.venueId.name}</td>
                                             </tr>
                                         ))}

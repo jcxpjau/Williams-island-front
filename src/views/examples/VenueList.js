@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 import Header from "components/Headers/Header";
 import SimpleFilterDropdown from "components/Filter/Filter";
+import moment from "moment";
 
 const VenueList = () => {
     const [originalVenues, setOriginalVenues] = useState([]);
@@ -155,7 +156,7 @@ const VenueList = () => {
                             <CardHeader className="border-0">
                                 <Row className="align-items-center">
                                     <Col xs="6">
-                                        <h3 className="mb-0">Venues List</h3>
+                                        <h3 className="mb-0">Experience List</h3>
                                     </Col>
                                     <Col xs="6" className="text-right">
                                         <SimpleFilterDropdown
@@ -199,7 +200,7 @@ const VenueList = () => {
                                                     )}
                                                     </td>
                                                     <td>{venue.capacity}</td>
-                                                    <td>{venue.startTimeOperation} - {venue.endTimeOperation}</td>
+                                                    <td>{ moment( "1900-01-01T"+venue.startTimeOperation).format( "LT" ) } - { moment(venue.endTimeOperation).format( "LT" )}</td>
                                                     <td>{venue.phone}</td>
                                                     <td>{getStatusBadge(venue.isActive)}</td>
                                                     <td className="text-right">
@@ -216,7 +217,7 @@ const VenueList = () => {
                                                             <DropdownMenu className="dropdown-menu-arrow" right>
                                                                 <DropdownItem
                                                                     href=""
-                                                                    onClick={(e) => navigate("/admin/venue/edit/" + venue._id)}
+                                                                    onClick={(e) => navigate("/admin/experience/edit/" + venue._id)}
                                                                 >
                                                                     Edit
                                                                 </DropdownItem>
@@ -240,7 +241,7 @@ const VenueList = () => {
                                             :
                                             <tr>
                                                 <td>
-                                                    <span>Venues List is Empty</span>
+                                                    <span>Experience List is Empty</span>
                                                 </td>
                                             </tr>
                                         }
