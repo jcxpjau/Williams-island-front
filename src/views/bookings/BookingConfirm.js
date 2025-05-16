@@ -49,12 +49,45 @@ const BookingConfirm = () => {
                 body: JSON.stringify(payload)
             });
             const json = await res.json();
-            console.log(json);
+            getNotification( json );
             setBooking(json);
         } catch (err) {
             console.error("Cancellation failed", err);
         }
     }
+
+    async function getNotification(booking)
+        {
+            const message = `*Booking Confirmation*\n\n` +
+                `Your booking was successfully!\n\n` +
+                `🧘 *Experience:* ${booking.venueId?.name}\n` +
+                `📍 *Location:* ${booking.venueId?.address}, ${booking.venueId?.city} - ${booking.venueId?.state}\n` +
+                `🕒 *When:* ${moment(booking.date).format("MM/DD/YY")} | ${moment("1970-01-01T" + booking.startTime).format("LT")} - ${moment("1970-01-01T" + booking.endTime).format("LT")}\n` +
+                `📌 *Status:* ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}\n\n` +
+                `🔗 *Confirm your booking:\n\n* https://williams-island.vercel.app/booking/${booking._id}/confirm\n\n` +
+                `Need to make changes? Please contact us.\n\n` +
+                `Thank you! 🌟`;
+    
+            const payload = {
+                to: booking.userId.phone,
+                message: message
+                
+            }
+            try {
+                const res = await fetch("https://avent7.app.n8n.cloud/webhook/booking", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+    
+                });
+                const json = await res.json();
+            } catch (err) {
+    
+            }
+    
+        }
 
     const indices = {
         'tennis': 1,
