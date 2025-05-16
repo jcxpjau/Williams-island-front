@@ -50,6 +50,7 @@ export default function AdEditor() {
   const [useAI, setUseAI] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [typingIndex, setTypingIndex] = useState(0);
+  const [locked, setLocked] = useState(false);
 
   const dragData = useRef({ isDragging: false, offsetX: 0, offsetY: 0, type: null });
 
@@ -79,8 +80,9 @@ export default function AdEditor() {
 };
 
     const handleDragStart = (e, type) => {
-    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
-    const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+      if (locked) return;
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY;
 
     let pos;
     if (type === "title") pos = titlePosition;
@@ -97,6 +99,7 @@ export default function AdEditor() {
   };
 
   const handleDrag = (e) => {
+  if (locked || !dragData.current.isDragging) return;
   if (!dragData.current.isDragging) return;
 
   const clientX = e.clientX ?? e.touches?.[0]?.clientX;
@@ -152,6 +155,7 @@ export default function AdEditor() {
 
   const handlePostToInstagram = async () => {
     setUploading(true);
+    setLocked(true);
     try {
       const element = document.getElementById("ad-preview");
       await postToSocialMedia(element, caption, previewFormat);
@@ -162,16 +166,18 @@ export default function AdEditor() {
       alert("Erro ao postar o anúncio.");
     } finally {
       setUploading(false);
+      setLocked(false);
       setShowPopup(false);
     }
   };
+
 
 
   return (
     <>
       <UserHeader title = 'Creating Ads' 
           description="In this page you can create an ad"
-          buttonText="Create"/>
+          />
       <Container className="mt--7" fluid>
         <Row>
 
@@ -300,7 +306,7 @@ export default function AdEditor() {
                 <div className={styles.successOverlay}>
                   <div className={styles.successPopup}>
                     <FaCheckCircle size={50} color="#2ecc71" />
-                    <p>Post enviado com sucesso!</p>
+                    <p>Post sent successfully!</p>
                   </div>
                 </div>
               )}
@@ -509,7 +515,7 @@ export default function AdEditor() {
                                                         disabled={generating}
                                                       />
                                                     }
-                                                    label="Gerar com IA 🤖"
+                                                    label="Generate with AI 🤖"
                                                   />
                                                 </>
                                               )}
