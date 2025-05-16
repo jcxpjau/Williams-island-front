@@ -45,7 +45,7 @@ const BookingResume = ({ user, setUser }) => {
         }
 
         try {
-            const res = await fetch("http://localhost:8000/auth", {
+            const res = await fetch(process.env.REACT_APP_API_URL +  "auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -66,7 +66,7 @@ const BookingResume = ({ user, setUser }) => {
 
     async function fetchBookings() {
         try {
-            const res = await fetch(`http://localhost:8000/bookings?user=${(user) ? user._id : id}`, {
+            const res = await fetch(process.env.REACT_APP_API_URL + `bookings?user=${(user) ? user._id : id}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" }
             });
@@ -87,7 +87,7 @@ const BookingResume = ({ user, setUser }) => {
         }
 
         try {
-            await fetch("http://localhost:8000/bookings/status", {
+            await fetch(process.env.REACT_APP_API_URL + "bookings/status", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -118,7 +118,7 @@ const BookingResume = ({ user, setUser }) => {
         console.log(payload);
 
         try {
-            await fetch("http://localhost:8000/bookings/status", {
+            await fetch( process.env.REACT_APP_API_URL +  "bookings/status", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

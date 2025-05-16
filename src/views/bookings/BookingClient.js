@@ -53,7 +53,7 @@ const BookingClient = ({user, setUser}) => {
         }
         setSearching(true);
         try {
-            const res = await fetch("http://localhost:8000/venues?category=" + category, {
+            const res = await fetch( process.env.REACT_APP_API_URL + "venues?category=" + category, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -70,7 +70,7 @@ const BookingClient = ({user, setUser}) => {
     async function GetBookings() {
 
         try {
-            const res = await fetch("http://localhost:8000/bookings?date=" + moment(date).format("YYYY-MM-DD"), {
+            const res = await fetch( process.env.REACT_APP_API_URL + "bookings?date=" + moment(date).format("YYYY-MM-DD"), {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -108,7 +108,7 @@ const BookingClient = ({user, setUser}) => {
 
         };
         try {
-            const res = await fetch("http://localhost:8000/bookings", {
+            const res = await fetch(process.env.REACT_APP_API_URL + "bookings", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -172,7 +172,7 @@ const BookingClient = ({user, setUser}) => {
         }
 
         try {
-            const res = await fetch("http://localhost:8000/auth", {
+            const res = await fetch( process.env.REACT_APP_API_URL +  "auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
