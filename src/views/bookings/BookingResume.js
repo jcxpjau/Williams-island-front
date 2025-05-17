@@ -114,9 +114,6 @@ const BookingResume = ({ user, setUser }) => {
             id: id,
             status: "cancelled"
         }
-
-        console.log(payload);
-
         try {
             await fetch( process.env.REACT_APP_API_URL +  "bookings/status", {
                 method: "POST",

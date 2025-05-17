@@ -128,7 +128,7 @@ const BookingClient = ({user, setUser}) => {
     async function getNotification(booking)
     {
         const message = `*Booking Confirmation*\n\n` +
-            `Your booking was successfully!\n\n` +
+            `Your booking is complete!\n\n` +
             `🧘 *Experience:* ${booking.venueId?.name}\n` +
             `📍 *Location:* ${booking.venueId?.address}, ${booking.venueId?.city} - ${booking.venueId?.state}\n` +
             `🕒 *When:* ${moment(booking.date).format("MM/DD/YY")} | ${moment("1970-01-01T" + booking.startTime).format("LT")} - ${moment("1970-01-01T" + booking.endTime).format("LT")}\n` +
@@ -139,8 +139,8 @@ const BookingClient = ({user, setUser}) => {
 
         const payload = {
             to: booking.userId.phone,
+            category: booking.venueId.category,
             message: message
-            
         }
         try {
             const res = await fetch("https://avent7.app.n8n.cloud/webhook/booking", {
@@ -152,8 +152,6 @@ const BookingClient = ({user, setUser}) => {
 
             });
             const json = await res.json();
-            setSelectedHours({});
-            setBookingConfirm( true );
         } catch (err) {
 
         }
