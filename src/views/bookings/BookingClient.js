@@ -24,6 +24,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import 'animate.css';
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const BookingClient = ({user, setUser}) => {
 
@@ -38,6 +39,7 @@ const BookingClient = ({user, setUser}) => {
     const [bookingConfirm, setBookingConfirm] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     const handleHourClick = (venueId, hour) => {
         setSelectedHours((prev) => ({
@@ -437,7 +439,7 @@ const BookingClient = ({user, setUser}) => {
                     </Row>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={() => setBookingConfirm(false)}>Close</Button>
+                    <Button color="secondary" onClick={() => { setBookingConfirm(false); clear(); } }>Close</Button>
                 </ModalFooter>
             </Modal>
         </Container>
