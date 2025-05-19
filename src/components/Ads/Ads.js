@@ -194,8 +194,11 @@ export default function AdEditor() {
                     id="ad-preview"
                     className={styles.adPreview}
                     style={{
+                      backgroundImage: `url(${imageUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
                       color: textColor,
-                      backgroundColor: bgColor,
                       fontFamily,
                       width: "90%",
                       maxWidth: previewFormat === "stories" ? "360px" : "500px",
@@ -212,14 +215,6 @@ export default function AdEditor() {
                     onTouchEnd={handleDragEnd}
                     onTouchCancel={handleDragEnd}
                   >
-                    {imageUrl && (
-                      <img
-                        src={imageUrl}
-                        alt="Background"
-                        className={styles.backgroundImage}
-                      />
-                    )}
-
                     <div className={styles.adPreviewContent}>
                       {logoUrl && (
                         <img
@@ -241,7 +236,7 @@ export default function AdEditor() {
 
                       <p
                         style={{
-                          fontSize: '32px',
+                          fontSize: "32px",
                           position: "absolute",
                           left: `${titlePosition.x}px`,
                           top: `${titlePosition.y}px`,

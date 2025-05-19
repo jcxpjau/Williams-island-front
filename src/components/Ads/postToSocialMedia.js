@@ -10,13 +10,19 @@ export async function postToSocialMedia(element, caption, format = "feed") {
   element.style.boxShadow = "none";
   element.style.filter = "none";
 
-  const canvas = await html2canvas(element, { useCORS: true, scale: 1 });
+  const canvas = await html2canvas(element, {
+    useCORS: true,
+    scale: 2,
+    backgroundColor: null,
+  });
 
   element.style.borderRadius = originalBorderRadius;
   element.style.boxShadow = originalBoxShadow;
   element.style.filter = originalFilter;
 
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/png", 1)
+  );
 
   if (!blob) throw new Error("Erro ao gerar imagem");
 
@@ -41,7 +47,8 @@ export async function postToSocialMedia(element, caption, format = "feed") {
 
   console.log("[Cloudinary] Resposta recebida:", data);
 
-  if (!response.ok) throw new Error("Erro ao enviar para o Cloudinary: " + data.error?.message);
+  if (!response.ok)
+    throw new Error("Erro ao enviar para o Cloudinary: " + data.error?.message);
 
   const payload = {
     social_media: [format === "stories" ? "instagramstory" : "instagram"],
@@ -51,11 +58,14 @@ export async function postToSocialMedia(element, caption, format = "feed") {
 
   console.log("[n8n] Enviando dados para n8n:", payload);
 
-  const n8nResponse = await fetch("https://avent7.app.n8n.cloud/webhook/automatic-post", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const n8nResponse = await fetch(
+    "https://avent7.app.n8n.cloud/webhook/automatic-post",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
 
   if (!n8nResponse.ok) {
     const errorText = await n8nResponse.text();
