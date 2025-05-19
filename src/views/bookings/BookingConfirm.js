@@ -31,8 +31,6 @@ const BookingConfirm = () => {
 
     async function confirmedBooking() {
 
-        console.log(id);
-
         if (!id) return;
 
         const payload = {

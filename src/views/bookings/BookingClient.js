@@ -179,7 +179,7 @@ const BookingClient = ({user, setUser}) => {
             });
 
             if (!res.ok) {
-                alert("Invalid credentials");
+                alert("Invalid credentials, please try again");
                 return;
             }
             const data = await res.json();
@@ -187,7 +187,7 @@ const BookingClient = ({user, setUser}) => {
             setLoginModalOpen(false);
         } catch (err) {
             console.error(err);
-            alert("Login failed");
+            alert("Login failed, please try again");
         }
     };
 
