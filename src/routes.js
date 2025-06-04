@@ -17,6 +17,7 @@
 */
 import Index from "views/Index.js";
 import AddMember from "views/examples/AddMember.js";
+import AddUnit from "views/examples/AddUnit.js";
 import Profile from "views/examples/Profile.js";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
@@ -41,7 +42,6 @@ import EmployeeAcess from "views/examples/EmployeeAcess";
 import Ads from "./components/Ads/Ads";
 import VenueList from "views/examples/VenueList";
 import Booking from "views/examples/Booking";
-
 
 var routes = [
   {
@@ -86,7 +86,7 @@ var routes = [
         name: "Report",
         layout: "/admin",
         component: <Report />,
-      }
+      },
     ],
   },
   {
@@ -119,7 +119,7 @@ var routes = [
         layout: "/admin",
         component: <Tables />,
       },
-    ]
+    ],
   },
   {
     name: "Inventory",
@@ -157,7 +157,7 @@ var routes = [
         layout: "/admin",
         component: <Report />,
       },
-    ]
+    ],
   },
   {
     name: "Activities",
@@ -165,7 +165,6 @@ var routes = [
     collapse: true,
     state: "activitiesCollapse",
     views: [
-
       {
         path: "/booking",
         name: "Bookings",
@@ -183,8 +182,8 @@ var routes = [
         name: "Add Experience",
         layout: "/admin",
         component: <AddVenue />,
-      }
-    ]
+      },
+    ],
   },
   {
     name: "Events",
@@ -234,7 +233,7 @@ var routes = [
         layout: "/admin",
         component: <Report />,
       },
-    ]
+    ],
   },
   {
     name: "HR",
@@ -296,7 +295,7 @@ var routes = [
         layout: "/admin",
         component: <Profile />,
       },
-    ]
+    ],
   },
   {
     name: "Communications",
@@ -340,8 +339,8 @@ var routes = [
         name: "Demographic Reports",
         layout: "/admin",
         component: <Report />,
-      }
-    ]
+      },
+    ],
   },
   {
     name: "Administration",
@@ -356,12 +355,18 @@ var routes = [
         component: <Profile />,
       },
       {
+        path: "/administrations/units/add",
+        name: "Add Unit",
+        layout: "/admin",
+        component: <AddUnit />,
+      },
+      {
         path: "/administrations/delivery",
         name: "Delivery",
         layout: "/admin",
         component: <Profile />,
       },
-    ]
+    ],
   },
   {
     name: "Security",
@@ -392,8 +397,8 @@ var routes = [
         name: "Emergency Numbers",
         layout: "/admin",
         component: <Profile />,
-      }
-    ]
-  }
+      },
+    ],
+  },
 ];
 export default routes;

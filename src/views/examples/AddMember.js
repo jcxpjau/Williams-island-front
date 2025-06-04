@@ -48,7 +48,7 @@ import {
   BsTelephone,
   BsPinMap,
   BsFillPeopleFill,
-  BsPhone
+  BsPhone,
 } from "react-icons/bs";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
@@ -211,7 +211,7 @@ const MemberForm = () => {
           />
         </RegistrationForm.Section>
 
-        <RegistrationForm.SubmitBtn onClick={() => console.log("submit")} />
+        <RegistrationForm.SubmitBtn />
       </RegistrationForm.Root>
     </TabPane>
   );
@@ -321,7 +321,7 @@ const DependantForm = () => {
             value={form.email}
             onChange={handleChange}
             placeholder="youremail@provider.com"
-             icon={<BsAt size={18} />}
+            icon={<BsAt size={18} />}
           />
 
           <RegistrationForm.Field
@@ -335,13 +335,8 @@ const DependantForm = () => {
             icon={<BsTelephone size={18} />}
           />
         </RegistrationForm.Section>
+        <RegistrationForm.SubmitBtn />
       </RegistrationForm.Root>
-
-      {/* <Row className="my-4">
-        <Col xs="12" className="d-flex justify-content-end">
-          <Button color="info">Add dependant</Button>
-        </Col>
-      </Row> */}
     </TabPane>
   );
 };
