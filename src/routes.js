@@ -16,7 +16,8 @@
 
 */
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile_redo.js";
+import AddMember from "views/examples/AddMember.js";
+import Profile from "views/examples/Profile.js";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
@@ -66,7 +67,7 @@ var routes = [
         path: "/membership/add",
         name: "Add Member",
         layout: "/admin",
-        component: <Profile />,
+        component: <AddMember />,
       },
       {
         path: "/membership/edit",

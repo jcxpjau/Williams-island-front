@@ -6,7 +6,7 @@ const UserHeader = ({ title, description, buttonText }) => {
       <div
         className="header pb-8 pt-5 pt-lg-8 d-flex align-items-center"
         style={{
-          minHeight: "600px",
+          minHeight: "300px",
           backgroundImage:
             "url(" + require("../../assets/img/theme/WI2.png") + ")",
           backgroundSize: "cover",
