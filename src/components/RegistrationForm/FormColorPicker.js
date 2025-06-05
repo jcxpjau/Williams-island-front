@@ -1,100 +1,99 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
+  Col,
+  FormGroup,
+  Label,
+  Input,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  Label,
-  Col,
 } from "reactstrap";
 
-const COLORS = [
-  { name: "Red", value: "#e74c3c" },
-  { name: "Orange", value: "#e67e22" },
-  { name: "Yellow", value: "#f1c40f" },
-  { name: "Green", value: "#2ecc71" },
-  { name: "Blue", value: "#3498db" },
-  { name: "Purple", value: "#9b59b6" },
-  { name: "Pink", value: "#fd79a8" },
-  { name: "Teal", value: "#1abc9c" },
-  { name: "Gray", value: "#95a5a6" },
-];
-
-export function ColorPicker({
-  label,
-  id,
-  value,
-  onChange,
-  lg,
-  md,
-  icon,
-}) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const toggle = () => setDropdownOpen((prev) => !prev);
-
-  const selected = COLORS.find((c) => c.value === value);
-
+export function ColorPicker({ label, id, onChange, lg, md }) {
   const colProps = {};
   if (lg) colProps.lg = lg;
   if (md) colProps.md = md;
 
+  const [selectedInternalColor, setSelectedInternalColor] = useState(null);
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const toggle = () => setDropdownOpen((prevState) => !prevState);
+
+  const colors = [
+    { name: "Red", hex: "#dc3545" },
+    { name: "Blue", hex: "#007bff" },
+    { name: "Green", hex: "#28a745" },
+    { name: "Yellow", hex: "#ffc107" },
+    { name: "Cyan", hex: "#17a2b8" },
+    { name: "Purple", hex: "#6f42c1" },
+    { name: "Orange", hex: "#fd7e14" },
+    { name: "Pink", hex: "#e83e8c" },
+    { name: "Gray", hex: "#6c757d" },
+     { name: "Lilac", hex: "#c8a2c8" },
+    { name: "Indigo", hex: "#6610f2" }, 
+    { name: "Brown", hex: "#795548" }, 
+    { name: "Olive", hex: "#6c7e10" }, 
+    { name: "Gold", hex: "#FFD700" }, 
+    { name: "Silver", hex: "#C0C0C0" },
+  ];
+
+  const selectedColorName =
+    colors.find((color) => color.hex === selectedInternalColor)?.name ||
+    "Select a color for this unit";
+
+  const handleColorChange = (hexValue) => {
+    setSelectedInternalColor(hexValue);
+    if (onChange) {
+      onChange({ target: { id: id, value: hexValue } });
+    }
+  };
+
   return (
     <Col {...colProps}>
-      <Label className="form-control-label d-flex align-items-center gap-1" htmlFor={id}>
-        {icon && <span className="me-1">{icon}</span>}
-        {label}
-      </Label>
-
-      <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-        <DropdownToggle
-          caret
-          className="form-control form-control-alternative d-flex align-items-center justify-content-between"
-          style={{
-            backgroundColor: "#fff",
-            borderColor: "#cad1d7",
-            color: "#525f7f",
-            height: "40px",
-          }}
-        >
-          <div className="d-flex align-items-center gap-2">
-            <span
-              style={{
-                backgroundColor: selected?.value,
-                width: "16px",
-                height: "16px",
-                display: "inline-block",
-                borderRadius: "3px",
-                border: "1px solid #ccc",
-              }}
-            />
-            {selected ? selected.name : "Select a color"}
-          </div>
-        </DropdownToggle>
-
-        <DropdownMenu>
-          {COLORS.map((color) => (
-            <DropdownItem
-              key={color.value}
-              onClick={() =>
-                onChange({ target: { id, value: color.value } })
-              }
-              className="d-flex align-items-center gap-2"
-            >
+      <FormGroup>
+        <Label className="form-control-label" htmlFor={id}>
+          {label}
+        </Label>
+        <Dropdown isOpen={dropdownOpen} toggle={toggle} className="w-100">
+          <DropdownToggle
+            caret
+            className="form-control-alternative d-flex justify-content-between align-items-center w-100 font-weight-normal"
+          >
+            <div className="d-flex align-items-center">
               <span
+                className="border border-1 border-black mr-2 d-inline-block"
                 style={{
-                  backgroundColor: color.value,
-                  width: "16px",
-                  height: "16px",
-                  display: "inline-block",
-                  borderRadius: "3px",
-                  border: "1px solid #ccc",
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: selectedInternalColor || "transparent",
                 }}
-              />
-              {color.name}
-            </DropdownItem>
-          ))}
-        </DropdownMenu>
-      </Dropdown>
+              ></span>
+              {selectedColorName}
+            </div>
+          </DropdownToggle>
+          <DropdownMenu className="w-100">
+            {colors.map((color) => (
+              <DropdownItem
+                key={color.hex}
+                onClick={() => handleColorChange(color.hex)}
+                className="d-flex align-items-center"
+              >
+                <span
+                  className="border border-1 border-black mr-2 d-inline-block"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: color.hex,
+                  }}
+                ></span>
+                {color.name}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
+        <Input type="hidden" id={id} value={selectedInternalColor || ""} />
+      </FormGroup>
     </Col>
   );
 }

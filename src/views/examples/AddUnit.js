@@ -51,10 +51,13 @@ import {
   BsPhone,
   BsHousesFill,
   BsPalette,
+  BsPeopleFill,
+  BsEnvelope,
 } from "react-icons/bs";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
+import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
 
 const AddUnit = () => {
   return (
@@ -77,10 +80,18 @@ const AddUnit = () => {
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title={"Unit information"}>
                     <RegistrationForm.Field
+                      id="input-address"
+                      label="Address"
+                      type="text"
+                      lg={8}
+                      placeholder="Address"
+                      icon={<BsEnvelope size={18} />}
+                    />
+                    <RegistrationForm.Field
                       id="input-denomination"
                       label="Denomination"
                       type="text"
-                      lg={6}
+                      lg={4}
                       placeholder="Denomination"
                       icon={<BsBuilding size={18} />}
                     />
@@ -88,19 +99,34 @@ const AddUnit = () => {
                       id="input-inhabitants"
                       label="Number of inhabitantes"
                       type="number"
-                      lg={6}
+                      lg={4}
                       placeholder="Number of inhabitants"
-                      icon={<BsHousesFill size={18} />}
+                      icon={<BsPeopleFill size={18} />}
                     />
-                     <RegistrationForm.Field
-                      id="input-color"
+                    <RegistrationForm.Field
+                      id="input-stores"
+                      label="Number of stores"
+                      type="number"
+                      lg={4}
+                      placeholder="Number of stores"
+                      icon={<BsBuilding size={18} />}
+                    />
+                    <RegistrationForm.Field
+                      id="input-apartments"
+                      label="Number of apartments"
+                      type="number"
+                      lg={4}
+                      placeholder="Number of apartments"
+                      icon={<BsBuilding size={18} />}
+                    />
+                  </RegistrationForm.Section>
+                  <RegistrationForm.Section title={"Visualization"}>
+                    <ColorPicker
                       label="Color"
-                      type="text"
+                      id="color"
                       lg={6}
-                      placeholder="Color"
-                      icon={<BsPalette size={18} />}
+                      onChange={() => {}}
                     />
-                    {/* <RegistrationForm.ColorPicker/> */}
                   </RegistrationForm.Section>
                 </RegistrationForm.Root>
               </CardBody>
