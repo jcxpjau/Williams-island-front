@@ -49,6 +49,7 @@ import {
   BsPinMap,
   BsFillPeopleFill,
   BsPhone,
+  BsEnvelope,
 } from "react-icons/bs";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
@@ -128,7 +129,6 @@ const MemberForm = () => {
               value={form.birthday}
               onChange={handleChange}
               type="date"
-              icon={<BsCake2 size={18} />}
             />
             <RegistrationForm.Field
               label="Date joined"
@@ -136,7 +136,6 @@ const MemberForm = () => {
               value={form.dateJoined}
               onChange={handleChange}
               type="date"
-              icon={<BsCalendar size={18} />}
             />
           </div>
         </RegistrationForm.Section>
@@ -149,7 +148,7 @@ const MemberForm = () => {
             onChange={handleChange}
             placeholder="Your William's Island address"
             md="12"
-            icon={<BsMailbox size={18} />}
+            icon={<BsEnvelope size={18} />}
           />
           <RegistrationForm.Field
             label="Email address"
@@ -179,7 +178,7 @@ const MemberForm = () => {
             onChange={handleChange}
             placeholder="Your secondary address"
             md="12"
-            icon={<BsMailbox size={18} />}
+            icon={<BsEnvelope size={18} />}
           />
           <RegistrationForm.Field
             label="City"
@@ -283,7 +282,6 @@ const DependantForm = () => {
               type="date"
               value={form.birthday}
               onChange={handleChange}
-              icon={<BsCake2 size={18} />}
             />
             <RegistrationForm.Field
               id="input-dateJoined"
@@ -291,7 +289,6 @@ const DependantForm = () => {
               type="date"
               value={form.dateJoined}
               onChange={handleChange}
-              icon={<BsCalendar size={18} />}
             />
             <RegistrationForm.Field
               id="input-relationship"
@@ -306,7 +303,6 @@ const DependantForm = () => {
                 { value: "parent", label: "Parent" },
                 { value: "visitor", label: "Visitor" },
               ]}
-              icon={<BsFillPeopleFill size={18} />}
             />
           </div>
         </RegistrationForm.Section>
@@ -355,7 +351,7 @@ const AddMember = () => {
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow">
-              <CardHeader className="border-0 pt-8 pt-md-4 pb-0 pb-md-4">
+              <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
               </CardHeader>
               <CardBody>

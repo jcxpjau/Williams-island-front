@@ -1,5 +1,13 @@
 import React from "react";
-import { Col, FormGroup, Input, Label } from "reactstrap";
+import {
+  Col,
+  FormGroup,
+  Input,
+  Label,
+  InputGroup,
+  InputGroupText,
+  InputGroupAddon,
+} from "reactstrap";
 
 export function Field({
   label,
@@ -12,45 +20,63 @@ export function Field({
   md,
   pattern,
   options,
-  icon 
+  icon,
 }) {
   const colProps = {};
   if (lg) colProps.lg = lg;
   if (md) colProps.md = md;
 
+  const renderInput = () => {
+    const inputElement =
+      type === "select" ? (
+        <Input
+          type="select"
+          id={id}
+          value={value}
+          onChange={onChange}
+          className="form-control-alternative"
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </Input>
+      ) : (
+        <Input
+          id={id}
+          type={type}
+          className="form-control-alternative"
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          pattern={pattern}
+        />
+      );
+
+    return icon && type !== "select" ? (
+      <InputGroup>
+        <InputGroupAddon addonType="prepend">
+          <InputGroupText className="bg-white border-0">
+            {icon}
+          </InputGroupText>
+        </InputGroupAddon>
+        {React.cloneElement(inputElement, {
+          className: `${inputElement.props.className} border-left-0`,
+        })}
+      </InputGroup>
+    ) : (
+      inputElement
+    );
+  };
+
   return (
     <Col {...colProps}>
       <FormGroup>
-        <Label className="form-control-label d-flex align-items-center gap-1" htmlFor={id}>
-          {icon && <span className="mr-2">{icon}</span>}
+        <Label className="form-control-label" htmlFor={id}>
           {label}
         </Label>
-
-        {type === "select" ? (
-          <Input
-            type="select"
-            id={id}
-            value={value}
-            onChange={onChange}
-            className="form-control-alternative"
-          >
-            {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Input>
-        ) : (
-          <Input
-            id={id}
-            type={type}
-            className="form-control-alternative"
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            pattern={pattern}
-          />
-        )}
+        {renderInput()}
       </FormGroup>
     </Col>
   );
