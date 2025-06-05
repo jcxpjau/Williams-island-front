@@ -25,32 +25,11 @@ import {
   Container,
   Row,
   Col,
-  Nav,
-  NavLink,
-  NavItem,
-  TabContent,
-  TabPane,
-  ListGroup,
-  ListGroupItem,
 } from "reactstrap";
 import {
-  BsPencil,
   BsFillPersonFill,
-  BsFillPersonBadgeFill,
-  BsCardText,
   BsPersonVcard,
   BsBuilding,
-  BsCake2,
-  BsCalendar,
-  BsMailbox,
-  BsMailboxFlag,
-  BsAt,
-  BsTelephone,
-  BsPinMap,
-  BsFillPeopleFill,
-  BsPhone,
-  BsHousesFill,
-  BsPalette,
   BsPeopleFill,
   BsEnvelope,
 } from "react-icons/bs";
@@ -58,8 +37,33 @@ import {
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
+import { ListExistingItems } from "components/ListExisting";
 
 const AddUnit = () => {
+  const initialState = {
+    address: "",
+    denomination: "",
+    inhabitants: "",
+    stores: "",
+    apartments: "",
+    color: null,
+  };
+
+  const [form, setForm] = useState(initialState);
+
+  const handleChange = (e) => {
+    const { id, value, type } = e.target;
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      [id]: value,
+    }));
+  };
+
+  const handleResetForm = () => {
+    setForm(initialState);
+  };
+
   return (
     <>
       <UserHeader
@@ -69,7 +73,35 @@ const AddUnit = () => {
       {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
-          <Col className="order-xl-1" xl="10">
+          <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
+            <Card className="bg-secondary shadow">
+              <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
+                <h3 className="mb-0">Edit unit information</h3>
+              </CardHeader>
+              <CardBody>
+                <ListExistingItems.Root>
+                  <ListExistingItems.Item>
+                    <span> Tower 1 </span>
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>
+                    <span> Tower 2 </span>
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>
+                    <span> Tower 3 </span>
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Button className="mt-4">
+                    <Button
+                      className="border-0 shadow-0 m-0"
+                      onClick={handleResetForm}
+                    >
+                      + New unit
+                    </Button>
+                  </ListExistingItems.Button>
+                </ListExistingItems.Root>
+              </CardBody>
+            </Card>
+          </Col>
+          <Col className="order-xl-1" xl="8">
             <Card className="bg-secondary shadow">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
@@ -80,44 +112,54 @@ const AddUnit = () => {
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title={"Unit information"}>
                     <RegistrationForm.Field
-                      id="input-address"
+                      id="address"
                       label="Address"
                       type="text"
                       lg={8}
                       placeholder="Address"
                       icon={<BsEnvelope size={18} />}
+                      value={form.address}
+                      onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="input-denomination"
+                      id="denomination"
                       label="Denomination"
                       type="text"
                       lg={4}
                       placeholder="Denomination"
                       icon={<BsBuilding size={18} />}
+                      value={form.denomination}
+                      onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="input-inhabitants"
-                      label="Number of inhabitantes"
+                      id="inhabitants"
+                      label="Number of inhabitants"
                       type="number"
                       lg={4}
                       placeholder="Number of inhabitants"
                       icon={<BsPeopleFill size={18} />}
+                      value={form.inhabitants}
+                      onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="input-stores"
+                      id="stores"
                       label="Number of stores"
                       type="number"
                       lg={4}
                       placeholder="Number of stores"
                       icon={<BsBuilding size={18} />}
+                      value={form.stores}
+                      onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="input-apartments"
+                      id="apartments"
                       label="Number of apartments"
                       type="number"
                       lg={4}
                       placeholder="Number of apartments"
                       icon={<BsBuilding size={18} />}
+                      value={form.apartments}
+                      onChange={handleChange}
                     />
                   </RegistrationForm.Section>
                   <RegistrationForm.Section title={"Visualization"}>
@@ -125,9 +167,11 @@ const AddUnit = () => {
                       label="Color"
                       id="color"
                       lg={6}
-                      onChange={() => {}}
+                      value={form.color}
+                      onChange={handleChange}
                     />
                   </RegistrationForm.Section>
+                  <RegistrationForm.SubmitBtn />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>
