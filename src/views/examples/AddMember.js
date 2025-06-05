@@ -34,29 +34,25 @@ import {
   ListGroupItem,
 } from "reactstrap";
 import {
-  BsPencil,
   BsFillPersonFill,
   BsFillPersonBadgeFill,
-  BsCardText,
   BsPersonVcard,
   BsBuilding,
-  BsCake2,
-  BsCalendar,
-  BsMailbox,
-  BsMailboxFlag,
   BsAt,
   BsTelephone,
   BsPinMap,
-  BsFillPeopleFill,
-  BsPhone,
   BsEnvelope,
 } from "react-icons/bs";
-// core components
+
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
+import { ListExistingItems } from "components/ListExisting";
+import { FaChild } from "react-icons/fa";
+import { GiBigDiamondRing } from "react-icons/gi";
+import { MdFamilyRestroom } from "react-icons/md";
 
 const MemberForm = () => {
-  const [form, setForm] = useState({
+  const initialState = {
     firstName: "",
     surname: "",
     unit: "",
@@ -69,7 +65,8 @@ const MemberForm = () => {
     city: "",
     country: "",
     postalCode: "",
-  });
+  };
+  const [form, setForm] = useState(initialState);
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(
     require("../../assets/img/theme/placeholder-pfp.jpg")
@@ -217,7 +214,7 @@ const MemberForm = () => {
 };
 
 const DependantForm = () => {
-  const [form, setForm] = useState({
+  const initialState = {
     firstName: "",
     surname: "",
     birthday: "",
@@ -225,7 +222,8 @@ const DependantForm = () => {
     relationship: "",
     email: "",
     phone: "",
-  });
+  };
+  const [form, setForm] = useState(initialState);
 
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(
@@ -298,10 +296,22 @@ const DependantForm = () => {
               onChange={handleChange}
               options={[
                 { value: "", label: "Select a relationship" },
-                { value: "child", label: "Child" },
-                { value: "spouse", label: "Spouse" },
-                { value: "parent", label: "Parent" },
-                { value: "visitor", label: "Visitor" },
+                { value: "child", label: "Child", icon: <FaChild size={16} /> },
+                {
+                  value: "spouse",
+                  label: "Spouse",
+                  icon: <GiBigDiamondRing size={16} />,
+                },
+                {
+                  value: "parent",
+                  label: "Parent",
+                  icon: <MdFamilyRestroom size={16} />,
+                },
+                {
+                  value: "visitor",
+                  label: "Visitor",
+                  icon: <BsPersonVcard size={16} />,
+                },
               ]}
             />
           </div>
@@ -355,37 +365,27 @@ const AddMember = () => {
                 <h3 className="mb-0">Edit member information</h3>
               </CardHeader>
               <CardBody>
-                <ListGroup className="text-black">
-                  <ListGroupItem className="d-flex justify-content-between align-items-center">
-                    <BsFillPersonFill size={20} />
+                <ListExistingItems.Root>
+                  <ListExistingItems.Item>
+                    <BsFillPersonFill className="mr-2" size={20} />
                     <span>John Doe (property owner)</span>
-                    <BsPencil size={18} />
-                  </ListGroupItem>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center">
-                    <BsFillPersonBadgeFill size={20} />
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>
+                    <GiBigDiamondRing className="mr-2" size={20} />
                     <span>Jane Doe (spouse)</span>
-                    <BsPencil size={18} />
-                  </ListGroupItem>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center">
-                    <BsFillPersonBadgeFill size={20} />
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>
+                    <FaChild className="mr-2" size={20} />
                     <span>Will Doe (child)</span>
-                    <BsPencil size={18} />
-                  </ListGroupItem>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center">
-                    <BsFillPersonBadgeFill size={20} />
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>
+                    <BsPersonVcard className="mr-2" size={20} />
                     <span>Bob Smith (visitor)</span>
-                    <BsPencil size={18} />
-                  </ListGroupItem>
-                  <ListGroupItem className="border-0 p-0 mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={() => setActiveTab("dependant")}
-                    >
-                      {" "}
-                      + New dependant{" "}
-                    </Button>
-                  </ListGroupItem>
-                </ListGroup>
+                  </ListExistingItems.Item>
+                  <ListExistingItems.Button className="mt-4">
+                    <Button className="border-0 shadow-0 m-0">+ New dependant </Button>
+                  </ListExistingItems.Button>
+                </ListExistingItems.Root>
               </CardBody>
             </Card>
           </Col>
