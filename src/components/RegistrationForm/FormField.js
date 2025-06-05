@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Col,
   FormGroup,
-  Input,
   Label,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  Input,
   InputGroup,
   InputGroupText,
   InputGroupAddon,
@@ -26,40 +30,70 @@ export function Field({
   if (lg) colProps.lg = lg;
   if (md) colProps.md = md;
 
-  const renderInput = () => {
-    const inputElement =
-      type === "select" ? (
-        <Input
-          type="select"
-          id={id}
-          value={value}
-          onChange={onChange}
-          className="form-control-alternative"
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </Input>
-      ) : (
-        <Input
-          id={id}
-          type={type}
-          className="form-control-alternative"
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          pattern={pattern}
-        />
-      );
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
-    return icon && type !== "select" ? (
+  const selectedOption =
+    type === "select" && options?.find((opt) => opt.value === value);
+
+  const renderInput = () => {
+    if (type === "select") {
+      return (
+        <Dropdown
+          isOpen={dropdownOpen}
+          toggle={toggleDropdown}
+          className="w-100"
+        >
+          <DropdownToggle
+            caret
+            className="form-control form-control-alternative d-flex align-items-center justify-content-between w-100 font-weight-normal"
+            style={{
+              backgroundColor: "#fff",
+              borderColor: "#cad1d7",
+              color: "#525f7f",
+              height: "40px",
+              width: "100%",
+            }}
+          >
+            <div className="d-flex align-items-center">
+              {selectedOption?.icon && (
+                <span className="mr-2">{selectedOption.icon}</span>
+              )}
+              <span>{selectedOption?.label || placeholder || "Select"}</span>
+            </div>
+          </DropdownToggle>
+          <DropdownMenu style={{ width: "100%" }}>
+            {options.map((opt) => (
+              <DropdownItem
+                key={opt.value}
+                onClick={() => onChange({ target: { id, value: opt.value } })}
+                className="d-flex align-items-center"
+              >
+                {opt.icon && <span className="mr-2">{opt.icon}</span>}
+                {opt.label}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
+      );
+    }
+
+    const inputElement = (
+      <Input
+        id={id}
+        type={type}
+        className="form-control-alternative"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        pattern={pattern}
+      />
+    );
+
+    return icon ? (
       <InputGroup>
         <InputGroupAddon addonType="prepend">
-          <InputGroupText className="bg-white border-0">
-            {icon}
-          </InputGroupText>
+          <InputGroupText className="bg-white border-0">{icon}</InputGroupText>
         </InputGroupAddon>
         {React.cloneElement(inputElement, {
           className: `${inputElement.props.className} border-left-0`,
