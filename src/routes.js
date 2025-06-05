@@ -18,6 +18,7 @@
 import Index from "views/Index.js";
 import AddMember from "views/examples/AddMember.js";
 import AddUnit from "views/examples/AddUnit.js";
+import AddFee from "views/examples/AddFee.js";
 import Profile from "views/examples/Profile.js";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
@@ -95,6 +96,12 @@ var routes = [
     collapse: true,
     state: "accountingCollapse",
     views: [
+      {
+        path: "/accounting/fees/add",
+        name: "Add new fees",
+        layout: "/admin",
+        component: <AddFee/>,
+      },
       {
         path: "/accounting/fees",
         name: "Membership Fees",
