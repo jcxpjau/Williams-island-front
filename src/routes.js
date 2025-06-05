@@ -19,6 +19,7 @@ import Index from "views/Index.js";
 import AddMember from "views/examples/AddMember.js";
 import AddUnit from "views/examples/AddUnit.js";
 import AddFee from "views/examples/AddFee.js";
+import AddUser from "views/examples/AddUser.js";
 import Profile from "views/examples/Profile.js";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";

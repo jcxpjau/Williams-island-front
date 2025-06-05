@@ -2,11 +2,12 @@ import AddVenue from "views/examples/AddVenue";
 import Logs from "views/examples/Logs";
 import Profile from "views/examples/Profile";
 import UsersList from "views/examples/UsersList";
+import AddUser from "views/examples/AddUser";
 
 const hiddenRoutes = [
   {
     path: "/users/list",
-    component: <UsersList />,
+    component: <AddUser />,
     layout: "/admin",
   },
   {
