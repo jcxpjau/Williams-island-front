@@ -42,6 +42,20 @@ import { MdLockOutline } from "react-icons/md";
 import { FaBlackTie } from "react-icons/fa";
 
 const AddUser = () => {
+  const [form, setForm] = useState({
+    firstName: "",
+    surname: "",
+    phone: "",
+    email: "",
+    password: "",
+    permissions: "",
+  });
+
+  const handleChange = (field) => (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
     <>
       <UserHeader
@@ -84,71 +98,70 @@ const AddUser = () => {
                     <RegistrationForm.Field
                       label="First name"
                       id="firstName"
-                      value=""
+                      value={form.firstName}
                       placeholder="First name"
                       type="text"
-                      onChange={() => {}}
+                      onChange={handleChange("firstName")}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
                       label="Surname"
                       id="surname"
-                      value=""
+                      value={form.surname}
                       placeholder="Surname"
                       type="text"
-                      onChange={() => {}}
+                      onChange={handleChange("surname")}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
+
                   <RegistrationForm.Section title="Contact information">
                     <RegistrationForm.Field
                       label="Phone"
                       id="phone"
-                      value=""
+                      value={form.phone}
                       placeholder=""
                       type="number"
-                      onChange={() => {}}
+                      onChange={handleChange("phone")}
                       lg={6}
                       icon={<BsTelephone className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
                       label="Email"
                       id="email"
-                      value=""
+                      value={form.email}
                       placeholder=""
                       type="email"
-                      onChange={() => {}}
+                      onChange={handleChange("email")}
                       lg={6}
                       icon={<BsAt className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
+
                   <RegistrationForm.Section title="Account">
                     <RegistrationForm.Field
                       label="Password"
                       id="password"
-                      value=""
+                      value={form.password}
                       placeholder=""
                       type="password"
-                      onChange={() => {}}
+                      onChange={handleChange("password")}
                       lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
                       label="Permissions"
                       id="permissions"
-                      value=""
+                      value={form.permissions}
                       placeholder=""
                       type="select"
                       options={[
                         { value: "", label: "Select permissions" },
-                        {
-                          value: "admin",
-                          label: "Admin",
-                        },
+                        { value: "admin", label: "Admin" },
                       ]}
-                      onChange={() => {}}
+                      onChange={handleChange("permissions")}
                       lg={6}
                       icon={<BsShield className="mr-2" size={20} />}
                     />
