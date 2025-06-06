@@ -30,7 +30,14 @@ import {
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
-import { BsHash, BsPersonVcard } from "react-icons/bs";
+import {
+  BsAt,
+  BsHash,
+  BsPersonVcard,
+  BsPhone,
+  BsShield,
+  BsTelephone,
+} from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import { FaBlackTie } from "react-icons/fa";
 
@@ -51,15 +58,9 @@ const AddUser = () => {
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  <ListExistingItems.Item>
-                    John Smith
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    Sally Bowles
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    Brian Parker
-                  </ListExistingItems.Item>
+                  <ListExistingItems.Item>John Smith</ListExistingItems.Item>
+                  <ListExistingItems.Item>Sally Bowles</ListExistingItems.Item>
+                  <ListExistingItems.Item>Brian Parker</ListExistingItems.Item>
                   <ListExistingItems.Button className="mt-4">
                     <Button className="border-0 shadow-0 m-0">
                       + New user
@@ -81,25 +82,49 @@ const AddUser = () => {
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title="Personal information">
                     <RegistrationForm.Field
-                      label="Full name"
-                      id="fullName"
+                      label="First name"
+                      id="firstName"
                       value=""
-                      placeholder="Full name"
+                      placeholder="First name"
                       type="text"
                       onChange={() => {}}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
-                      label="Familiar name"
-                      id="familiarName"
+                      label="Surname"
+                      id="surname"
                       value=""
-                      placeholder="Familiar name"
+                      placeholder="Surname"
                       type="text"
                       onChange={() => {}}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
+                  </RegistrationForm.Section>
+                  <RegistrationForm.Section title="Contact information">
+                    <RegistrationForm.Field
+                      label="Phone"
+                      id="phone"
+                      value=""
+                      placeholder=""
+                      type="number"
+                      onChange={() => {}}
+                      lg={6}
+                      icon={<BsTelephone className="mr-2" size={20} />}
+                    />
+                    <RegistrationForm.Field
+                      label="Email"
+                      id="email"
+                      value=""
+                      placeholder=""
+                      type="email"
+                      onChange={() => {}}
+                      lg={6}
+                      icon={<BsAt className="mr-2" size={20} />}
+                    />
+                  </RegistrationForm.Section>
+                  <RegistrationForm.Section title="Account">
                     <RegistrationForm.Field
                       label="Password"
                       id="password"
@@ -107,40 +132,28 @@ const AddUser = () => {
                       placeholder=""
                       type="password"
                       onChange={() => {}}
-                      lg={3}
+                      lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
-                      label="Job/Function"
-                      id="jobFunction"
+                      label="Permissions"
+                      id="permissions"
                       value=""
                       placeholder=""
-                      type="number"
+                      type="select"
+                      options={[
+                        { value: "", label: "Select permissions" },
+                        {
+                          value: "admin",
+                          label: "Admin",
+                        },
+                      ]}
                       onChange={() => {}}
-                      lg={3}
-                      icon={<FaBlackTie className="mr-2" size={20} />}
-                    />
-                    <RegistrationForm.Field
-                      label="Group ID"
-                      id="groupID"
-                      value=""
-                      placeholder=""
-                      type="number"
-                      onChange={() => {}}
-                      lg={3}
-                      icon={<BsHash className="mr-2" size={20} />}
-                    />
-                    <RegistrationForm.Field
-                      label="Bar code ID"
-                      id="barcodeID"
-                      value=""
-                      placeholder=""
-                      type="number"
-                      onChange={() => {}}
-                      lg={3}
-                      icon={<BsHash className="mr-2" size={20} />}
+                      lg={6}
+                      icon={<BsShield className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
+
                   <RegistrationForm.SubmitBtn />
                 </RegistrationForm.Root>
               </CardBody>
