@@ -68,9 +68,7 @@ const MemberForm = () => {
   };
   const [form, setForm] = useState(initialState);
   const fileInputRef = useRef(null);
-  const [preview, setPreview] = useState(
-    require("../../assets/img/theme/placeholder-pfp.jpg")
-  );
+  const [preview, setPreview] = useState(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -226,9 +224,7 @@ const DependantForm = () => {
   const [form, setForm] = useState(initialState);
 
   const fileInputRef = useRef(null);
-  const [preview, setPreview] = useState(
-    require("../../assets/img/theme/placeholder-pfp.jpg")
-  );
+  const [preview, setPreview] = useState(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -383,7 +379,9 @@ const AddMember = () => {
                     <span>Bob Smith (visitor)</span>
                   </ListExistingItems.Item>
                   <ListExistingItems.Button className="mt-4">
-                    <Button className="border-0 shadow-0 m-0">+ New dependant </Button>
+                    <Button className="border-0 shadow-0 m-0">
+                      + New dependant{" "}
+                    </Button>
                   </ListExistingItems.Button>
                 </ListExistingItems.Root>
               </CardBody>
