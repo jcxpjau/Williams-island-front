@@ -57,7 +57,16 @@ const Auth = (props) => {
   return (
     <>
       <div className="main-content" ref={mainContent}>
-        <div className="header bg-gradient-info py-7 py-lg-8">
+        <div className="py-7 py-lg-8">
+          <Container>
+            <div className="text-center mb-7">
+              <Row className="justify-content-center px-0 mx-0">
+                <h1 className="text-white">Welcome!</h1>
+              </Row>
+            </div>
+          </Container>
+        </div>
+        {/* <div className="header bg-gradient-info py-7 py-lg-8">
           <Container>
             <div className="header-body text-center mb-7">
               <Row className="justify-content-center">
@@ -83,7 +92,7 @@ const Auth = (props) => {
             </svg>
           </div>
         </div>
-        {/* Page content */}
+       
         <Container className="mt--8 pb-5">
           <Row className="justify-content-center">
             <Routes>
@@ -91,7 +100,7 @@ const Auth = (props) => {
               <Route path="*" element={<Navigate to="/auth/login" replace />} />
             </Routes>
           </Row>
-        </Container>
+        </Container> */}
       </div>
       <AuthFooter />
     </>
