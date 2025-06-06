@@ -23,10 +23,10 @@ const Login = () => {
   return (
     <>
       <Col lg="5" md="7">
-        <Card className="bg-secondary shadow border-0">
+        <Card className="bg-default shadow border-0">
           <CardBody className="px-lg-5 py-lg-5">
-            <div className="text-center text-muted mb-4">
-              <small>Sign in with credentials</small>
+            <div className="text-center text-white mb-4">
+              <p>Sign in with credentials</p>
             </div>
             <Form role="form">
               <FormGroup className="mb-3">
@@ -67,11 +67,11 @@ const Login = () => {
                   className="custom-control-label"
                   htmlFor=" customCheckLogin"
                 >
-                  <span className="text-muted">Remember me</span>
+                  <span className="text-white">Remember me</span>
                 </label>
               </div>
               <div className="text-center">
-                <Button className="my-4" color="primary" type="button" onClick={() => navigate( "/admin" )}>
+                <Button className="my-4" color="secondary" type="button" onClick={() => navigate( "/admin/index" )}>
                   Sign in
                 </Button>
               </div>
@@ -85,7 +85,7 @@ const Login = () => {
               href="#pablo"
               onClick={(e) => e.preventDefault()}
             >
-              <small>Forgot password?</small>
+              <small style={{"color":"#172b4d"}}>Forgot password?</small>
             </a>
           </Col>
           <Col className="text-right" xs="6">
@@ -93,7 +93,7 @@ const Login = () => {
               className="text-light"
               onClick={ () => navigate( "/auth/register" )}
             >
-              <small>Create new account</small>
+              <small style={{"color":"#172b4d"}}>Create new account</small>
             </a>
           </Col>
         </Row>

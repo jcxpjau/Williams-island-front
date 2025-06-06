@@ -30,12 +30,12 @@ const Auth = (props) => {
   const mainContent = React.useRef(null);
   const location = useLocation();
 
-  React.useEffect(() => {
+/*   React.useEffect(() => {
     document.body.classList.add("bg-default");
     return () => {
       document.body.classList.remove("bg-default");
     };
-  }, []);
+  }, []); */
   React.useEffect(() => {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
@@ -57,13 +57,32 @@ const Auth = (props) => {
   return (
     <>
       <div className="main-content" ref={mainContent}>
-        <div className="py-7 py-lg-8">
+        <div className="mt-6 py-4 py-lg-6">
           <Container>
-            <div className="text-center mb-7">
+            <div className="text-center mb-4">
               <Row className="justify-content-center px-0 mx-0">
-                <h1 className="text-white">Welcome!</h1>
+                <Col lg="auto">
+                  <img
+                    src={require("../assets/img/brand/WI_Logo.png")}
+                    alt="Logo"
+                    style={{ height: "80px" }} 
+                    className="mb-3 border border-white"
+                  />
+                  <h1 style={{"color":"#172b4d"}}>Welcome!</h1>
+                </Col>
               </Row>
             </div>
+          </Container>
+          <Container className="">
+            <Row className="justify-content-center">
+              <Routes>
+                {getRoutes(routes)}
+                <Route
+                  path="*"
+                  element={<Navigate to="/auth/login" replace />}
+                />
+              </Routes>
+            </Row>
           </Container>
         </div>
         {/* <div className="header bg-gradient-info py-7 py-lg-8">
