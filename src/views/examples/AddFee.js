@@ -37,10 +37,15 @@ import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
+import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
-  { value: "poa", label: "Property Owners Association", icon: <FaHome size={16} /> },
+  {
+    value: "poa",
+    label: "Property Owners Association",
+    icon: <FaHome size={16} />,
+  },
   { value: "sports", label: "Sports", icon: <MdSportsFootball size={16} /> },
   { value: "restaurant", label: "Restaurant", icon: <MdFastfood size={16} /> },
   { value: "cafe", label: "Cafe", icon: <FaCoffee size={16} /> },
@@ -48,7 +53,11 @@ const CATEGORY_OPTIONS = [
   { value: "pet", label: "Pets", icon: <MdPets size={16} /> },
   { value: "spa", label: "Spa", icon: <FaSpa size={16} /> },
   { value: "pool", label: "Pool", icon: <FaPersonSwimming size={16} /> },
-  { value: "fitness", label: "Fitness", icon: <MdOutlineFitnessCenter size={16} /> },
+  {
+    value: "fitness",
+    label: "Fitness",
+    icon: <MdOutlineFitnessCenter size={16} />,
+  },
   { value: "marina", label: "Marina", icon: <FaSailboat size={16} /> },
 ];
 
@@ -60,7 +69,7 @@ const AddFee = () => {
   };
   const [form, setForm] = useState(initialState);
   const [fees, setFees] = useState([]);
-  const [editingFeeIndex, setEditingFeeIndex] = useState(null); 
+  const [editingFeeIndex, setEditingFeeIndex] = useState(null);
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prevData) => ({
@@ -70,8 +79,8 @@ const AddFee = () => {
   };
 
   const handleSaveFee = () => {
-    if (!form.category || !form.fee) {
-      alert("Please fill in all required fields (Category and Value).");
+    if (!form.category || !form.fee || form.identifier) {
+      alert("Please fill in all required fields.");
       return;
     }
 
@@ -83,19 +92,21 @@ const AddFee = () => {
 
     if (editingFeeIndex !== null) {
       const updatedFees = [...fees];
-      updatedFees[editingFeeIndex] = { ...form, fee: feeValue }; 
+      updatedFees[editingFeeIndex] = { ...form, fee: feeValue };
       setFees(updatedFees);
       alert("Fee updated successfully!");
     } else {
-      const isDuplicate = fees.some(
-        (f) => f.category === form.category
-      );
+      const isDuplicate = fees.some((f) => f.category === form.category);
 
       if (isDuplicate) {
-        alert(`A fee for "${CATEGORY_OPTIONS.find(opt => opt.value === form.category)?.label}" already exists. Please edit the existing one.`);
+        alert(
+          `A fee for "${
+            CATEGORY_OPTIONS.find((opt) => opt.value === form.category)?.label
+          }" already exists. Please edit the existing one.`
+        );
         return;
       }
-      setFees((prev) => [...prev, { ...form, fee: feeValue }]); 
+      setFees((prev) => [...prev, { ...form, fee: feeValue }]);
       alert("Fee successfully registered!");
     }
 
@@ -105,14 +116,14 @@ const AddFee = () => {
   const handleEditFee = (feeToEdit, index) => {
     setForm({
       category: feeToEdit.category,
-      fee: feeToEdit.fee.toString(), 
+      fee: feeToEdit.fee.toString(),
     });
-    setEditingFeeIndex(index); 
+    setEditingFeeIndex(index);
   };
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingFeeIndex(null); 
+    setEditingFeeIndex(null);
   };
 
   return (
@@ -131,7 +142,7 @@ const AddFee = () => {
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                 {fees.length === 0 ? (
+                  {fees.length === 0 ? (
                     <span> No fees registered yet. </span>
                   ) : (
                     fees.map((fee, index) => (
@@ -177,6 +188,7 @@ const AddFee = () => {
                       placeholder="Fee name"
                       value={form.identifier}
                       onChange={handleChange}
+                      icon={<BsFillTagFill size={18} />}
                     />
                     <RegistrationForm.Field
                       id="category"
@@ -197,6 +209,7 @@ const AddFee = () => {
                       placeholder="0.0"
                       value={form.fee}
                       onChange={handleChange}
+                      icon={<BsCurrencyDollar size={18} />}
                     />
                   </RegistrationForm.Section>
 
