@@ -15,8 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState, useRef } from "react";
-// reactstrap components
+import { useState } from "react"; 
 import {
   Button,
   Card,
@@ -34,33 +33,79 @@ import {
   BsAt,
   BsHash,
   BsPersonVcard,
-  BsPhone,
+  BsPhone, 
   BsShield,
   BsTelephone,
 } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
-import { FaBlackTie } from "react-icons/fa";
+import { FaBlackTie } from "react-icons/fa"; 
 
 const AddUser = () => {
-  const [form, setForm] = useState({
+  const initialState = {
     firstName: "",
     surname: "",
     phone: "",
     email: "",
     password: "",
     permissions: "",
-  });
+  };
 
-  const handleChange = (field) => (e) => {
-    const value = e.target.value;
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const [form, setForm] = useState(initialState);
+  const [users, setUsers] = useState([]);
+  const [editingUserIndex, setEditingUserIndex] = useState(null);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSaveUser = () => {
+    if (
+      !form.firstName ||
+      !form.surname ||
+      !form.phone ||
+      !form.email ||
+      !form.password ||
+      !form.permissions
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    if (editingUserIndex !== null) {
+      const updatedUsers = [...users];
+      updatedUsers[editingUserIndex] = form;
+      setUsers(updatedUsers);
+      alert("User updated successfully!");
+    } else {
+      const isDuplicate = users.some((user) => user.email === form.email);
+
+      if (isDuplicate) {
+        alert("A user with this email already exists.");
+        return;
+      }
+
+      setUsers((prev) => [...prev, form]);
+      alert("User successfully registered!");
+    }
+    handleResetForm();
+  };
+
+  const handleEditUser = (userToEdit, index) => {
+    setForm(userToEdit);
+    setEditingUserIndex(index); 
+  };
+
+  const handleResetForm = () => {
+    setForm(initialState);
+    setEditingUserIndex(null); 
   };
 
   return (
     <>
       <UserHeader
         title="Add User"
-        description="In this page you can you add a new user or change their informations."
+        description="In this page you can add a new user or change their information."
       />
       {/* Page content */}
       <Container className="mt--7" fluid>
@@ -72,11 +117,26 @@ const AddUser = () => {
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  <ListExistingItems.Item>John Smith</ListExistingItems.Item>
-                  <ListExistingItems.Item>Sally Bowles</ListExistingItems.Item>
-                  <ListExistingItems.Item>Brian Parker</ListExistingItems.Item>
+                  {users.length === 0 ? (
+                    <span> No users registered yet. </span>
+                  ) : (
+                    users.map((user, index) => (
+                      <ListExistingItems.Item
+                        key={index}
+                        onEdit={() => handleEditUser(user, index)}
+                      >
+                      
+                        <span>
+                          {user.firstName} {user.surname}
+                        </span>
+                      </ListExistingItems.Item>
+                    ))
+                  )}
                   <ListExistingItems.Button className="mt-4">
-                    <Button className="border-0 shadow-0 m-0">
+                    <Button
+                      className="border-0 shadow-0 m-0"
+                      onClick={handleResetForm}
+                    >
                       + New user
                     </Button>
                   </ListExistingItems.Button>
@@ -89,7 +149,9 @@ const AddUser = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
-                  <h3 className="mb-0"> User Registration </h3>
+                  <h3 className="mb-0">
+                    {editingUserIndex !== null ? "Edit User" : "User Registration"}
+                  </h3>
                 </Col>
               </CardHeader>
               <CardBody>
@@ -101,7 +163,7 @@ const AddUser = () => {
                       value={form.firstName}
                       placeholder="First name"
                       type="text"
-                      onChange={handleChange("firstName")}
+                      onChange={handleChange} 
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
@@ -111,7 +173,7 @@ const AddUser = () => {
                       value={form.surname}
                       placeholder="Surname"
                       type="text"
-                      onChange={handleChange("surname")}
+                      onChange={handleChange}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
@@ -124,7 +186,7 @@ const AddUser = () => {
                       value={form.phone}
                       placeholder=""
                       type="number"
-                      onChange={handleChange("phone")}
+                      onChange={handleChange}
                       lg={6}
                       icon={<BsTelephone className="mr-2" size={20} />}
                     />
@@ -134,8 +196,7 @@ const AddUser = () => {
                       value={form.email}
                       placeholder=""
                       type="email"
-                      onChange={handleChange("email")}
-                      lg={6}
+                      onChange={handleChange} 
                       icon={<BsAt className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
@@ -147,7 +208,7 @@ const AddUser = () => {
                       value={form.password}
                       placeholder=""
                       type="password"
-                      onChange={handleChange("password")}
+                      onChange={handleChange} 
                       lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
                     />
@@ -161,13 +222,13 @@ const AddUser = () => {
                         { value: "", label: "Select permissions" },
                         { value: "admin", label: "Admin" },
                       ]}
-                      onChange={handleChange("permissions")}
+                      onChange={handleChange} 
                       lg={6}
                       icon={<BsShield className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
 
-                  <RegistrationForm.SubmitBtn />
+                  <RegistrationForm.SubmitBtn onClick={handleSaveUser} />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>

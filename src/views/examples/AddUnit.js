@@ -135,9 +135,7 @@ const AddUnit = () => {
               <CardBody>
                 <ListExistingItems.Root>
                   {units.length === 0 ? (
-                    <ListExistingItems.Item>
-                      No units registered yet.
-                    </ListExistingItems.Item>
+                    <span> No units registered yet. </span>
                   ) : (
                     units.map((unit, index) => (
                       <ListExistingItems.Item
