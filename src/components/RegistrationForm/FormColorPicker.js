@@ -1,21 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Import useEffect
 import {
   Col,
   FormGroup,
   Label,
-  Input,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
+  Input, 
 } from "reactstrap";
 
-export function ColorPicker({ label, id, onChange, lg, md }) {
+export function ColorPicker({ label, id, onChange, lg, md, value }) { // Add 'value' to props
   const colProps = {};
   if (lg) colProps.lg = lg;
   if (md) colProps.md = md;
 
-  const [selectedInternalColor, setSelectedInternalColor] = useState(null);
+  const [selectedInternalColor, setSelectedInternalColor] = useState(value); 
+  useEffect(() => {
+    setSelectedInternalColor(value);
+  }, [value]); 
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggle = () => setDropdownOpen((prevState) => !prevState);
@@ -30,11 +33,11 @@ export function ColorPicker({ label, id, onChange, lg, md }) {
     { name: "Orange", hex: "#fd7e14" },
     { name: "Pink", hex: "#e83e8c" },
     { name: "Gray", hex: "#6c757d" },
-     { name: "Lilac", hex: "#c8a2c8" },
-    { name: "Indigo", hex: "#6610f2" }, 
-    { name: "Brown", hex: "#795548" }, 
-    { name: "Olive", hex: "#6c7e10" }, 
-    { name: "Gold", hex: "#FFD700" }, 
+    { name: "Lilac", hex: "#c8a2c8" },
+    { name: "Indigo", hex: "#6610f2" },
+    { name: "Brown", hex: "#795548" },
+    { name: "Olive", hex: "#6c7e10" },
+    { name: "Gold", hex: "#FFD700" },
     { name: "Silver", hex: "#C0C0C0" },
   ];
 
@@ -42,10 +45,10 @@ export function ColorPicker({ label, id, onChange, lg, md }) {
     colors.find((color) => color.hex === selectedInternalColor)?.name ||
     "Select a color for this unit";
 
-  const handleColorChange = (hexValue) => {
+  const handleColorSelection = (hexValue) => {
     setSelectedInternalColor(hexValue);
     if (onChange) {
-      onChange({ target: { id: id, value: hexValue } });
+      onChange({ hex: hexValue }); 
     }
   };
 
@@ -76,7 +79,7 @@ export function ColorPicker({ label, id, onChange, lg, md }) {
             {colors.map((color) => (
               <DropdownItem
                 key={color.hex}
-                onClick={() => handleColorChange(color.hex)}
+                onClick={() => handleColorSelection(color.hex)} // Use new handler
                 className="d-flex align-items-center"
               >
                 <span
@@ -92,6 +95,7 @@ export function ColorPicker({ label, id, onChange, lg, md }) {
             ))}
           </DropdownMenu>
         </Dropdown>
+    
         <Input type="hidden" id={id} value={selectedInternalColor || ""} />
       </FormGroup>
     </Col>

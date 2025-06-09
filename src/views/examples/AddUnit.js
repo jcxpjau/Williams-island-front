@@ -26,14 +26,7 @@ import {
   Row,
   Col,
 } from "reactstrap";
-import {
-  BsFillPersonFill,
-  BsPersonVcard,
-  BsBuilding,
-  BsPeopleFill,
-  BsEnvelope,
-} from "react-icons/bs";
-// core components
+import { BsBuilding, BsPeopleFill, BsEnvelope } from "react-icons/bs";
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
@@ -50,25 +43,86 @@ const AddUnit = () => {
   };
 
   const [form, setForm] = useState(initialState);
+  const [units, setUnits] = useState([]);
+  const [editingUnitIndex, setEditingUnitIndex] = useState(null);
 
+  console.log(units);
   const handleChange = (e) => {
-    const { id, value, type } = e.target;
-
+    const { id, value } = e.target;
     setForm((prevForm) => ({
       ...prevForm,
       [id]: value,
     }));
   };
 
+  const handleColorChange = (colorValue) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      color: colorValue.hex,
+    }));
+  };
+
+  const handleSaveUnit = () => {
+    if (
+      !form.address ||
+      !form.denomination ||
+      form.inhabitants === "" ||
+      form.stores === "" ||
+      form.apartments === ""
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    const unitData = {
+      ...form,
+      inhabitants: parseInt(form.inhabitants, 10),
+      stores: parseInt(form.stores, 10),
+      apartments: parseInt(form.apartments, 10),
+    };
+
+    if (editingUnitIndex !== null) {
+      const updatedUnits = [...units];
+      updatedUnits[editingUnitIndex] = unitData;
+      setUnits(updatedUnits);
+      alert("Unit updated successfully!");
+    } else {
+      const isDuplicate = units.some(
+        (unit) =>
+          unit.address === unitData.address ||
+          unit.denomination === unitData.denomination
+      );
+
+      if (isDuplicate) {
+        alert("A unit with this address or denomination already exists.");
+        return;
+      }
+
+      setUnits((prev) => [...prev, unitData]);
+      alert("Unit successfully registered!");
+    }
+    handleResetForm();
+  };
+
+  const handleEditUnit = (unitToEdit, index) => {
+    setForm({
+      ...unitToEdit,
+      inhabitants: unitToEdit.inhabitants.toString(),
+      stores: unitToEdit.stores.toString(),
+      apartments: unitToEdit.apartments.toString(),
+    });
+    setEditingUnitIndex(index);
+  };
+
   const handleResetForm = () => {
     setForm(initialState);
+    setEditingUnitIndex(null);
   };
 
   return (
     <>
       <UserHeader
         title="Add Unit"
-        description="In this page you can you add residential units or edit their information."
+        description="In this page you can add residential units or edit their information."
       />
       {/* Page content */}
       <Container className="mt--7" fluid>
@@ -80,15 +134,23 @@ const AddUnit = () => {
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  <ListExistingItems.Item>
-                    <span> Tower 1 </span>
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    <span> Tower 2 </span>
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    <span> Tower 3 </span>
-                  </ListExistingItems.Item>
+                  {units.length === 0 ? (
+                    <ListExistingItems.Item>
+                      No units registered yet.
+                    </ListExistingItems.Item>
+                  ) : (
+                    units.map((unit, index) => (
+                      <ListExistingItems.Item
+                        key={index}
+                        onEdit={() => handleEditUnit(unit, index)}
+                      >
+                        <BsBuilding color={unit.color} className="mr-2" />
+                        <span style={{ color: unit.color }}>
+                          {unit.denomination}
+                        </span>
+                      </ListExistingItems.Item>
+                    ))
+                  )}
                   <ListExistingItems.Button className="mt-4">
                     <Button
                       className="border-0 shadow-0 m-0"
@@ -105,7 +167,11 @@ const AddUnit = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
-                  <h3 className="mb-0"> Unit Registration </h3>
+                  <h3 className="mb-0">
+                    {editingUnitIndex !== null
+                      ? "Edit Unit"
+                      : "Unit Registration"}
+                  </h3>
                 </Col>
               </CardHeader>
               <CardBody>
@@ -168,10 +234,10 @@ const AddUnit = () => {
                       id="color"
                       lg={6}
                       value={form.color}
-                      onChange={handleChange}
+                      onChange={handleColorChange}
                     />
                   </RegistrationForm.Section>
-                  <RegistrationForm.SubmitBtn />
+                  <RegistrationForm.SubmitBtn onClick={handleSaveUnit} />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>
