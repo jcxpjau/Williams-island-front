@@ -29,6 +29,10 @@ import {
   NavItem,
   TabContent,
   TabPane,
+  InputGroup, // Import InputGroup for search bar styling
+  InputGroupAddon, // Import InputGroupAddon
+  InputGroupText, // Import InputGroupText
+  Input, // Import Input
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -38,6 +42,7 @@ import {
   BsTelephone,
   BsPinMap,
   BsEnvelope,
+  BsSearch, // Import search icon
 } from "react-icons/bs";
 
 import UserHeader from "components/Headers/UserHeader.js";
@@ -47,7 +52,72 @@ import { FaChild } from "react-icons/fa";
 import { GiBigDiamondRing } from "react-icons/gi";
 import { MdFamilyRestroom } from "react-icons/md";
 
-// Constants for relationship options
+const familyData = [
+  {
+    propertyOwner: {
+      firstName: "John",
+      surname: "Doe",
+      unit: "A101",
+      birthday: "1980-05-15",
+      dateJoined: "2020-01-01",
+      address: "123 Main St",
+      email: "john.doe@example.com",
+      phone: "123-456-7890",
+      secondaryAddress: "456 Side Ave",
+      city: "Springfield",
+      country: "USA",
+      postalCode: "12345",
+    },
+    dependants: [
+      {
+        firstName: "Jane",
+        surname: "Doe",
+        birthday: "2010-03-20",
+        dateJoined: "2020-01-01",
+        relationship: "child",
+        email: "jane.doe@example.com",
+        phone: "123-456-7890",
+      },
+      {
+        firstName: "Robert",
+        surname: "Doe",
+        birthday: "1982-11-01",
+        dateJoined: "2020-01-01",
+        relationship: "spouse",
+        email: "robert.doe@example.com",
+        phone: "123-456-7890",
+      },
+    ],
+  },
+  {
+    propertyOwner: {
+      firstName: "Alice",
+      surname: "Smith",
+      unit: "B202",
+      birthday: "1975-01-20",
+      dateJoined: "2019-06-10",
+      address: "789 Oak Ave",
+      email: "alice.smith@example.com",
+      phone: "987-654-3210",
+      secondaryAddress: "",
+      city: "Shelbyville",
+      country: "USA",
+      postalCode: "54321",
+    },
+    dependants: [
+      {
+        firstName: "Bob",
+        surname: "Smith",
+        birthday: "2005-09-05",
+        dateJoined: "2019-06-10",
+        relationship: "child",
+        email: "bob.smith@example.com",
+        phone: "987-654-3210",
+      },
+    ],
+  },
+];
+
 const RELATIONSHIP_OPTIONS = [
   { value: "", label: "Select a relationship" },
   { value: "child", label: "Child", icon: <FaChild size={16} /> },
@@ -68,7 +138,6 @@ const RELATIONSHIP_OPTIONS = [
   },
 ];
 
-// Helper function to get icon based on relationship
 const getIconForRelationship = (rel) => {
   const size = 20;
   switch (rel) {
@@ -87,13 +156,10 @@ const getIconForRelationship = (rel) => {
 
 const AddMember = () => {
   const [activeTab, setActiveTab] = useState("member");
-  const [ownerSaved, setOwnerSaved] = useState(false);
-  const [member, setMember] = useState(null);
   const [dependants, setDependants] = useState([]);
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
 
-  // State for Member Form
-  const [memberForm, setMemberForm] = useState({
+  const initialMemberFormState = {
     firstName: "",
     surname: "",
     unit: "",
@@ -106,12 +172,9 @@ const AddMember = () => {
     city: "",
     country: "",
     postalCode: "",
-  });
-  const memberFileInputRef = useRef(null);
-  const [memberPreview, setMemberPreview] = useState(null);
+  };
 
-  // State for Dependant Form
-  const [dependantForm, setDependantForm] = useState({
+  const initialDependantFormState = {
     firstName: "",
     surname: "",
     birthday: "",
@@ -119,9 +182,19 @@ const AddMember = () => {
     relationship: "",
     email: "",
     phone: "",
-  });
+  };
+
+  const [memberForm, setMemberForm] = useState(initialMemberFormState);
+  const memberFileInputRef = useRef(null);
+  const [memberPreview, setMemberPreview] = useState(null);
+
+  const [dependantForm, setDependantForm] = useState(initialDependantFormState);
   const dependantFileInputRef = useRef(null);
   const [dependantPreview, setDependantPreview] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const isOwnerLoaded = !!memberForm.firstName;
 
   const handleMemberFileChange = (event) => {
     const file = event.target.files[0];
@@ -156,7 +229,10 @@ const AddMember = () => {
   };
 
   const handleSaveMember = () => {
-    const requiredFields = ["firstName", "surname"];
+    const requiredFields = [
+      "firstName",
+      "surname" /* "unit", "address", "email", "phone" */,
+    ];
     const hasEmptyField = requiredFields.some(
       (field) => !memberForm[field]?.trim()
     );
@@ -165,22 +241,13 @@ const AddMember = () => {
       alert("Please fill in all required fields for the property owner.");
       return;
     }
-
     alert(
-      "Property owner successfully registered. You can now register dependants."
+      "Property owner successfully registered. You can now register dependants or search for existing members."
     );
-    setMember(memberForm);
-    setOwnerSaved(true);
   };
 
   const handleSaveDependant = () => {
-    const requiredFields = [
-      "firstName",
-      "surname",
-      /* "birthday",
-      "dateJoined", */
-      "relationship",
-    ];
+    const requiredFields = ["firstName", "surname", "relationship"];
     const hasEmptyField = requiredFields.some(
       (field) => !dependantForm[field]?.trim()
     );
@@ -191,14 +258,12 @@ const AddMember = () => {
     }
 
     if (editingDependantIndex !== null) {
-      // Update existing dependant
       const updatedDependants = [...dependants];
       updatedDependants[editingDependantIndex] = dependantForm;
       setDependants(updatedDependants);
-      setEditingDependantIndex(null); // Reset editing state
+      setEditingDependantIndex(null);
       alert("Dependant updated successfully!");
     } else {
-      // Add new dependant
       const isDuplicate = dependants.some(
         (d) =>
           d.firstName === dependantForm.firstName &&
@@ -210,26 +275,16 @@ const AddMember = () => {
         setDependants((prev) => [...prev, dependantForm]);
         alert("Dependant successfully registered!");
       } else {
-        alert("This dependant is already registered.");
+        alert("This dependant is already registered for this property owner.");
       }
     }
-
-    // Reset dependant form after successful submission/update
-    setDependantForm({
-      firstName: "",
-      surname: "",
-      birthday: "",
-      dateJoined: "",
-      relationship: "",
-      email: "",
-      phone: "",
-    });
+    setDependantForm(initialDependantFormState);
     setDependantPreview(null);
   };
 
   const handleEditDependant = (dependantToEdit, index) => {
-    if (!ownerSaved) {
-      alert("Please save the Property Owner first.");
+    if (!isOwnerLoaded) {
+      alert("Please save or load a Property Owner first.");
       return;
     }
     setDependantForm(dependantToEdit);
@@ -237,9 +292,70 @@ const AddMember = () => {
     setActiveTab("dependant");
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      alert("Please enter a search term (e.g., a dependant's name or email).");
+      return;
+    }
+
+    const foundFamily = familyData.find(
+      (family) =>
+        family.dependants.some(
+          (dep) =>
+            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
+        ) ||
+        family.propertyOwner.firstName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        family.propertyOwner.surname
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        family.propertyOwner.email
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+    );
+
+    if (foundFamily) {
+      setMemberForm(foundFamily.propertyOwner);
+      setDependants(foundFamily.dependants);
+      setEditingDependantIndex(null);
+
+      setActiveTab("member");
+      /* alert(`Family found for: ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname}`); */
+    } else {
+      alert("No family found matching your search criteria.");
+      /* setMember(null);
+      setMemberForm(initialMemberFormState);
+      setDependants([]);
+      setOwnerSaved(false);
+      setEditingDependantIndex(null); */
+    }
+    setSearchTerm("");
+  };
+
+  const handleNewMemberForm = () => {
+    setMemberForm(initialMemberFormState);
+    setMemberPreview(null);
+    setDependants([]);
+    setDependantForm(initialDependantFormState);
+    setDependantPreview(null);
+    setEditingDependantIndex(null);
+    setActiveTab("member");
+  };
+
   const tabs = [
     { id: "member", label: "Property Owner Registration", disabled: false },
-    { id: "dependant", label: "Dependant Registration", disabled: !ownerSaved },
+    {
+      id: "dependant",
+      label: "Dependant Registration",
+      disabled: !isOwnerLoaded,
+    },
   ];
 
   return (
@@ -254,16 +370,57 @@ const AddMember = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
+                {/* --- Search Bar --- */}
+                <div className="mt-3">
+                  <InputGroup className="input-group-alternative">
+                    <InputGroupAddon addonType="prepend">
+                      <InputGroupText>
+                        <BsSearch />
+                      </InputGroupText>
+                    </InputGroupAddon>
+                    <Input
+                      placeholder="Search dependant or owner (e.g., name, email)"
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          handleSearch();
+                        }
+                      }}
+                    />
+                    <Button
+                      color="primary"
+                      onClick={handleSearch}
+                      className="ml-2"
+                    >
+                      Search
+                    </Button>
+                  </InputGroup>
+                </div>
+                {/* --- End Search Bar --- */}
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {member && (
-                    <ListExistingItems.Item>
+                  {isOwnerLoaded ? (
+                    <ListExistingItems.Item
+                      onEdit={() => {
+                        setActiveTab("member");
+                      }}
+                      isOwner={true}
+                    >
                       <BsFillPersonFill className="mr-2" size={20} />
                       <span>
-                        {member.firstName} {member.surname} (property owner)
+                        {memberForm.firstName} {memberForm.surname} (property
+                        owner)
                       </span>
                     </ListExistingItems.Item>
+                  ) : (
+                    <span>  No property owner loaded. Search or add a new one. </span>
+                  )}
+
+                  {dependants.length > 0 && (
+                    <h5 className="mt-4 mb-2 text-muted">Dependants:</h5>
                   )}
                   {dependants.map((d, idx) => (
                     <ListExistingItems.Item
@@ -276,29 +433,33 @@ const AddMember = () => {
                       </span>
                     </ListExistingItems.Item>
                   ))}
+                      {isOwnerLoaded && (
+                    <ListExistingItems.Button className="mt-2">
+                      <Button
+                        className="border-0 shadow-0 m-0"
+                        onClick={() => {
+                          if (isOwnerLoaded) {
+                            setActiveTab("dependant");
+                            setDependantForm(initialDependantFormState);
+                            setDependantPreview(null);
+                            setEditingDependantIndex(null);
+                          } else {
+                            alert(
+                              "Please save the Property Owner first to add dependants."
+                            );
+                          }
+                        }}
+                      >
+                        + New dependant
+                      </Button>
+                    </ListExistingItems.Button>
+                  )}
                   <ListExistingItems.Button className="mt-4">
                     <Button
                       className="border-0 shadow-0 m-0"
-                      onClick={() => {
-                        if (ownerSaved) {
-                          setActiveTab("dependant");
-                          setDependantForm({
-                            firstName: "",
-                            surname: "",
-                            birthday: "",
-                            dateJoined: "",
-                            relationship: "",
-                            email: "",
-                            phone: "",
-                          });
-                          setDependantPreview(null);
-                          setEditingDependantIndex(null);
-                        } else {
-                          alert("Please save the Property Owner first.");
-                        }
-                      }}
+                      onClick={handleNewMemberForm}
                     >
-                      + New dependant
+                      Setup new property owner
                     </Button>
                   </ListExistingItems.Button>
                 </ListExistingItems.Root>
