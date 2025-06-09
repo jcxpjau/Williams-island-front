@@ -6,7 +6,7 @@
 
 * Product Page: https://www.creative-tim.com/product/argon-dashboard-react
 * Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
+* Licensed under MIT (https://github.com/creativetimofficial/argon-design-system-react/blob/master/LICENSE.md)
 
 * Coded by Creative Tim
 
@@ -15,8 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState, useRef } from "react";
-// reactstrap components
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -30,25 +29,38 @@ import {
   MdFastfood,
   MdOutlineFitnessCenter,
   MdPets,
-  MdSportsBasketball,
   MdSportsFootball,
 } from "react-icons/md";
-
-// core components
-import UserHeader from "components/Headers/UserHeader.js";
-import { RegistrationForm } from "components/RegistrationForm";
-import { ListExistingItems } from "components/ListExisting";
-import { BsFillPersonFill, BsHouseFill } from "react-icons/bs";
 import { FaCocktail, FaCoffee, FaHome, FaSpa } from "react-icons/fa";
 import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
 
+import UserHeader from "components/Headers/UserHeader.js";
+import { RegistrationForm } from "components/RegistrationForm";
+import { ListExistingItems } from "components/ListExisting";
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Select a category" },
+  { value: "poa", label: "Property Owners Association", icon: <FaHome size={16} /> },
+  { value: "sports", label: "Sports", icon: <MdSportsFootball size={16} /> },
+  { value: "restaurant", label: "Restaurant", icon: <MdFastfood size={16} /> },
+  { value: "cafe", label: "Cafe", icon: <FaCoffee size={16} /> },
+  { value: "bar", label: "Bar", icon: <FaCocktail size={16} /> },
+  { value: "pet", label: "Pets", icon: <MdPets size={16} /> },
+  { value: "spa", label: "Spa", icon: <FaSpa size={16} /> },
+  { value: "pool", label: "Pool", icon: <FaPersonSwimming size={16} /> },
+  { value: "fitness", label: "Fitness", icon: <MdOutlineFitnessCenter size={16} /> },
+  { value: "marina", label: "Marina", icon: <FaSailboat size={16} /> },
+];
+
 const AddFee = () => {
   const initialState = {
+    identifier: "",
     category: "",
     fee: "",
   };
   const [form, setForm] = useState(initialState);
-
+  const [fees, setFees] = useState([]);
+  const [editingFeeIndex, setEditingFeeIndex] = useState(null); 
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prevData) => ({
@@ -57,8 +69,50 @@ const AddFee = () => {
     }));
   };
 
+  const handleSaveFee = () => {
+    if (!form.category || !form.fee) {
+      alert("Please fill in all required fields (Category and Value).");
+      return;
+    }
+
+    const feeValue = parseFloat(form.fee);
+    if (isNaN(feeValue) || feeValue < 0) {
+      alert("Please enter a valid positive number for the Fee Value.");
+      return;
+    }
+
+    if (editingFeeIndex !== null) {
+      const updatedFees = [...fees];
+      updatedFees[editingFeeIndex] = { ...form, fee: feeValue }; 
+      setFees(updatedFees);
+      alert("Fee updated successfully!");
+    } else {
+      const isDuplicate = fees.some(
+        (f) => f.category === form.category
+      );
+
+      if (isDuplicate) {
+        alert(`A fee for "${CATEGORY_OPTIONS.find(opt => opt.value === form.category)?.label}" already exists. Please edit the existing one.`);
+        return;
+      }
+      setFees((prev) => [...prev, { ...form, fee: feeValue }]); 
+      alert("Fee successfully registered!");
+    }
+
+    handleResetForm();
+  };
+
+  const handleEditFee = (feeToEdit, index) => {
+    setForm({
+      category: feeToEdit.category,
+      fee: feeToEdit.fee.toString(), 
+    });
+    setEditingFeeIndex(index); 
+  };
+
   const handleResetForm = () => {
     setForm(initialState);
+    setEditingFeeIndex(null); 
   };
 
   return (
@@ -73,20 +127,24 @@ const AddFee = () => {
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
-                <h3 className="mb-0">Edit fees </h3>
+                <h3 className="mb-0">Edit fees</h3>
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  <ListExistingItems.Item>
-                    Food & Beverage fee
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    Pet walking fee
-                  </ListExistingItems.Item>
-                  <ListExistingItems.Item>Courtyard fee</ListExistingItems.Item>
-                  <ListExistingItems.Item>
-                    Playground fee
-                  </ListExistingItems.Item>
+                 {fees.length === 0 ? (
+                    <span> No fees registered yet. </span>
+                  ) : (
+                    fees.map((fee, index) => (
+                      <ListExistingItems.Item
+                        key={index}
+                        onEdit={() => handleEditFee(fee, index)}
+                      >
+                        <span>
+                          {fee.identifier} ({fee.fee}%)
+                        </span>
+                      </ListExistingItems.Item>
+                    ))
+                  )}
                   <ListExistingItems.Button className="mt-4">
                     <Button
                       className="border-0 shadow-0 m-0"
@@ -103,12 +161,23 @@ const AddFee = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
-                  <h3 className="mb-0"> Fee Registration </h3>
+                  <h3 className="mb-0">
+                    {editingFeeIndex !== null ? "Edit Fee" : "Fee Registration"}
+                  </h3>
                 </Col>
               </CardHeader>
               <CardBody>
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title="Fee details">
+                    <RegistrationForm.Field
+                      id="identifier"
+                      label="Identifier"
+                      type="text"
+                      lg={12}
+                      placeholder="Fee name"
+                      value={form.identifier}
+                      onChange={handleChange}
+                    />
                     <RegistrationForm.Field
                       id="category"
                       label="Category"
@@ -117,62 +186,7 @@ const AddFee = () => {
                       placeholder="Category"
                       value={form.category}
                       onChange={handleChange}
-                      options={[
-                        {
-                          value: "",
-                          label: "Select a category",
-                        },
-                        {
-                          value: "poa",
-                          label: "Property Owners Association",
-                          icon: <FaHome size={16} />,
-                        },
-                        {
-                          value: "sports",
-                          label: "Sports",
-                          icon: <MdSportsFootball size={16} />,
-                        },
-                        {
-                          value: "restaurant",
-                          label: "Restaurant",
-                          icon: <MdFastfood size={16} />,
-                        },
-                        {
-                          value: "cafe",
-                          label: "Cafe",
-                          icon: <FaCoffee size={16} />,
-                        },
-                        {
-                          value: "bar",
-                          label: "Bar",
-                          icon: <FaCocktail size={16} />,
-                        },
-                        {
-                          value: "pet",
-                          label: "Pets",
-                          icon: <MdPets size={16} />,
-                        },
-                        {
-                          value: "spa",
-                          label: "Spa",
-                          icon: <FaSpa size={16} />,
-                        },
-                        {
-                          value: "pool",
-                          label: "Pool",
-                          icon: <FaPersonSwimming size={16} />,
-                        },
-                        {
-                          value: "fitness",
-                          label: "Fitness",
-                          icon: <MdOutlineFitnessCenter size={16} />,
-                        },
-                        {
-                          value: "marina",
-                          label: "Marina",
-                          icon: <FaSailboat size={16} />,
-                        },
-                      ]}
+                      options={CATEGORY_OPTIONS}
                     />
 
                     <RegistrationForm.Field
@@ -180,13 +194,13 @@ const AddFee = () => {
                       label="Value (%)"
                       type="number"
                       lg={4}
-                      placeholder="0.0%"
+                      placeholder="0.0"
                       value={form.fee}
                       onChange={handleChange}
                     />
                   </RegistrationForm.Section>
 
-                  <RegistrationForm.SubmitBtn />
+                  <RegistrationForm.SubmitBtn onClick={handleSaveFee} />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>
