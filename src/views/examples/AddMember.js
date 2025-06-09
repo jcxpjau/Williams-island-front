@@ -29,10 +29,10 @@ import {
   NavItem,
   TabContent,
   TabPane,
-  InputGroup, // Import InputGroup for search bar styling
-  InputGroupAddon, // Import InputGroupAddon
-  InputGroupText, // Import InputGroupText
-  Input, // Import Input
+  InputGroup, 
+  InputGroupAddon, 
+  InputGroupText, 
+  Input, 
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -42,7 +42,7 @@ import {
   BsTelephone,
   BsPinMap,
   BsEnvelope,
-  BsSearch, // Import search icon
+  BsSearch,
 } from "react-icons/bs";
 
 import UserHeader from "components/Headers/UserHeader.js";
@@ -156,9 +156,9 @@ const getIconForRelationship = (rel) => {
 
 const AddMember = () => {
   const [activeTab, setActiveTab] = useState("member");
+  // dependant control states
   const [dependants, setDependants] = useState([]);
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
-
   const initialMemberFormState = {
     firstName: "",
     surname: "",
@@ -173,7 +173,7 @@ const AddMember = () => {
     country: "",
     postalCode: "",
   };
-
+  
   const initialDependantFormState = {
     firstName: "",
     surname: "",
@@ -183,19 +183,20 @@ const AddMember = () => {
     email: "",
     phone: "",
   };
-
-  const [memberForm, setMemberForm] = useState(initialMemberFormState);
-  const memberFileInputRef = useRef(null);
-  const [memberPreview, setMemberPreview] = useState(null);
-
   const [dependantForm, setDependantForm] = useState(initialDependantFormState);
   const dependantFileInputRef = useRef(null);
   const [dependantPreview, setDependantPreview] = useState(null);
-
+  
+  // member control states
+  const [memberForm, setMemberForm] = useState(initialMemberFormState);
+  const memberFileInputRef = useRef(null);
+  const [memberPreview, setMemberPreview] = useState(null);
+  const [isOwnerLoaded, setIsOwnerLoaded] = useState(false);
+  
+  // search control states
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isOwnerLoaded = !!memberForm.firstName;
-
+  // Dependent & owner controls
   const handleMemberFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -244,6 +245,7 @@ const AddMember = () => {
     alert(
       "Property owner successfully registered. You can now register dependants or search for existing members."
     );
+    setIsOwnerLoaded(true);
   };
 
   const handleSaveDependant = () => {
@@ -292,6 +294,7 @@ const AddMember = () => {
     setActiveTab("dependant");
   };
 
+  // Searchbar handlers
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -301,15 +304,12 @@ const AddMember = () => {
       alert("Please enter a search term (e.g., a dependant's name or email).");
       return;
     }
+    let foundOwner = null;
+    let foundDependant = null;
+    let foundFamily = null;
 
-    const foundFamily = familyData.find(
+    foundOwner = familyData.find(
       (family) =>
-        family.dependants.some(
-          (dep) =>
-            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
-        ) ||
         family.propertyOwner.firstName
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
@@ -319,26 +319,66 @@ const AddMember = () => {
         family.propertyOwner.email
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
-    );
+    )?.propertyOwner;
 
-    if (foundFamily) {
-      setMemberForm(foundFamily.propertyOwner);
-      setDependants(foundFamily.dependants);
+    if (!foundOwner) {
+      foundFamily = familyData.find((family) =>
+        family.dependants.some(
+          (dep) =>
+            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      if (foundFamily) {
+        foundDependant = foundFamily.dependants.find(
+          (dep) =>
+            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+    }
+
+    if (foundOwner) {
+      setMemberForm(foundOwner); 
+      setDependants(
+        familyData.find((f) => f.propertyOwner === foundOwner).dependants
+      ); 
       setEditingDependantIndex(null);
-
       setActiveTab("member");
-      /* alert(`Family found for: ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname}`); */
+      alert(
+        `Property owner found: ${foundOwner.firstName} ${foundOwner.surname}`
+      );
+    } else if (foundDependant && foundFamily) {
+      setMemberForm(foundFamily.propertyOwner); 
+      setDependants(foundFamily.dependants); 
+      const indexToEdit = foundFamily.dependants.findIndex(
+        (dep) =>
+          dep.firstName.toLowerCase() ===
+            foundDependant.firstName.toLowerCase() &&
+          dep.surname.toLowerCase() === foundDependant.surname.toLowerCase()
+      );
+      setDependantForm(foundDependant); 
+      setEditingDependantIndex(indexToEdit !== -1 ? indexToEdit : null); 
+      setActiveTab("dependant"); 
+      alert(
+        `Dependant found: ${foundDependant.firstName} ${foundDependant.surname} (Associated property owner: ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname})`
+      );
     } else {
-      alert("No family found matching your search criteria.");
-      /* setMember(null);
+      alert(
+        "No members found"
+      );
+     /* 
       setMemberForm(initialMemberFormState);
       setDependants([]);
-      setOwnerSaved(false);
+      setDependantForm(initialDependantFormState);
       setEditingDependantIndex(null); */
     }
     setSearchTerm("");
   };
 
+  // Reseting handler
   const handleNewMemberForm = () => {
     setMemberForm(initialMemberFormState);
     setMemberPreview(null);
@@ -363,6 +403,7 @@ const AddMember = () => {
       <UserHeader
         title="Add Member"
         description="In this page you can add a new member or change their information."
+        height='600px'
       />
       <Container className="mt--7" fluid>
         <Row>
@@ -416,7 +457,10 @@ const AddMember = () => {
                       </span>
                     </ListExistingItems.Item>
                   ) : (
-                    <span>  No property owner loaded. Search or add a new one. </span>
+                    <span>
+                      {" "}
+                      No property owner loaded. Search or add a new one.{" "}
+                    </span>
                   )}
 
                   {dependants.length > 0 && (
@@ -433,7 +477,7 @@ const AddMember = () => {
                       </span>
                     </ListExistingItems.Item>
                   ))}
-                      {isOwnerLoaded && (
+                  {isOwnerLoaded && (
                     <ListExistingItems.Button className="mt-2">
                       <Button
                         className="border-0 shadow-0 m-0"
