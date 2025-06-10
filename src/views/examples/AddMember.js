@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Button,
   Card,
@@ -29,10 +29,10 @@ import {
   NavItem,
   TabContent,
   TabPane,
-  InputGroup, 
-  InputGroupAddon, 
-  InputGroupText, 
-  Input, 
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  Input,
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -43,14 +43,17 @@ import {
   BsPinMap,
   BsEnvelope,
   BsSearch,
+  BsPersonFill,
+  BsCalendar,
 } from "react-icons/bs";
 
-import UserHeader from "components/Headers/UserHeader.js";
+//import UserHeader from "components/Headers/UserHeader.js";
+import Header from "components/Headers/Header";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { FaChild } from "react-icons/fa";
 import { GiBigDiamondRing } from "react-icons/gi";
-import { MdFamilyRestroom } from "react-icons/md";
+import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 
 const familyData = [
   {
@@ -173,7 +176,7 @@ const AddMember = () => {
     country: "",
     postalCode: "",
   };
-  
+
   const initialDependantFormState = {
     firstName: "",
     surname: "",
@@ -186,15 +189,18 @@ const AddMember = () => {
   const [dependantForm, setDependantForm] = useState(initialDependantFormState);
   const dependantFileInputRef = useRef(null);
   const [dependantPreview, setDependantPreview] = useState(null);
-  
+
   // member control states
   const [memberForm, setMemberForm] = useState(initialMemberFormState);
   const memberFileInputRef = useRef(null);
   const [memberPreview, setMemberPreview] = useState(null);
   const [isOwnerLoaded, setIsOwnerLoaded] = useState(false);
-  
+
   // search control states
   const [searchTerm, setSearchTerm] = useState("");
+
+  // state for header cards
+  const [headerCards, setHeaderCards] = useState([]);
 
   // Dependent & owner controls
   const handleMemberFileChange = (event) => {
@@ -294,6 +300,56 @@ const AddMember = () => {
     setActiveTab("dependant");
   };
 
+  // Helper function to calculate years and days
+  const calculateYearsAndDays = (startDateString) => {
+    if (!startDateString) return { years: 0, days: 0 };
+    const startDate = new Date(startDateString);
+    const today = new Date();
+    const diffTime = Math.abs(today - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const years = Math.floor(diffDays / 365);
+    const remainingDays = diffDays % 365;
+
+    return { years, days: remainingDays };
+  };
+
+  useEffect(() => {
+    if (memberForm && memberForm.dateJoined) {
+      const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
+      setHeaderCards([
+        {
+          title: "Property owner",
+          value: `${memberForm.firstName} ${memberForm.surname}`,
+          Icon: BsPersonFill,
+          iconBg: "bg-primary",
+          footerText: false,
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: `Unit ${memberForm.unit}`,
+        },
+        {
+          title: "Member for",
+          value: `${years} Yrs, ${days} Days`,
+          Icon: BsCalendar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: `since ${memberForm.dateJoined}`,
+        },
+        {
+          title: "Number of Dependants",
+          value: dependants.length,
+          Icon: MdOutlineFamilyRestroom,
+          iconBg: "bg-info",
+          footerText: false,
+        },
+      ]);
+    } else {
+      setHeaderCards([]);
+    }
+  }, [memberForm, dependants]);
+
   // Searchbar handlers
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -341,35 +397,35 @@ const AddMember = () => {
     }
 
     if (foundOwner) {
-      setMemberForm(foundOwner); 
+      setIsOwnerLoaded(true);
+      setMemberForm(foundOwner);
       setDependants(
         familyData.find((f) => f.propertyOwner === foundOwner).dependants
-      ); 
+      );
       setEditingDependantIndex(null);
       setActiveTab("member");
       alert(
         `Property owner found: ${foundOwner.firstName} ${foundOwner.surname}`
       );
     } else if (foundDependant && foundFamily) {
-      setMemberForm(foundFamily.propertyOwner); 
-      setDependants(foundFamily.dependants); 
+      setIsOwnerLoaded(true);
+      setMemberForm(foundFamily.propertyOwner);
+      setDependants(foundFamily.dependants);
       const indexToEdit = foundFamily.dependants.findIndex(
         (dep) =>
           dep.firstName.toLowerCase() ===
             foundDependant.firstName.toLowerCase() &&
           dep.surname.toLowerCase() === foundDependant.surname.toLowerCase()
       );
-      setDependantForm(foundDependant); 
-      setEditingDependantIndex(indexToEdit !== -1 ? indexToEdit : null); 
-      setActiveTab("dependant"); 
+      setDependantForm(foundDependant);
+      setEditingDependantIndex(indexToEdit !== -1 ? indexToEdit : null);
+      setActiveTab("dependant");
       alert(
         `Dependant found: ${foundDependant.firstName} ${foundDependant.surname} (Associated property owner: ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname})`
       );
     } else {
-      alert(
-        "No members found"
-      );
-     /* 
+      alert("No members found");
+      /* 
       setMemberForm(initialMemberFormState);
       setDependants([]);
       setDependantForm(initialDependantFormState);
@@ -400,10 +456,11 @@ const AddMember = () => {
 
   return (
     <>
-      <UserHeader
+      <Header
         title="Add Member"
         description="In this page you can add a new member or change their information."
-        height='600px'
+        height="600px"
+        cards={headerCards}
       />
       <Container className="mt--7" fluid>
         <Row>
