@@ -45,6 +45,7 @@ import {
   BsSearch,
   BsPersonFill,
   BsCalendar,
+  BsCurrencyDollar,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -343,6 +344,15 @@ const AddMember = () => {
           Icon: MdOutlineFamilyRestroom,
           iconBg: "bg-info",
           footerText: false,
+        },
+         {
+          title: "Expenses",
+          value: '$2740',
+          Icon: BsCurrencyDollar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: 'in the last three months',
         },
       ]);
     } else {
