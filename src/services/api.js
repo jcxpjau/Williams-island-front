@@ -1,9 +1,9 @@
-import axios from 'axios'
-import { store } from './store'
-import { logout } from './context/auth/authSlice'
+import axios, { InternalAxiosRequestConfig } from 'axios';
+import { store } from 'store';
+import { logout } from 'context/auth/authSlice';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: process.env.REACT_APP_API_URL,
   headers: {
     'Content-Type': 'application/json'
   }

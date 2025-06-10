@@ -13,13 +13,32 @@ import {
   Col,
 } from "reactstrap";
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-
+import api from "services/api";
+import { useAuth } from "context/auth/authHooks";
 
 const Login = () => {
-
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  async function LoginAuth(e) {
+    e.preventDefault();
+    try {
+      const res = await api.post("auth/login", { email, password });
+      console.log(res)
+      if (res.data.access_token) {
+        login(res.data.access_token, rememberMe);
+        navigate(null, "/admin/index");
+      }
+    } catch(err){
+      console.log(err)
+    }
+  } 
+
   return (
     <>
       <Col lg="5" md="7">
@@ -28,7 +47,7 @@ const Login = () => {
             <div className="text-center text-white mb-4">
               <p>Sign in with credentials</p>
             </div>
-            <Form role="form">
+            <Form role="form" onSubmit={LoginAuth}>
               <FormGroup className="mb-3">
                 <InputGroup className="input-group-alternative">
                   <InputGroupAddon addonType="prepend">
@@ -36,9 +55,11 @@ const Login = () => {
                       <i className="ni ni-email-83" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input  
+                  <Input
                     placeholder="Email"
                     type="email"
+                    value={email}
+                    onChange={(e)=>setEmail(e.target.value)}
                     autoComplete="new-email"
                   />
                 </InputGroup>
@@ -54,6 +75,8 @@ const Login = () => {
                     placeholder="Password"
                     type="password"
                     autoComplete="new-password"
+                    value={password}
+                    onChange={(e)=>setPassword(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -62,6 +85,8 @@ const Login = () => {
                   className="custom-control-input"
                   id=" customCheckLogin"
                   type="checkbox"
+                  checked={rememberMe}
+                  onClick={()=>setRememberMe(!rememberMe)}
                 />
                 <label
                   className="custom-control-label"
@@ -71,7 +96,11 @@ const Login = () => {
                 </label>
               </div>
               <div className="text-center">
-                <Button className="my-4" color="secondary" type="button" onClick={() => navigate( "/admin/index" )}>
+                <Button
+                  className="my-4"
+                  color="secondary"
+                  type="submit"
+                >
                   Sign in
                 </Button>
               </div>
@@ -85,15 +114,15 @@ const Login = () => {
               href="#pablo"
               onClick={(e) => e.preventDefault()}
             >
-              <small style={{"color":"#172b4d"}}>Forgot password?</small>
+              <small style={{ color: "#172b4d" }}>Forgot password?</small>
             </a>
           </Col>
           <Col className="text-right" xs="6">
             <a
               className="text-light"
-              onClick={ () => navigate( "/auth/register" )}
+              onClick={() => navigate("/auth/register")}
             >
-              <small style={{"color":"#172b4d"}}>Create new account</small>
+              <small style={{ color: "#172b4d" }}>Create new account</small>
             </a>
           </Col>
         </Row>
