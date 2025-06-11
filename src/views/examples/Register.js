@@ -12,7 +12,7 @@ import {
   Row,
   Col,
 } from "reactstrap";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,25 +28,37 @@ const Register = () => {
               <FormGroup>
                 <InputGroup className="input-group-alternative mb-3">
                   <InputGroupAddon addonType="prepend">
-                    <InputGroupText>
-                      <i className="ni ni-hat-3" />
-                    </InputGroupText>
+                    <InputGroupText></InputGroupText>
                   </InputGroupAddon>
-                  <Input placeholder="Name" type="text" />
+                  <Input placeholder="First name" type="text" />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
                 <InputGroup className="input-group-alternative mb-3">
                   <InputGroupAddon addonType="prepend">
-                    <InputGroupText>
-                      <i className="ni ni-email-83" />
-                    </InputGroupText>
+                    <InputGroupText></InputGroupText>
+                  </InputGroupAddon>
+                  <Input placeholder="Surame" type="text" />
+                </InputGroup>
+              </FormGroup>
+              <FormGroup>
+                <InputGroup className="input-group-alternative mb-3">
+                  <InputGroupAddon addonType="prepend">
+                    <InputGroupText></InputGroupText>
                   </InputGroupAddon>
                   <Input
                     placeholder="Email"
                     type="email"
                     autoComplete="new-email"
                   />
+                </InputGroup>
+              </FormGroup>
+              <FormGroup>
+                <InputGroup className="input-group-alternative mb-3">
+                  <InputGroupAddon addonType="prepend">
+                    <InputGroupText></InputGroupText>
+                  </InputGroupAddon>
+                  <Input placeholder="Phone number" type="phone" />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -63,12 +75,12 @@ const Register = () => {
                   />
                 </InputGroup>
               </FormGroup>
-              <div className="text-muted font-italic">
+              {/* <div className="text-muted font-italic">
                 <small>
                   password strength:{" "}
                   <span className="text-success font-weight-700">strong</span>
                 </small>
-              </div>
+              </div> */}
               <Row className="my-4">
                 <Col xs="12">
                   <div className="custom-control custom-control-alternative custom-checkbox">
@@ -83,7 +95,10 @@ const Register = () => {
                     >
                       <span className="text-muted">
                         I agree with the{" "}
-                        <a href="https://avent7.com.br/#privacy-policy"  target="_blank">
+                        <a
+                          href="https://avent7.com.br/#privacy-policy"
+                          target="_blank"
+                        >
                           Privacy Policy
                         </a>
                       </span>
@@ -92,7 +107,12 @@ const Register = () => {
                 </Col>
               </Row>
               <div className="text-center">
-                <Button className="mt-4" color="primary" type="button" onClick={() => navigate('/auth/login')}>
+                <Button
+                  className="mt-4"
+                  color="primary"
+                  type="button"
+                  onClick={() => navigate("/auth/login")}
+                >
                   Create account
                 </Button>
               </div>

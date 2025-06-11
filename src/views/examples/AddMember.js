@@ -33,6 +33,9 @@ import {
   InputGroupAddon,
   InputGroupText,
   Input,
+  Modal,
+  ModalHeader,
+  ModalBody,
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -203,6 +206,19 @@ const AddMember = () => {
   // state for header cards
   const [headerCards, setHeaderCards] = useState([]);
 
+  // modal state
+  const [modal, setModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalBody, setModalBody] = useState("");
+
+  //Modal controls
+
+  const resetModal = () => {
+    setModal(!modal);
+    setModalTitle("");
+    setModalBody("");
+  };
+
   // Dependent & owner controls
   const handleMemberFileChange = (event) => {
     const file = event.target.files[0];
@@ -245,12 +261,17 @@ const AddMember = () => {
       (field) => !memberForm[field]?.trim()
     );
 
+    setModal(true);
     if (hasEmptyField) {
-      alert("Please fill in all required fields for the property owner.");
+      setModalTitle("Incomplete register.");
+      setModalBody(
+        "Please fill in all required fields for the property owner."
+      );
       return;
     }
-    alert(
-      "Property owner successfully registered. You can now register dependants or search for existing members."
+    setModalTitle("Property owner successfully registered.");
+    setModalBody(
+      "You can now register dependants or search for existing members."
     );
     setIsOwnerLoaded(true);
   };
@@ -261,8 +282,10 @@ const AddMember = () => {
       (field) => !dependantForm[field]?.trim()
     );
 
+    setModal(true);
     if (hasEmptyField) {
-      alert("Please fill in all required fields for the dependant.");
+      setModalTitle("Incomplete register.");
+      setModalBody("Please fill in all required fields for the dependant");
       return;
     }
 
@@ -271,7 +294,11 @@ const AddMember = () => {
       updatedDependants[editingDependantIndex] = dependantForm;
       setDependants(updatedDependants);
       setEditingDependantIndex(null);
-      alert("Dependant updated successfully!");
+      setModal(true);
+      setModalTitle("Dependant updated");
+      setModalBody(
+        "The registration information for this dependant was sucessfully updated"
+      );
     } else {
       const isDuplicate = dependants.some(
         (d) =>
@@ -282,18 +309,27 @@ const AddMember = () => {
 
       if (!isDuplicate) {
         setDependants((prev) => [...prev, dependantForm]);
-        alert("Dependant successfully registered!");
+        setModalTitle("Dependant sucessfully registered!");
+        setModalBody(
+          "You can edit their details by clicking the pencil icon next to their name if you need"
+        );
       } else {
-        alert("This dependant is already registered for this property owner.");
+        setModalTitle("Duplicated dependant");
+        setModalBody(
+          "There is already a dependant with the same name and relationship to the property owner. You can verify this in the list of dependants on the column to the right"
+        );
       }
     }
     setDependantForm(initialDependantFormState);
     setDependantPreview(null);
+    setModal(true);
   };
 
   const handleEditDependant = (dependantToEdit, index) => {
     if (!isOwnerLoaded) {
-      alert("Please save or load a Property Owner first.");
+      setModal(true);
+      setModalTitle("Property owner not registered");
+      setModalBody("Please save or load a property owner first.");
       return;
     }
     setDependantForm(dependantToEdit);
@@ -345,14 +381,14 @@ const AddMember = () => {
           iconBg: "bg-info",
           footerText: false,
         },
-         {
+        {
           title: "Expenses",
-          value: '$2740',
+          value: "$2740",
           Icon: BsCurrencyDollar,
           iconBg: "bg-success",
           footerText: true,
           footerColor: "text-black",
-          footerNote: 'in the last three months',
+          footerNote: "in the last three months",
         },
       ]);
     } else {
@@ -367,7 +403,11 @@ const AddMember = () => {
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
-      alert("Please enter a search term (e.g., a dependant's name or email).");
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody(
+        "Please enter a search term (e.g., a dependant's name or email)."
+      );
       return;
     }
     let foundOwner = null;
@@ -405,7 +445,7 @@ const AddMember = () => {
         );
       }
     }
-
+    setModal(true);
     if (foundOwner) {
       setIsOwnerLoaded(true);
       setMemberForm(foundOwner);
@@ -414,8 +454,11 @@ const AddMember = () => {
       );
       setEditingDependantIndex(null);
       setActiveTab("member");
-      alert(
-        `Property owner found: ${foundOwner.firstName} ${foundOwner.surname}`
+      setModalTitle(
+        `Property owner found:  ${foundOwner.firstName} ${foundOwner.surname}`
+      );
+      setModalBody(
+        `We have loaded their data to the form. You can edit fields as you wish`
       );
     } else if (foundDependant && foundFamily) {
       setIsOwnerLoaded(true);
@@ -430,11 +473,17 @@ const AddMember = () => {
       setDependantForm(foundDependant);
       setEditingDependantIndex(indexToEdit !== -1 ? indexToEdit : null);
       setActiveTab("dependant");
-      alert(
-        `Dependant found: ${foundDependant.firstName} ${foundDependant.surname} (Associated property owner: ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname})`
+      setModalTitle(
+        `Dependant found: ${foundDependant.firstName} ${foundDependant.surname} `
+      );
+      setModalBody(
+        `This dependant is associated with the property owne ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname}. We have loaded their data to the form. You can edit fields as you wish`
       );
     } else {
-      alert("No members found");
+      setModalTitle("No members found");
+      setModalBody(
+        "Check your search terms for spelling or search for another name"
+      );
       /* 
       setMemberForm(initialMemberFormState);
       setDependants([]);
@@ -555,8 +604,10 @@ const AddMember = () => {
                             setDependantPreview(null);
                             setEditingDependantIndex(null);
                           } else {
-                            alert(
-                              "Please save the Property Owner first to add dependants."
+                            setModal(true);
+                            setModalTitle("Property owner not registered");
+                            setModalBody(
+                              "Please save or load a property owner first."
                             );
                           }
                         }}
@@ -591,7 +642,11 @@ const AddMember = () => {
                             if (!tab.disabled) {
                               setActiveTab(tab.id);
                             } else {
-                              alert("Please save the Property Owner first.");
+                              setModal(true);
+                              setModalTitle("Property owner not registered");
+                              setModalBody(
+                                "Please save or load a property owner first."
+                              );
                             }
                           }}
                           style={{
@@ -819,6 +874,21 @@ const AddMember = () => {
           </Col>
         </Row>
       </Container>
+
+      <Modal isOpen={modal} toggle={resetModal} centered className="modal-lg">
+        <ModalHeader
+          toggle={resetModal}
+          className="bg-primary d-flex align-items-center justify-content-center"
+        >
+          <h3 className="text-white fs-3 fw-bold m-0 w-100 text-center">
+            {modalTitle}
+          </h3>
+        </ModalHeader>
+
+        <ModalBody>
+          <div className="fs-5 py-4">{modalBody}</div>
+        </ModalBody>
+      </Modal>
     </>
   );
 };
