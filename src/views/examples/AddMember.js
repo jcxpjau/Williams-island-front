@@ -33,9 +33,6 @@ import {
   InputGroupAddon,
   InputGroupText,
   Input,
-  Modal,
-  ModalHeader,
-  ModalBody,
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -58,6 +55,7 @@ import { ListExistingItems } from "components/ListExisting";
 import { FaChild } from "react-icons/fa";
 import { GiBigDiamondRing } from "react-icons/gi";
 import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
+import { ModalCustom as Modal } from "components/MessagePopUp";
 
 const familyData = [
   {
@@ -875,20 +873,10 @@ const AddMember = () => {
         </Row>
       </Container>
 
-      <Modal isOpen={modal} toggle={resetModal} centered className="modal-lg">
-        <ModalHeader
-          toggle={resetModal}
-          className="bg-primary d-flex align-items-center justify-content-center"
-        >
-          <h3 className="text-white fs-3 fw-bold m-0 w-100 text-center">
-            {modalTitle}
-          </h3>
-        </ModalHeader>
-
-        <ModalBody>
-          <div className="fs-5 py-4">{modalBody}</div>
-        </ModalBody>
-      </Modal>
+      <Modal.Root isOpen={modal} toggle={resetModal}>
+        <Modal.Header toggle={resetModal} title={modalTitle} />
+        <Modal.Body>{modalBody}</Modal.Body>
+      </Modal.Root>
     </>
   );
 };
