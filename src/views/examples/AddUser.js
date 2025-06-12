@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState } from "react"; 
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -33,26 +33,56 @@ import {
   BsAt,
   BsHash,
   BsPersonVcard,
-  BsPhone, 
+  BsPhone,
   BsShield,
   BsTelephone,
 } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
-import { FaBlackTie } from "react-icons/fa"; 
+import api from "services/api";
 
 const AddUser = () => {
   const initialState = {
-    firstName: "",
+    email: "",
+    name: "",
     surname: "",
     phone: "",
-    email: "",
     password: "",
-    permissions: "",
+    type: "",
   };
 
   const [form, setForm] = useState(initialState);
   const [users, setUsers] = useState([]);
   const [editingUserIndex, setEditingUserIndex] = useState(null);
+
+  console.log(users);
+
+  useEffect(() => {
+    console.log("effect");
+    const fetchUsers = async () => {
+      try {
+        const { data } = await api.get("users");
+        //console.log(data);
+        if (!data || data.length == 0) {
+          return;
+        }
+
+        const mappedData = data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          surname: item.surname,
+          phone: item.phone,
+          email: item.email,
+          password: item.password,
+          type: item.type,
+        }));
+        setUsers(mappedData);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -61,12 +91,12 @@ const AddUser = () => {
 
   const handleSaveUser = () => {
     if (
-      !form.firstName ||
+      !form.name ||
       !form.surname ||
       !form.phone ||
       !form.email ||
       !form.password ||
-      !form.permissions
+      !form.type
     ) {
       alert("Please fill in all required fields.");
       return;
@@ -75,30 +105,34 @@ const AddUser = () => {
     if (editingUserIndex !== null) {
       const updatedUsers = [...users];
       updatedUsers[editingUserIndex] = form;
-      setUsers(updatedUsers);
-      alert("User updated successfully!");
+      //setUsers(updatedUsers);
+
+      //alert("User updated successfully!");
     } else {
-      const isDuplicate = users.some((user) => user.email === form.email);
+      const fetchUsers = async () => {
+        try {
+          const { data } = await api.post("users", form);
+          //console.log("registered!")
+          setUsers((prev) => [...prev, form]);
+        } catch (err) {
+          console.log(err);
+        }
+      };
 
-      if (isDuplicate) {
-        alert("A user with this email already exists.");
-        return;
-      }
-
-      setUsers((prev) => [...prev, form]);
-      alert("User successfully registered!");
+      fetchUsers();
+      //alert("User successfully registered!");
     }
     handleResetForm();
   };
 
   const handleEditUser = (userToEdit, index) => {
     setForm(userToEdit);
-    setEditingUserIndex(index); 
+    setEditingUserIndex(index);
   };
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingUserIndex(null); 
+    setEditingUserIndex(null);
   };
 
   return (
@@ -125,9 +159,8 @@ const AddUser = () => {
                         key={index}
                         onEdit={() => handleEditUser(user, index)}
                       >
-                      
                         <span>
-                          {user.firstName} {user.surname}
+                          {user.name} {user.surname}
                         </span>
                       </ListExistingItems.Item>
                     ))
@@ -150,7 +183,9 @@ const AddUser = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingUserIndex !== null ? "Edit User" : "User Registration"}
+                    {editingUserIndex !== null
+                      ? "Edit User"
+                      : "User Registration"}
                   </h3>
                 </Col>
               </CardHeader>
@@ -159,11 +194,11 @@ const AddUser = () => {
                   <RegistrationForm.Section title="Personal information">
                     <RegistrationForm.Field
                       label="First name"
-                      id="firstName"
-                      value={form.firstName}
+                      id="name"
+                      value={form.name}
                       placeholder="First name"
                       type="text"
-                      onChange={handleChange} 
+                      onChange={handleChange}
                       lg={6}
                       icon={<BsPersonVcard className="mr-2" size={20} />}
                     />
@@ -196,7 +231,7 @@ const AddUser = () => {
                       value={form.email}
                       placeholder=""
                       type="email"
-                      onChange={handleChange} 
+                      onChange={handleChange}
                       icon={<BsAt className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
@@ -208,21 +243,21 @@ const AddUser = () => {
                       value={form.password}
                       placeholder=""
                       type="password"
-                      onChange={handleChange} 
+                      onChange={handleChange}
                       lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
                     />
                     <RegistrationForm.Field
-                      label="Permissions"
-                      id="permissions"
-                      value={form.permissions}
+                      label="Type"
+                      id="type"
+                      value={form.type}
                       placeholder=""
                       type="select"
                       options={[
-                        { value: "", label: "Select permissions" },
+                        { value: "", label: "Select user type" },
                         { value: "admin", label: "Admin" },
                       ]}
-                      onChange={handleChange} 
+                      onChange={handleChange}
                       lg={6}
                       icon={<BsShield className="mr-2" size={20} />}
                     />
