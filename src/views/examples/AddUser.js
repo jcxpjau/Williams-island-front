@@ -33,6 +33,7 @@ import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
 import { ModalCustom as Modal } from "components/MessagePopUp";
+import { setUser } from "context/auth/authSlice";
 
 const AddUser = () => {
   const initialState = {
@@ -45,17 +46,24 @@ const AddUser = () => {
     type: "",
   };
 
+  // control form
   const [form, setForm] = useState(initialState);
-  const [users, setUsers] = useState([]);
+  // control editing and deleting
   const [editingUserIndex, setEditingUserIndex] = useState(-1);
+  const [deletingUserIndex, setDeletingUserIndex] = useState(-1);
+  // control hidden password
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState(null);
+  // control user list
+  const [users, setUsers] = useState([]);
+  // save logged user
   const [loggedUserInfo, setLoggedUserInfo] = useState();
 
   // modal state
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -96,6 +104,11 @@ const AddUser = () => {
     fetchMe();
   }, []);
 
+  useEffect(() => {
+    setCurrentPassword(null);
+    setCurrentPasswordVisible(null);
+  }, [editingUserIndex]);
+
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
@@ -116,11 +129,6 @@ const AddUser = () => {
     }
     return changes;
   };
-
-  useEffect(() => {
-    setCurrentPassword(null);
-    setCurrentPasswordVisible(null);
-  }, [editingUserIndex]);
 
   const handleSaveUser = () => {
     if (
@@ -203,9 +211,36 @@ const AddUser = () => {
     handleResetForm();
   };
 
+  const handleDeleteUser = () => {
+    const id = users[deletingUserIndex].id;
+    const deleteUser = async () => {
+      await api.delete(`users/${id}`);
+      setUsers((prevItems) => prevItems.filter((item) => item.id != id));
+    };
+    deleteUser();
+    setModal(false);
+    setDeletingUserIndex(null);
+  };
+
   const handleEditUser = (userToEdit, index) => {
     setForm(userToEdit);
     setEditingUserIndex(index);
+  };
+
+  const handleConfirmDeleteUser = (userToEdit, index) => {
+    setDeletingUserIndex(index);
+    setModal(true);
+    setModalBtnTitle("Confirm");
+    setModalTitle("Delete user");
+    if (userToEdit.id == loggedUserInfo.id) {
+      setModalBody(
+        `Are you sure you want to delete yourself (${userToEdit.name} ${userToEdit.surname}?)? You will no longer be able to log into this system `
+      );
+    } else {
+      setModalBody(
+        `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
+      );
+    }
   };
 
   const handleResetForm = () => {
@@ -236,6 +271,7 @@ const AddUser = () => {
                       <ListExistingItems.Item
                         key={index}
                         onEdit={() => handleEditUser(user, index)}
+                        onDelete={() => handleConfirmDeleteUser(user, index)}
                       >
                         <span>
                           {user.name} {user.surname}
@@ -371,6 +407,12 @@ const AddUser = () => {
       <Modal.Root isOpen={modal} toggle={resetModal}>
         <Modal.Header toggle={resetModal} title={modalTitle} />
         <Modal.Body>{modalBody}</Modal.Body>
+        {modalBtnTitle && (
+          <Modal.Footer
+            label={modalBtnTitle}
+            onClick={handleDeleteUser}
+          ></Modal.Footer>
+        )}
       </Modal.Root>
     </>
   );
