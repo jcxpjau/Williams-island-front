@@ -32,6 +32,7 @@ import { ListExistingItems } from "components/ListExisting";
 import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
+import { ModalCustom as Modal } from "components/MessagePopUp";
 
 const AddUser = () => {
   const initialState = {
@@ -50,6 +51,11 @@ const AddUser = () => {
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState(null);
   const [loggedUserInfo, setLoggedUserInfo] = useState();
+
+  // modal state
+  const [modal, setModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalBody, setModalBody] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -90,6 +96,12 @@ const AddUser = () => {
     fetchMe();
   }, []);
 
+  const resetModal = () => {
+    setModal(!modal);
+    setModalTitle("");
+    setModalBody("");
+  };
+
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prev) => ({ ...prev, [id]: value }));
@@ -119,7 +131,9 @@ const AddUser = () => {
       !form.password ||
       !form.type
     ) {
-      alert("Please fill in all required fields.");
+      setModal(true);
+      setModalTitle("Incomplete register");
+      setModalBody("Please fill in all required fields.");
       return;
     }
 
@@ -141,6 +155,11 @@ const AddUser = () => {
             }
           };
           patchPassword();
+          setModal(true);
+          setModalTitle("Password updated");
+          setModalBody(
+            "User password sucessfully updated. You must use it from now on to login"
+          );
         }
 
         if (Object.keys(fieldsToSend).length === 0) {
@@ -157,9 +176,14 @@ const AddUser = () => {
             }
           };
           patchChanges();
+          setModal(true);
+          setModalTitle("User updated");
+          setModalBody("User information has been sucessfully updated");
         }
       } else {
-        alert("You don't have pemission to edit this user");
+        setModal(true);
+        setModalTitle("Unauthorized changes");
+        setModalBody("You don't have pemission to edit this user");
       }
     } else {
       const postUsers = async () => {
@@ -170,6 +194,11 @@ const AddUser = () => {
         }
       };
       postUsers();
+      setModal(true);
+      setModalTitle("User registered");
+      setModalBody(
+        "User was successfully registered and can now be used to login"
+      );
     }
     handleResetForm();
   };
@@ -295,7 +324,7 @@ const AddUser = () => {
                       onChange={(e) => {
                         handleChange(e);
                         setCurrentPasswordVisible(
-                          e.target.value.trim() !== "" && (editingUserIndex+1)
+                          e.target.value.trim() !== "" && editingUserIndex + 1
                         );
                       }}
                       lg={6}
@@ -338,6 +367,11 @@ const AddUser = () => {
           </Col>
         </Row>
       </Container>
+
+      <Modal.Root isOpen={modal} toggle={resetModal}>
+        <Modal.Header toggle={resetModal} title={modalTitle} />
+        <Modal.Body>{modalBody}</Modal.Body>
+      </Modal.Root>
     </>
   );
 };
