@@ -113,6 +113,7 @@ const AddUser = () => {
     setModal(!modal);
     setModalTitle("");
     setModalBody("");
+    setModalBtnTitle("");
   };
 
   const handleChange = (e) => {
@@ -220,6 +221,7 @@ const AddUser = () => {
     deleteUser();
     setModal(false);
     setDeletingUserIndex(null);
+    resetModal();
   };
 
   const handleEditUser = (userToEdit, index) => {
@@ -228,15 +230,15 @@ const AddUser = () => {
   };
 
   const handleConfirmDeleteUser = (userToEdit, index) => {
-    setDeletingUserIndex(index);
     setModal(true);
-    setModalBtnTitle("Confirm");
     setModalTitle("Delete user");
     if (userToEdit.id == loggedUserInfo.id) {
       setModalBody(
-        `Are you sure you want to delete yourself (${userToEdit.name} ${userToEdit.surname}?)? You will no longer be able to log into this system `
+        `You can't delete yourself. Chose another user to delete`
       );
     } else {
+      setDeletingUserIndex(index);
+      setModalBtnTitle("Confirm");
       setModalBody(
         `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
       );
