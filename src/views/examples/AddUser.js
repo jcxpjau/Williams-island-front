@@ -29,19 +29,13 @@ import {
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
-import {
-  BsAt,
-  BsHash,
-  BsPersonVcard,
-  BsPhone,
-  BsShield,
-  BsTelephone,
-} from "react-icons/bs";
+import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
 
 const AddUser = () => {
   const initialState = {
+    id: "",
     email: "",
     name: "",
     surname: "",
@@ -52,16 +46,15 @@ const AddUser = () => {
 
   const [form, setForm] = useState(initialState);
   const [users, setUsers] = useState([]);
-  const [editingUserIndex, setEditingUserIndex] = useState(null);
-
-  console.log(users);
+  const [editingUserIndex, setEditingUserIndex] = useState(-1);
+  const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState(null);
+  const [loggedUserInfo, setLoggedUserInfo] = useState();
 
   useEffect(() => {
-    console.log("effect");
     const fetchUsers = async () => {
       try {
         const { data } = await api.get("users");
-        //console.log(data);
         if (!data || data.length == 0) {
           return;
         }
@@ -81,13 +74,41 @@ const AddUser = () => {
       }
     };
 
+    const fetchMe = async () => {
+      try {
+        const { data } = await api.get("users/me");
+        if (!data || data.length == 0) {
+          return;
+        }
+        setLoggedUserInfo(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
     fetchUsers();
+    fetchMe();
   }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prev) => ({ ...prev, [id]: value }));
   };
+
+  const getChangedFields = (original, updated) => {
+    const changes = {};
+    for (const key in updated) {
+      if (updated[key] !== original[key]) {
+        changes[key] = updated[key];
+      }
+    }
+    return changes;
+  };
+
+  useEffect(() => {
+    setCurrentPassword(null);
+    setCurrentPasswordVisible(null);
+  }, [editingUserIndex]);
 
   const handleSaveUser = () => {
     if (
@@ -103,24 +124,52 @@ const AddUser = () => {
     }
 
     if (editingUserIndex !== null) {
-      const updatedUsers = [...users];
-      updatedUsers[editingUserIndex] = form;
-      //setUsers(updatedUsers);
+      if (form.id == loggedUserInfo.id) {
+        const originalUser = users[editingUserIndex];
+        const changedFields = getChangedFields(originalUser, form);
+        const { password, ...fieldsToSend } = changedFields;
 
-      //alert("User updated successfully!");
+        if (password) {
+          const patchPassword = async () => {
+            try {
+              const { data } = await api.patch("users/me/password", {
+                currentPassword: currentPassword,
+                newPassword: password,
+              });
+            } catch (err) {
+              console.log(err);
+            }
+          };
+          patchPassword();
+        }
+
+        if (Object.keys(fieldsToSend).length === 0) {
+          return;
+        } else {
+          const patchChanges = async () => {
+            try {
+              const { data } = await api.patch("users/me", fieldsToSend);
+              const updatedUsers = [...users];
+              updatedUsers[editingUserIndex] = form;
+              setUsers(updatedUsers);
+            } catch (err) {
+              console.log(err);
+            }
+          };
+          patchChanges();
+        }
+      } else {
+        alert("You don't have pemission to edit this user");
+      }
     } else {
-      const fetchUsers = async () => {
+      const postUsers = async () => {
         try {
           const { data } = await api.post("users", form);
-          //console.log("registered!")
-          setUsers((prev) => [...prev, form]);
         } catch (err) {
           console.log(err);
         }
       };
-
-      fetchUsers();
-      //alert("User successfully registered!");
+      postUsers();
     }
     handleResetForm();
   };
@@ -132,7 +181,7 @@ const AddUser = () => {
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingUserIndex(null);
+    setEditingUserIndex(-1);
   };
 
   return (
@@ -219,7 +268,7 @@ const AddUser = () => {
                       label="Phone"
                       id="phone"
                       value={form.phone}
-                      placeholder=""
+                      placeholder="123-456-789"
                       type="number"
                       onChange={handleChange}
                       lg={6}
@@ -229,7 +278,7 @@ const AddUser = () => {
                       label="Email"
                       id="email"
                       value={form.email}
-                      placeholder=""
+                      placeholder="youremail@provider.com"
                       type="email"
                       onChange={handleChange}
                       icon={<BsAt className="mr-2" size={20} />}
@@ -243,10 +292,30 @@ const AddUser = () => {
                       value={form.password}
                       placeholder=""
                       type="password"
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        handleChange(e);
+                        setCurrentPasswordVisible(
+                          e.target.value.trim() !== "" && (editingUserIndex+1)
+                        );
+                      }}
                       lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
                     />
+                    <div
+                      className={`col-lg-6 p-0 ${
+                        !currentPasswordVisible ? "d-none" : ""
+                      }`}
+                    >
+                      <RegistrationForm.Field
+                        label="Confirm current password"
+                        id="currentPassword"
+                        value={currentPassword}
+                        type="password"
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        lg={6}
+                        icon={<MdLockOutline className="mr-2" size={20} />}
+                      />
+                    </div>
                     <RegistrationForm.Field
                       label="Type"
                       id="type"
@@ -262,7 +331,6 @@ const AddUser = () => {
                       icon={<BsShield className="mr-2" size={20} />}
                     />
                   </RegistrationForm.Section>
-
                   <RegistrationForm.SubmitBtn onClick={handleSaveUser} />
                 </RegistrationForm.Root>
               </CardBody>
