@@ -29,10 +29,9 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await api.post("auth/login", { email, password });
-      console.log(res)
       if (res.data.access_token) {
         login(res.data.access_token, rememberMe);
-        navigate(null, "/admin/index");
+        navigate("/admin/index")
       }
     } catch(err){
       console.log(err)
@@ -120,7 +119,7 @@ const Login = () => {
           <Col className="text-right" xs="6">
             <a
               className="text-light"
-              onClick={() => navigate("/auth/register")}
+          /*     onClick={() => navigate("/auth/register")} */
             >
               <small style={{ color: "#172b4d" }}>Create new account</small>
             </a>

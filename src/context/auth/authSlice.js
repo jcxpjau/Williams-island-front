@@ -8,7 +8,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const getInitialUser = () => {
   if (typeof window !== 'undefined') {
-    const storeToken = localStorage.getItem('camaly.token')
+    const storeToken = localStorage.getItem('wi.token')
     if (storeToken) {
       return { isAuthenticated: true, token: storeToken, user: null }
     }
@@ -25,13 +25,13 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       state.token = token
       if (remember) {
-        localStorage.setItem('camaly.token', token)
+        localStorage.setItem('wi.token', token)
       }
     },
     logout: (state) => {
       state.isAuthenticated = false
       state.token = null
-      localStorage.removeItem('camaly.token')
+      localStorage.removeItem('wi.token')
     },
     setUser: (state, action) => {
       state.user = action.payload

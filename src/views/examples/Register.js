@@ -111,7 +111,7 @@ const Register = () => {
                   className="mt-4"
                   color="primary"
                   type="button"
-                  onClick={() => navigate("/auth/login")}
+                  /* onClick={() => navigate("/auth/login")} */
                 >
                   Create account
                 </Button>

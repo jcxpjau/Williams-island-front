@@ -15,8 +15,17 @@ import {
   Container,
   Media,
 } from "reactstrap";
+import { useAuth } from "context/auth/authHooks";
+import { useNavigate} from "react-router-dom";
 
 const AdminNavbar = (props) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/auth/login");
+  };
+  
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -24,9 +33,8 @@ const AdminNavbar = (props) => {
           <Link
             className="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block"
             to="/"
-          >
-          </Link>
-        {/*   <Form className="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
+          ></Link>
+          {/*   <Form className="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
             <FormGroup className="mb-0">
               <InputGroup className="input-group-alternative">
                 <InputGroupAddon addonType="prepend">
@@ -76,7 +84,11 @@ const AdminNavbar = (props) => {
                   <span>Support</span>
                 </DropdownItem>
                 <DropdownItem divider />
-                <DropdownItem to="/auth" tag={Link}>
+                <DropdownItem
+                  to="/auth/login"
+                  tag={Link}
+                  onClick={handleLogout}
+                >
                   <i className="ni ni-user-run" />
                   <span>Logout</span>
                 </DropdownItem>

@@ -46,7 +46,6 @@ const AddUnit = () => {
   const [units, setUnits] = useState([]);
   const [editingUnitIndex, setEditingUnitIndex] = useState(null);
 
-  console.log(units);
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prevForm) => ({

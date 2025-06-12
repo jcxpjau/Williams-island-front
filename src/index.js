@@ -28,6 +28,7 @@ import AuthLayout from "layouts/Auth.js";
 import BookingLayout from "layouts/Booking.js";
 import { Provider } from "react-redux";
 import { store } from "store";
+import PrivateRoute from "privateRoutes";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -35,9 +36,23 @@ root.render(
   <Provider store={store}>
     <BrowserRouter>
       <Routes>
-        <Route path="/admin/*" element={<AdminLayout />} />
+        <Route
+          path="/admin/*"
+          element={
+            <PrivateRoute>
+              <AdminLayout />
+            </PrivateRoute>
+          }
+        />
         <Route path="/auth/*" element={<AuthLayout />} />
-        <Route path="/booking/*" element={<BookingLayout />} />
+        <Route
+          path="/booking/*"
+          element={
+            <PrivateRoute>
+              <BookingLayout />
+            </PrivateRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/admin/index" replace />} />
       </Routes>
     </BrowserRouter>
