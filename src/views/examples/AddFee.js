@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -38,8 +38,9 @@ import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
+import api from "services/api";
 
-const CATEGORY_OPTIONS = [
+/* const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
   {
     value: "poa",
@@ -59,6 +60,16 @@ const CATEGORY_OPTIONS = [
     icon: <MdOutlineFitnessCenter size={16} />,
   },
   { value: "marina", label: "Marina", icon: <FaSailboat size={16} /> },
+]; */
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Select a category" },
+  {
+    value: "Default",
+    label: "Default",
+    icon: <FaHome size={16} />,
+  },
+  { value: "Pets", label: "Pets", icon: <MdPets size={16} /> },
 ];
 
 const AddFee = () => {
@@ -66,11 +77,36 @@ const AddFee = () => {
     identifier: "",
     category: "",
     type: "",
-    fee: "",
+    value: "",
   };
   const [form, setForm] = useState(initialState);
   const [fees, setFees] = useState([]);
   const [editingFeeIndex, setEditingFeeIndex] = useState(null);
+
+  useEffect(() => {
+    const fetchFees = async () => {
+      try {
+        const { data } = await api.get("fees");
+        console.log(data);
+        if (!data || data.length == 0) {
+          return;
+        }
+        const mappedData = data.map((item) => ({
+          id: item.id,
+          identifier: item.identifier,
+          category: item.category,
+          type: item.type,
+          value: item.value,
+        }));
+        setFees(mappedData);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchFees();
+  }, []);
+
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prevData) => ({
@@ -80,12 +116,12 @@ const AddFee = () => {
   };
 
   const handleSaveFee = () => {
-    if (!form.category || !form.fee || form.identifier) {
+    if (!form.category || !form.value || !form.identifier) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    const feeValue = parseFloat(form.fee);
+    const feeValue = parseFloat(form.value);
     if (isNaN(feeValue) || feeValue < 0) {
       alert("Please enter a valid positive number for the Fee Value.");
       return;
@@ -97,18 +133,17 @@ const AddFee = () => {
       setFees(updatedFees);
       alert("Fee updated successfully!");
     } else {
-      const isDuplicate = fees.some((f) => f.category === form.category);
 
-      if (isDuplicate) {
-        alert(
-          `A fee for "${
-            CATEGORY_OPTIONS.find((opt) => opt.value === form.category)?.label
-          }" already exists. Please edit the existing one.`
-        );
-        return;
-      }
-      setFees((prev) => [...prev, { ...form, fee: feeValue }]);
-      alert("Fee successfully registered!");
+      const postFees = async () => {
+        try {
+          const { data } = await api.post("fees", form);
+          setFees((prev) => [...prev, form]);
+          alert("Fee successfully registered!")
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      postFees();
     }
 
     handleResetForm();
@@ -152,7 +187,7 @@ const AddFee = () => {
                         onEdit={() => handleEditFee(fee, index)}
                       >
                         <span>
-                          {fee.identifier} ({fee.fee}%)
+                          {fee.identifier}
                         </span>
                       </ListExistingItems.Item>
                     ))
@@ -213,23 +248,23 @@ const AddFee = () => {
                       options={[
                         {
                           value: "fixed",
-                          label: "Fixed"
+                          label: "Fixed",
                         },
                         {
-                          value: 'percentage',
-                          label: 'Percentage'
+                          value: "percentual",
+                          label: "Percentage",
                         },
                       ]}
                       icon={<BsCurrencyDollar size={18} />}
                     />
 
                     <RegistrationForm.Field
-                      id="fee"
+                      id="value"
                       label="Value"
                       type="number"
                       lg={3}
                       placeholder="0.0"
-                      value={form.fee}
+                      value={form.value}
                       onChange={handleChange}
                       icon={<BsCurrencyDollar size={18} />}
                     />
