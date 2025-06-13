@@ -47,6 +47,8 @@ import {
   BsCalendar,
   BsCurrencyDollar,
   BsHash,
+  BsPlusCircle,
+  BsDashCircle,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -162,13 +164,13 @@ const getIconForRelationship = (rel) => {
 };
 
 const SetupMember = () => {
-  console.log('teste')
+  console.log("teste");
   const [activeTab, setActiveTab] = useState("member");
   // shows existing units
   const [units, setUnits] = useState([]);
 
-  useEffect(()=>{
-     const fetchUnits = async () => {
+  useEffect(() => {
+    const fetchUnits = async () => {
       try {
         const { data } = await api.get("units");
         if (!data || data.length == 0) {
@@ -185,9 +187,9 @@ const SetupMember = () => {
       }
     };
     fetchUnits();
-  },[])
+  }, []);
 
-  console.log(units)
+  console.log(units);
 
   // dependant control states
   const [dependants, setDependants] = useState([]);
@@ -220,8 +222,8 @@ const SetupMember = () => {
   const initialPropertyFormState = {
     unit: "",
     number: "",
-    address: ""
-  }
+    address: "",
+  };
 
   const [dependantForm, setDependantForm] = useState(initialDependantFormState);
   const dependantFileInputRef = useRef(null);
@@ -234,7 +236,8 @@ const SetupMember = () => {
   const [isOwnerLoaded, setIsOwnerLoaded] = useState(false);
 
   // property control states
-  const [propertyForm, setPropertyForm] = useState(initialPropertyFormState);
+  const [properties, setProperties] = useState([initialPropertyFormState]);
+
   // search control states
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -288,13 +291,24 @@ const SetupMember = () => {
     }));
   };
 
-  const handlePropertyChange = (e) =>{
-    const {id, value} = e.target;
-    setPropertyForm((prev)=>({
-      ...prev,
-      [id]: value,
-    }));
-  }
+  const handlePropertyChange = (index, e) => {
+    const { id, value } = e.target;
+    setProperties((prev) => {
+      const updated = [...prev];
+      updated[index][id] = value;
+      return updated;
+    });
+  };
+
+  const addProperty = () => {
+    setProperties((prev) => [...prev, initialPropertyFormState]);
+  };
+
+  const removeProperty = (indexToRemove) => {
+    setProperties((prevProperties) =>
+      prevProperties.filter((_, index) => index !== indexToRemove)
+    );
+  };
 
   // save profiles (member or dependant)
   const handleSaveMember = () => {
@@ -750,37 +764,75 @@ const SetupMember = () => {
                           />
                         </div>
                       </RegistrationForm.Section>
-                      <RegistrationForm.Section title="Property information">
-                        <RegistrationForm.Field
-                          label="Address"
-                          id="address"
-                          value={propertyForm.address}
-                          onChange={handlePropertyChange}
-                          placeholder="Your William's Island address"
-                          md="12"
-                          icon={<BsEnvelope size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Number"
-                          id="number"
-                          type="number"
-                          value={propertyForm.number}
-                          onChange={handleMemberChange}
-                          placeholder="Your property's number"
-                          md="6"
-                          icon={<BsHash size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Unit"
-                          id="unit"
-                          value={propertyForm.unit}
-                          onChange={handleMemberChange}
-                          placeholder="Your unit"
-                          md="6"
-                          type='select'
-                          options={units}
-                        />
+                      <RegistrationForm.Section
+                        title="Property information"
+                        rightContent={
+                          <div className="d-flex justify-content-end w-100 mr-4">
+                            <button
+                              type="button"
+                              onClick={addProperty}
+                              className="btn d-flex align-items-center justify-content-center p-0 rounded-circle  hover-bg-light transition"
+                            >
+                              <BsPlusCircle size={20} />
+                            </button>
+                          </div>
+                        }
+                      >
+                        {properties.map((property, index) => (
+                          <>
+                            <div className="d-flex w-100 flex-row justify-content-between mr-4 mt-1">
+                              <h4 className="my-4"> Property #{index + 1}</h4>
+                              {index > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeProperty(index)}
+                                  className="bg-transparent border-0 d-flex align-items-center justify-content-center p-0"
+                                >
+                                  <BsDashCircle size={20} />
+                                </button>
+                              )}
+                            </div>
+                            <div
+                              className="w-100 row py-4 rounded rounded-5"
+                              style={{ backgroundColor: "#f0f4f7" }}
+                            >
+                              <RegistrationForm.Field
+                                key={index}
+                                label="Address"
+                                id="address"
+                                value={property.address}
+                                onChange={(e) => handlePropertyChange(index, e)}
+                                placeholder="Your William's Island address"
+                                md="12"
+                                icon={<BsEnvelope size={18} />}
+                              />
+                              <RegistrationForm.Field
+                                key={index}
+                                label="Number"
+                                id="number"
+                                type="number"
+                                value={property.number}
+                                onChange={(e) => handlePropertyChange(index, e)}
+                                placeholder="Your property's number"
+                                md="6"
+                                icon={<BsHash size={18} />}
+                              />
+                              <RegistrationForm.Field
+                                key={index}
+                                label="Unit"
+                                id="unit"
+                                value={property.unit}
+                                onChange={(e) => handlePropertyChange(index, e)}
+                                placeholder="Your unit"
+                                md="6"
+                                type="select"
+                                options={units}
+                              />
+                            </div>
+                          </>
+                        ))}
                       </RegistrationForm.Section>
+
                       <RegistrationForm.Section title="Contact information">
                         <RegistrationForm.Field
                           label="Email address"
