@@ -46,6 +46,7 @@ import {
   BsPersonFill,
   BsCalendar,
   BsCurrencyDollar,
+  BsHash,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -56,6 +57,7 @@ import { FaChild } from "react-icons/fa";
 import { GiBigDiamondRing } from "react-icons/gi";
 import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 import { ModalCustom as Modal } from "components/MessagePopUp";
+import api from "services/api";
 
 const familyData = [
   {
@@ -159,8 +161,34 @@ const getIconForRelationship = (rel) => {
   }
 };
 
-const AddMember = () => {
+const SetupMember = () => {
+  console.log('teste')
   const [activeTab, setActiveTab] = useState("member");
+  // shows existing units
+  const [units, setUnits] = useState([]);
+
+  useEffect(()=>{
+     const fetchUnits = async () => {
+      try {
+        const { data } = await api.get("units");
+        if (!data || data.length == 0) {
+          return;
+        }
+        const mappedData = data.map((item) => ({
+          value: item.id,
+          label: item.denomination,
+          color: item.color,
+        }));
+        setUnits(mappedData);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchUnits();
+  },[])
+
+  console.log(units)
+
   // dependant control states
   const [dependants, setDependants] = useState([]);
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
@@ -188,6 +216,13 @@ const AddMember = () => {
     email: "",
     phone: "",
   };
+
+  const initialPropertyFormState = {
+    unit: "",
+    number: "",
+    address: ""
+  }
+
   const [dependantForm, setDependantForm] = useState(initialDependantFormState);
   const dependantFileInputRef = useRef(null);
   const [dependantPreview, setDependantPreview] = useState(null);
@@ -198,6 +233,8 @@ const AddMember = () => {
   const [memberPreview, setMemberPreview] = useState(null);
   const [isOwnerLoaded, setIsOwnerLoaded] = useState(false);
 
+  // property control states
+  const [propertyForm, setPropertyForm] = useState(initialPropertyFormState);
   // search control states
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -226,6 +263,7 @@ const AddMember = () => {
     }
   };
 
+  // handle form change
   const handleDependantFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -250,6 +288,15 @@ const AddMember = () => {
     }));
   };
 
+  const handlePropertyChange = (e) =>{
+    const {id, value} = e.target;
+    setPropertyForm((prev)=>({
+      ...prev,
+      [id]: value,
+    }));
+  }
+
+  // save profiles (member or dependant)
   const handleSaveMember = () => {
     const requiredFields = [
       "firstName",
@@ -688,14 +735,6 @@ const AddMember = () => {
                             icon={<BsPersonVcard size={18} />}
                           />
                           <RegistrationForm.Field
-                            label="Unit"
-                            id="unit"
-                            value={memberForm.unit}
-                            onChange={handleMemberChange}
-                            placeholder="Your unit"
-                            icon={<BsBuilding size={18} />}
-                          />
-                          <RegistrationForm.Field
                             label="Date of birth"
                             id="birthday"
                             value={memberForm.birthday}
@@ -711,17 +750,38 @@ const AddMember = () => {
                           />
                         </div>
                       </RegistrationForm.Section>
-
-                      <RegistrationForm.Section title="Contact information">
+                      <RegistrationForm.Section title="Property information">
                         <RegistrationForm.Field
                           label="Address"
                           id="address"
-                          value={memberForm.address}
-                          onChange={handleMemberChange}
+                          value={propertyForm.address}
+                          onChange={handlePropertyChange}
                           placeholder="Your William's Island address"
                           md="12"
                           icon={<BsEnvelope size={18} />}
                         />
+                        <RegistrationForm.Field
+                          label="Number"
+                          id="number"
+                          type="number"
+                          value={propertyForm.number}
+                          onChange={handleMemberChange}
+                          placeholder="Your property's number"
+                          md="6"
+                          icon={<BsHash size={18} />}
+                        />
+                        <RegistrationForm.Field
+                          label="Unit"
+                          id="unit"
+                          value={propertyForm.unit}
+                          onChange={handleMemberChange}
+                          placeholder="Your unit"
+                          md="6"
+                          type='select'
+                          options={units}
+                        />
+                      </RegistrationForm.Section>
+                      <RegistrationForm.Section title="Contact information">
                         <RegistrationForm.Field
                           label="Email address"
                           id="email"
@@ -881,4 +941,4 @@ const AddMember = () => {
   );
 };
 
-export default AddMember;
+export default SetupMember;

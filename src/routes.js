@@ -16,7 +16,6 @@
 
 */
 import Index from "views/Index.js";
-import AddMember from "views/examples/AddMember.js";
 import AddUnit from "views/examples/AddUnit.js";
 import AddFee from "views/examples/AddFee.js";
 import AddUser from "views/examples/AddUser.js";
@@ -44,6 +43,7 @@ import EmployeeAcess from "views/examples/EmployeeAcess";
 import Ads from "./components/Ads/Ads";
 import VenueList from "views/examples/VenueList";
 import Booking from "views/examples/Booking";
+import SetupMember from "views/examples/SetupMember";
 
 var routes = [
   {
@@ -67,9 +67,9 @@ var routes = [
       },
       {
         path: "/membership/add",
-        name: "Add Member",
+        name: "Setup members",
         layout: "/admin",
-        component: <AddMember />,
+        component: <SetupMember />,
       },
       {
         path: "/membership/edit",

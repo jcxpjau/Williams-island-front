@@ -159,7 +159,6 @@ const AddUnit = () => {
       } else {
         const postUnits = async () => {
           try {
-            console.log(form);
             const { data } = await api.post("units", form);
             setUnits((prev) => [...prev, form]);
             setModal(true);
