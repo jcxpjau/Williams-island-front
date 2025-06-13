@@ -38,6 +38,7 @@ import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
+import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
 
 /* const CATEGORY_OPTIONS = [
@@ -74,14 +75,30 @@ const CATEGORY_OPTIONS = [
 
 const AddFee = () => {
   const initialState = {
+    id: "",
     identifier: "",
     category: "",
     type: "",
     value: "",
   };
+
   const [form, setForm] = useState(initialState);
   const [fees, setFees] = useState([]);
   const [editingFeeIndex, setEditingFeeIndex] = useState(null);
+  const [deletingFeeIndex, setDeletingFeeIndex] = useState(0);
+  // modal state
+  const [modal, setModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalBody, setModalBody] = useState("");
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
+
+  //Modal controls
+  const resetModal = () => {
+    setModal(!modal);
+    setModalTitle("");
+    setModalBody("");
+    setModalBtnTitle(null);
+  };
 
   useEffect(() => {
     const fetchFees = async () => {
@@ -115,9 +132,21 @@ const AddFee = () => {
     }));
   };
 
+  const getChangedFields = (original, updated) => {
+    const changes = {};
+    for (const key in updated) {
+      if (updated[key] !== original[key]) {
+        changes[key] = updated[key];
+      }
+    }
+    return changes;
+  };
+
   const handleSaveFee = () => {
     if (!form.category || !form.value || !form.identifier) {
-      alert("Please fill in all required fields.");
+      setModal(true);
+      setModalTitle("Incomplete register");
+      setModalBody("Please fill in all required fields.");
       return;
     }
 
@@ -128,17 +157,28 @@ const AddFee = () => {
     }
 
     if (editingFeeIndex !== null) {
-      const updatedFees = [...fees];
-      updatedFees[editingFeeIndex] = { ...form, fee: feeValue };
-      setFees(updatedFees);
-      alert("Fee updated successfully!");
+      const originalFee= fees[editingFeeIndex];
+      const changedFields = getChangedFields(originalFee, form);
+      const putFees = async () => {
+        try {
+          const { data } = await api.put(`fees/${form.id}`, changedFields);
+          const updatedFees = [...fees];
+          updatedFees[editingFeeIndex] = form;
+          setFees(updatedFees);
+          setModal(true);
+          setModalTitle("Fee sucessfully updated!");
+          setModalBody(`Fee '${form.identifier}' was sucessfully updated`);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      putFees();
     } else {
-
       const postFees = async () => {
         try {
           const { data } = await api.post("fees", form);
           setFees((prev) => [...prev, form]);
-          alert("Fee successfully registered!")
+          alert("Fee successfully registered!");
         } catch (err) {
           console.log(err);
         }
@@ -149,11 +189,28 @@ const AddFee = () => {
     handleResetForm();
   };
 
+  const handleConfirmDeleteFee = (feeToEdit, index) => {
+    setModal(true);
+    setModalTitle("Delete fee");
+    setDeletingFeeIndex(index);
+    setModalBtnTitle("Confirm");
+    setModalBody(`Are you sure you want to delete ${feeToEdit.identifier}?`);
+  };
+
+  const handleDeleteFee = () => {
+    const id = fees[deletingFeeIndex].id;
+    const deleteFee = async () => {
+      await api.delete(`fees/${id}`);
+      setFees((prevItems) => prevItems.filter((item) => item.id != id));
+    };
+    deleteFee();
+    setModal(false);
+    setDeletingFeeIndex(null);
+    resetModal();
+  };
+
   const handleEditFee = (feeToEdit, index) => {
-    setForm({
-      category: feeToEdit.category,
-      fee: feeToEdit.fee.toString(),
-    });
+    setForm(feeToEdit);
     setEditingFeeIndex(index);
   };
 
@@ -185,10 +242,9 @@ const AddFee = () => {
                       <ListExistingItems.Item
                         key={index}
                         onEdit={() => handleEditFee(fee, index)}
+                        onDelete={() => handleConfirmDeleteFee(fee, index)}
                       >
-                        <span>
-                          {fee.identifier}
-                        </span>
+                        <span>{fee.identifier}</span>
                       </ListExistingItems.Item>
                     ))
                   )}
@@ -277,6 +333,16 @@ const AddFee = () => {
           </Col>
         </Row>
       </Container>
+      <Modal.Root isOpen={modal} toggle={resetModal}>
+        <Modal.Header toggle={resetModal} title={modalTitle} />
+        <Modal.Body>{modalBody}</Modal.Body>
+        {modalBtnTitle && (
+          <Modal.Footer
+            label={modalBtnTitle}
+            onClick={handleDeleteFee}
+          ></Modal.Footer>
+        )}
+      </Modal.Root>
     </>
   );
 };
