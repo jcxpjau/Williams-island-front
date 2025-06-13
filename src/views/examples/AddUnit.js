@@ -47,17 +47,19 @@ const AddUnit = () => {
   const [form, setForm] = useState(initialState);
   const [units, setUnits] = useState([]);
   const [editingUnitIndex, setEditingUnitIndex] = useState(null);
-
+  const [deletingUnitIndex, setDeletingUnitIndex] = useState(0);
   // modal state
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
   //Modal controls
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
     setModalBody("");
+    setModalBtnTitle(null);
   };
 
   useEffect(() => {
@@ -100,6 +102,16 @@ const AddUnit = () => {
     }));
   };
 
+  const getChangedFields = (original, updated) => {
+    const changes = {};
+    for (const key in updated) {
+      if (updated[key] !== original[key]) {
+        changes[key] = updated[key];
+      }
+    }
+    return changes;
+  };
+
   const handleSaveUnit = () => {
     if (
       !form.address ||
@@ -114,30 +126,40 @@ const AddUnit = () => {
       return;
     }
 
-    const isDuplicate = units.some(
-      (unit) =>
-        unit.address === form.address || unit.denomination === form.denomination
-    );
-
-    if (isDuplicate) {
-      setModal(true);
-      setModalTitle("Duplicated unit");
-      setModalBody("A unit with this address or denomination already exists.");
-      return;
+    if (editingUnitIndex !== null) {
+      const originalUnit = units[editingUnitIndex];
+      const changedFields = getChangedFields(originalUnit, form);
+      const putUnits = async () => {
+        try {
+          const { data } = await api.put(`units/${form.id}`, changedFields);
+          const updatedUnits = [...units];
+          updatedUnits[editingUnitIndex] = form;
+          setUnits(updatedUnits);
+          setModal(true);
+          setModalTitle("Unit sucessfully updated!");
+          setModalBody(`Unit '${form.denomination}' was sucessfully updated`);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      putUnits();
     } else {
-      if (editingUnitIndex !== null) {
-        // em construção
-        const updatedUnits = [...units];
-        updatedUnits[editingUnitIndex] = form;
-        setUnits(updatedUnits);
+      const isDuplicate = units.some(
+        (unit) =>
+          unit.address === form.address ||
+          unit.denomination === form.denomination
+      );
+      if (isDuplicate) {
         setModal(true);
-        setModalTitle("Unit sucessfully updated!");
-        setModalBody(`Unit ${form.denomination} was sucessfully updated`);
+        setModalTitle("Duplicated unit");
+        setModalBody(
+          "A unit with this address or denomination already exists."
+        );
         return;
       } else {
         const postUnits = async () => {
           try {
-            console.log(form)
+            console.log(form);
             const { data } = await api.post("units", form);
             setUnits((prev) => [...prev, form]);
             setModal(true);
@@ -155,9 +177,31 @@ const AddUnit = () => {
     handleResetForm();
   };
 
+  const handleDeleteUnit = () => {
+    const id = units[deletingUnitIndex].id;
+    const deleteUnit = async () => {
+      await api.delete(`units/${id}`);
+      setUnits((prevItems) => prevItems.filter((item) => item.id != id));
+    };
+    deleteUnit();
+    setModal(false);
+    setDeletingUnitIndex(null);
+    resetModal();
+  };
+
   const handleEditUnit = (unitToEdit, index) => {
     setForm(unitToEdit);
     setEditingUnitIndex(index);
+  };
+
+  const handleConfirmDeleteUnit = (unitToEdit, index) => {
+    setModal(true);
+    setModalTitle("Delete unit");
+    setDeletingUnitIndex(index);
+    setModalBtnTitle("Confirm");
+    setModalBody(
+      `Are you sure you want to delete unit ${unitToEdit.denomination}? This may impact other registers`
+    );
   };
 
   const handleResetForm = () => {
@@ -188,6 +232,7 @@ const AddUnit = () => {
                       <ListExistingItems.Item
                         key={index}
                         onEdit={() => handleEditUnit(unit, index)}
+                        onDelete={() => handleConfirmDeleteUnit(unit, index)}
                       >
                         <BsBuilding color={unit.color} className="mr-2" />
                         <span style={{ color: unit.color }}>
@@ -292,6 +337,12 @@ const AddUnit = () => {
       <Modal.Root isOpen={modal} toggle={resetModal}>
         <Modal.Header toggle={resetModal} title={modalTitle} />
         <Modal.Body>{modalBody}</Modal.Body>
+        {modalBtnTitle && (
+          <Modal.Footer
+            label={modalBtnTitle}
+            onClick={handleDeleteUnit}
+          ></Modal.Footer>
+        )}
       </Modal.Root>
     </>
   );
