@@ -65,6 +65,7 @@ const AddFee = () => {
   const initialState = {
     identifier: "",
     category: "",
+    type: "",
     fee: "",
   };
   const [form, setForm] = useState(initialState);
@@ -194,7 +195,7 @@ const AddFee = () => {
                       id="category"
                       label="Category"
                       type="select"
-                      lg={8}
+                      lg={6}
                       placeholder="Category"
                       value={form.category}
                       onChange={handleChange}
@@ -202,10 +203,31 @@ const AddFee = () => {
                     />
 
                     <RegistrationForm.Field
+                      id="type"
+                      label="Type"
+                      type="select"
+                      lg={3}
+                      placeholder="Type"
+                      value={form.type}
+                      onChange={handleChange}
+                      options={[
+                        {
+                          value: "fixed",
+                          label: "Fixed"
+                        },
+                        {
+                          value: 'percentage',
+                          label: 'Percentage'
+                        },
+                      ]}
+                      icon={<BsCurrencyDollar size={18} />}
+                    />
+
+                    <RegistrationForm.Field
                       id="fee"
-                      label="Value (%)"
+                      label="Value"
                       type="number"
-                      lg={4}
+                      lg={3}
                       placeholder="0.0"
                       value={form.fee}
                       onChange={handleChange}
