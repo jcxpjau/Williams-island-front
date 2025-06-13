@@ -232,17 +232,11 @@ const AddUser = () => {
   const handleConfirmDeleteUser = (userToEdit, index) => {
     setModal(true);
     setModalTitle("Delete user");
-    if (userToEdit.id == loggedUserInfo.id) {
-      setModalBody(
-        `You can't delete yourself. Chose another user to delete`
-      );
-    } else {
-      setDeletingUserIndex(index);
-      setModalBtnTitle("Confirm");
-      setModalBody(
-        `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
-      );
-    }
+    setDeletingUserIndex(index);
+    setModalBtnTitle("Confirm");
+    setModalBody(
+      `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
+    );
   };
 
   const handleResetForm = () => {
@@ -273,6 +267,7 @@ const AddUser = () => {
                       <ListExistingItems.Item
                         key={index}
                         onEdit={() => handleEditUser(user, index)}
+                        showDelete={user.id != loggedUserInfo.id}
                         onDelete={() => handleConfirmDeleteUser(user, index)}
                       >
                         <span>
