@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 // reactstrap components
 import {
   Button,
@@ -31,20 +31,59 @@ import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
 import { ListExistingItems } from "components/ListExisting";
+import { ModalCustom as Modal } from "components/MessagePopUp";
+import api from "services/api";
 
 const AddUnit = () => {
   const initialState = {
     address: "",
     denomination: "",
-    inhabitants: "",
-    stores: "",
-    apartments: "",
+    numberOfInhabitants: "",
+    numberOfStores: "",
+    numberOfApartments: "",
     color: null,
   };
 
   const [form, setForm] = useState(initialState);
   const [units, setUnits] = useState([]);
   const [editingUnitIndex, setEditingUnitIndex] = useState(null);
+
+  // modal state
+  const [modal, setModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalBody, setModalBody] = useState("");
+
+  //Modal controls
+  const resetModal = () => {
+    setModal(!modal);
+    setModalTitle("");
+    setModalBody("");
+  };
+
+  useEffect(() => {
+    const fetchUnits = async () => {
+      try {
+        const { data } = await api.get("units");
+        if (!data || data.length == 0) {
+          return;
+        }
+        const mappedData = data.map((item) => ({
+          id: item.id,
+          address: item.address,
+          denomination: item.denomination,
+          numberOfInhabitants: item.numberOfInhabitants,
+          numberOfStores: item.numberOfStores,
+          numberOfApartments: item.numberOfApartments,
+          color: item.color,
+        }));
+        setUnits(mappedData);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUnits();
+  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -65,50 +104,59 @@ const AddUnit = () => {
     if (
       !form.address ||
       !form.denomination ||
-      form.inhabitants === "" ||
-      form.stores === "" ||
-      form.apartments === ""
+      form.numberOfInhabitants === "" ||
+      form.numberOfStores === "" ||
+      form.numberOfApartments === ""
     ) {
-      alert("Please fill in all required fields.");
+      setModal(true);
+      setModalTitle("Incomplete register");
+      setModalBody("Please fill in all required fields.");
       return;
     }
-    const unitData = {
-      ...form,
-      inhabitants: parseInt(form.inhabitants, 10),
-      stores: parseInt(form.stores, 10),
-      apartments: parseInt(form.apartments, 10),
-    };
 
-    if (editingUnitIndex !== null) {
-      const updatedUnits = [...units];
-      updatedUnits[editingUnitIndex] = unitData;
-      setUnits(updatedUnits);
-      alert("Unit updated successfully!");
+    const isDuplicate = units.some(
+      (unit) =>
+        unit.address === form.address || unit.denomination === form.denomination
+    );
+
+    if (isDuplicate) {
+      setModal(true);
+      setModalTitle("Duplicated unit");
+      setModalBody("A unit with this address or denomination already exists.");
+      return;
     } else {
-      const isDuplicate = units.some(
-        (unit) =>
-          unit.address === unitData.address ||
-          unit.denomination === unitData.denomination
-      );
-
-      if (isDuplicate) {
-        alert("A unit with this address or denomination already exists.");
+      if (editingUnitIndex !== null) {
+        // em construção
+        const updatedUnits = [...units];
+        updatedUnits[editingUnitIndex] = form;
+        setUnits(updatedUnits);
+        setModal(true);
+        setModalTitle("Unit sucessfully updated!");
+        setModalBody(`Unit ${form.denomination} was sucessfully updated`);
         return;
+      } else {
+        const postUnits = async () => {
+          try {
+            console.log(form)
+            const { data } = await api.post("units", form);
+            setUnits((prev) => [...prev, form]);
+            setModal(true);
+            setModalTitle("Unit sucessfully registered!");
+            setModalBody(
+              "You can edit their details by clicking the pencil icon next to its name if you need"
+            );
+          } catch (err) {
+            console.log(err);
+          }
+        };
+        postUnits();
       }
-
-      setUnits((prev) => [...prev, unitData]);
-      alert("Unit successfully registered!");
     }
     handleResetForm();
   };
 
   const handleEditUnit = (unitToEdit, index) => {
-    setForm({
-      ...unitToEdit,
-      inhabitants: unitToEdit.inhabitants.toString(),
-      stores: unitToEdit.stores.toString(),
-      apartments: unitToEdit.apartments.toString(),
-    });
+    setForm(unitToEdit);
     setEditingUnitIndex(index);
   };
 
@@ -195,33 +243,33 @@ const AddUnit = () => {
                       onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="inhabitants"
+                      id="numberOfInhabitants"
                       label="Number of inhabitants"
                       type="number"
                       lg={4}
                       placeholder="Number of inhabitants"
                       icon={<BsPeopleFill size={18} />}
-                      value={form.inhabitants}
+                      value={form.numberOfInhabitants}
                       onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="stores"
+                      id="numberOfStores"
                       label="Number of stores"
                       type="number"
                       lg={4}
                       placeholder="Number of stores"
                       icon={<BsBuilding size={18} />}
-                      value={form.stores}
+                      value={form.numberOfStores}
                       onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="apartments"
+                      id="numberOfApartments"
                       label="Number of apartments"
                       type="number"
                       lg={4}
                       placeholder="Number of apartments"
                       icon={<BsBuilding size={18} />}
-                      value={form.apartments}
+                      value={form.numberOfApartments}
                       onChange={handleChange}
                     />
                   </RegistrationForm.Section>
@@ -241,6 +289,10 @@ const AddUnit = () => {
           </Col>
         </Row>
       </Container>
+      <Modal.Root isOpen={modal} toggle={resetModal}>
+        <Modal.Header toggle={resetModal} title={modalTitle} />
+        <Modal.Body>{modalBody}</Modal.Body>
+      </Modal.Root>
     </>
   );
 };
