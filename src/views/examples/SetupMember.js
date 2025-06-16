@@ -49,6 +49,8 @@ import {
   BsHash,
   BsPlusCircle,
   BsDashCircle,
+  BsCardImage,
+  BsCartDash,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -164,7 +166,6 @@ const getIconForRelationship = (rel) => {
 };
 
 const SetupMember = () => {
-  console.log("teste");
   const [activeTab, setActiveTab] = useState("member");
   // shows existing units
   const [units, setUnits] = useState([]);
@@ -189,24 +190,20 @@ const SetupMember = () => {
     fetchUnits();
   }, []);
 
-  console.log(units);
-
   // dependant control states
   const [dependants, setDependants] = useState([]);
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
   const initialMemberFormState = {
-    firstName: "",
+    name: "",
     surname: "",
-    unit: "",
-    birthday: "",
-    dateJoined: "",
-    address: "",
     email: "",
-    phone: "",
-    secondaryAddress: "",
-    city: "",
-    country: "",
-    postalCode: "",
+    memberNumber: "",
+    address: "",
+    tel: "",
+    zipCode: "",
+    dateOfBirth: "",
+    dateJoined: "",
+    lockerShare: "Sim",
   };
 
   const initialDependantFormState = {
@@ -313,8 +310,15 @@ const SetupMember = () => {
   // save profiles (member or dependant)
   const handleSaveMember = () => {
     const requiredFields = [
-      "firstName",
-      "surname" /* "unit", "address", "email", "phone" */,
+      "name",
+      "surname",
+      "email",
+      "memberNumber",
+      "address",
+      "tel",
+      "zipCode",
+      "dateOfBirth",
+      "dateJoined",
     ];
     const hasEmptyField = requiredFields.some(
       (field) => !memberForm[field]?.trim()
@@ -328,13 +332,61 @@ const SetupMember = () => {
       );
       return;
     }
-    setModalTitle("Property owner successfully registered.");
-    setModalBody(
-      "You can now register dependants or search for existing members."
-    );
-    setIsOwnerLoaded(true);
-  };
 
+    const postMembers = async () => {
+      try {
+        console.log(memberForm);
+        const { data } = await api.post("members", memberForm);
+        console.log(data);
+        setIsOwnerLoaded(true);
+        setMemberForm(data);
+        setModal(true);
+        setModalTitle("Property owner successfully registered.");
+        setModalBody(
+          "You can now register dependants or search for existing members."
+        );
+         const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
+      setHeaderCards([
+        {
+          title: "Property owner",
+          value: `${memberForm.name} ${memberForm.surname}`,
+          Icon: BsPersonFill,
+          iconBg: "bg-primary",
+          footerText: false,
+        },
+        {
+          title: "Member for",
+          value: `${years} Yrs, ${days} Days`,
+          Icon: BsCalendar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: `since ${memberForm.dateJoined}`,
+        },
+        {
+          title: "Number of Dependants",
+          value: dependants.length,
+          Icon: MdOutlineFamilyRestroom,
+          iconBg: "bg-info",
+          footerText: false,
+        },
+        {
+          title: "Expenses",
+          value: "$2740",
+          Icon: BsCurrencyDollar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: "in the last three months",
+        },
+      ]);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    postMembers();
+  };
+  
   const handleSaveDependant = () => {
     const requiredFields = ["firstName", "surname", "relationship"];
     const hasEmptyField = requiredFields.some(
@@ -409,51 +461,6 @@ const SetupMember = () => {
 
     return { years, days: remainingDays };
   };
-
-  useEffect(() => {
-    if (memberForm && memberForm.dateJoined) {
-      const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
-      setHeaderCards([
-        {
-          title: "Property owner",
-          value: `${memberForm.firstName} ${memberForm.surname}`,
-          Icon: BsPersonFill,
-          iconBg: "bg-primary",
-          footerText: false,
-          footerText: true,
-          footerColor: "text-black",
-          footerNote: `Unit ${memberForm.unit}`,
-        },
-        {
-          title: "Member for",
-          value: `${years} Yrs, ${days} Days`,
-          Icon: BsCalendar,
-          iconBg: "bg-success",
-          footerText: true,
-          footerColor: "text-black",
-          footerNote: `since ${memberForm.dateJoined}`,
-        },
-        {
-          title: "Number of Dependants",
-          value: dependants.length,
-          Icon: MdOutlineFamilyRestroom,
-          iconBg: "bg-info",
-          footerText: false,
-        },
-        {
-          title: "Expenses",
-          value: "$2740",
-          Icon: BsCurrencyDollar,
-          iconBg: "bg-success",
-          footerText: true,
-          footerColor: "text-black",
-          footerNote: "in the last three months",
-        },
-      ]);
-    } else {
-      setHeaderCards([]);
-    }
-  }, [memberForm, dependants]);
 
   // Searchbar handlers
   const handleSearchChange = (e) => {
@@ -627,7 +634,7 @@ const SetupMember = () => {
                     >
                       <BsFillPersonFill className="mr-2" size={20} />
                       <span>
-                        {memberForm.firstName} {memberForm.surname} (property
+                        {memberForm.name} {memberForm.surname} (property
                         owner)
                       </span>
                     </ListExistingItems.Item>
@@ -734,8 +741,8 @@ const SetupMember = () => {
                         <div className="col-lg-9 d-flex flex-column">
                           <RegistrationForm.Field
                             label="First Name"
-                            id="firstName"
-                            value={memberForm.firstName}
+                            id="name"
+                            value={memberForm.name}
                             onChange={handleMemberChange}
                             placeholder="First Name"
                             icon={<BsPersonVcard size={18} />}
@@ -750,8 +757,8 @@ const SetupMember = () => {
                           />
                           <RegistrationForm.Field
                             label="Date of birth"
-                            id="birthday"
-                            value={memberForm.birthday}
+                            id="dateOfBirth"
+                            value={memberForm.dateOfBirth}
                             onChange={handleMemberChange}
                             type="date"
                           />
@@ -762,8 +769,61 @@ const SetupMember = () => {
                             onChange={handleMemberChange}
                             type="date"
                           />
+                          <RegistrationForm.Field
+                            label="Member number"
+                            id="memberNumber"
+                            value={memberForm.memberNumber}
+                            onChange={handleMemberChange}
+                            placeholder="Your Williams Island identification"
+                            type="text"
+                            icon={<BsPersonVcard size={18} />}
+                          />
                         </div>
                       </RegistrationForm.Section>
+
+                      <RegistrationForm.Section title="Contact information">
+                        <RegistrationForm.Field
+                          label="Email address"
+                          id="email"
+                          value={memberForm.email}
+                          onChange={handleMemberChange}
+                          type="email"
+                          placeholder="youremail@provider.com"
+                          lg="6"
+                          icon={<BsAt size={18} />}
+                        />
+                        <RegistrationForm.Field
+                          label="Phone number"
+                          id="tel"
+                          value={memberForm.tel}
+                          onChange={handleMemberChange}
+                          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+                          type="tel"
+                          placeholder="123-456-7890"
+                          lg="6"
+                          icon={<BsTelephone size={18} />}
+                        />
+                        <RegistrationForm.Field
+                          label="Secondary Address"
+                          id="address"
+                          value={memberForm.address}
+                          onChange={handleMemberChange}
+                          placeholder="Your secondary address"
+                          md="6"
+                          icon={<BsEnvelope size={18} />}
+                        />
+                        <RegistrationForm.Field
+                          label="Postal code"
+                          id="zipCode"
+                          value={memberForm.zipCode}
+                          onChange={handleMemberChange}
+                          placeholder="Postal code"
+                          type="text"
+                          lg="6"
+                          icon={<BsPinMap size={18} />}
+                        />
+                      </RegistrationForm.Section>
+
                       <RegistrationForm.Section
                         title="Property information"
                         rightContent={
@@ -810,7 +870,7 @@ const SetupMember = () => {
                                 key={index}
                                 label="Number"
                                 id="number"
-                                type="number"
+                                type="text"
                                 value={property.number}
                                 onChange={(e) => handlePropertyChange(index, e)}
                                 placeholder="Your property's number"
@@ -832,68 +892,6 @@ const SetupMember = () => {
                           </>
                         ))}
                       </RegistrationForm.Section>
-
-                      <RegistrationForm.Section title="Contact information">
-                        <RegistrationForm.Field
-                          label="Email address"
-                          id="email"
-                          value={memberForm.email}
-                          onChange={handleMemberChange}
-                          type="email"
-                          placeholder="youremail@provider.com"
-                          lg="6"
-                          icon={<BsAt size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Phone number"
-                          id="phone"
-                          value={memberForm.phone}
-                          onChange={handleMemberChange}
-                          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                          type="tel"
-                          placeholder="123-456-7890"
-                          lg="6"
-                          icon={<BsTelephone size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Secondary Address"
-                          id="secondaryAddress"
-                          value={memberForm.secondaryAddress}
-                          onChange={handleMemberChange}
-                          placeholder="Your secondary address"
-                          md="12"
-                          icon={<BsEnvelope size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="City"
-                          id="city"
-                          value={memberForm.city}
-                          onChange={handleMemberChange}
-                          placeholder="City"
-                          lg="4"
-                          icon={<BsPinMap size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Country"
-                          id="country"
-                          value={memberForm.country}
-                          onChange={handleMemberChange}
-                          placeholder="Country"
-                          lg="4"
-                          icon={<BsPinMap size={18} />}
-                        />
-                        <RegistrationForm.Field
-                          label="Postal code"
-                          id="postalCode"
-                          value={memberForm.postalCode}
-                          onChange={handleMemberChange}
-                          placeholder="Postal code"
-                          type="number"
-                          lg="4"
-                          icon={<BsPinMap size={18} />}
-                        />
-                      </RegistrationForm.Section>
-
                       <RegistrationForm.SubmitBtn onClick={handleSaveMember} />
                     </RegistrationForm.Root>
                   </TabPane>
