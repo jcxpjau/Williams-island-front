@@ -57,7 +57,7 @@ const AddUser = () => {
   // control user list
   const [users, setUsers] = useState([]);
   // save logged user
-  const [loggedUserInfo, setLoggedUserInfo] = useState();
+  const [loggedUserInfo, setLoggedUserInfo] = useState("");
 
   // modal state
   const [modal, setModal] = useState(false);
@@ -94,14 +94,17 @@ const AddUser = () => {
         if (!data || data.length == 0) {
           return;
         }
+        console.log(data)
         setLoggedUserInfo(data);
+        console.log(loggedUserInfo)
       } catch (err) {
         console.log(err);
       }
     };
 
-    fetchUsers();
     fetchMe();
+    fetchUsers();
+    console.log(loggedUserInfo)
   }, []);
 
   useEffect(() => {
@@ -109,6 +112,8 @@ const AddUser = () => {
     setCurrentPasswordVisible(null);
   }, [editingUserIndex]);
 
+  /* console.log(users)
+  console.log(loggedUserInfo) */
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
