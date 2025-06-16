@@ -121,7 +121,7 @@ const Sidebar = (props) => {
                             backgroundColor: isActiveSubRoute
                               ? "#f6f9fc"
                               : "transparent",
-                            color: isActiveSubRoute ? "#1a174d" : "inherit", 
+                            color: '#1a174d',
                             fontWeight: isActiveSubRoute ? "bold" : "normal",
                           }}
                         >
@@ -137,7 +137,7 @@ const Sidebar = (props) => {
                             marginLeft: "-1.5rem",
                             borderLeft: "none", 
                             backgroundColor: "transparent",
-                            color: "gray",
+                            color: "#A7A7B9",
                             fontWeight: "normal", 
                             cursor: "not-allowed",
                           }}
