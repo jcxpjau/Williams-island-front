@@ -160,11 +160,11 @@ const AddUnit = () => {
         const postUnits = async () => {
           try {
             const { data } = await api.post("units", form);
-            setUnits((prev) => [...prev, form]);
+            setUnits((prev) => [...prev, data]);
             setModal(true);
             setModalTitle("Unit sucessfully registered!");
             setModalBody(
-              "You can edit their details by clicking the pencil icon next to its name if you need"
+              "You can edit its details by clicking the pencil icon next to its name if you need"
             );
           } catch (err) {
             console.log(err);

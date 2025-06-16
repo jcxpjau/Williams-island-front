@@ -37,7 +37,6 @@ import { setUser } from "context/auth/authSlice";
 
 const AddUser = () => {
   const initialState = {
-    id: "",
     email: "",
     name: "",
     surname: "",
@@ -94,9 +93,7 @@ const AddUser = () => {
         if (!data || data.length == 0) {
           return;
         }
-        console.log(data)
         setLoggedUserInfo(data);
-        console.log(loggedUserInfo)
       } catch (err) {
         console.log(err);
       }
@@ -104,7 +101,6 @@ const AddUser = () => {
 
     fetchMe();
     fetchUsers();
-    console.log(loggedUserInfo)
   }, []);
 
   useEffect(() => {
@@ -112,8 +108,6 @@ const AddUser = () => {
     setCurrentPasswordVisible(null);
   }, [editingUserIndex]);
 
-  /* console.log(users)
-  console.log(loggedUserInfo) */
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
@@ -151,7 +145,7 @@ const AddUser = () => {
       return;
     }
 
-    if (editingUserIndex !== null) {
+    if (editingUserIndex !== -1) {
       if (form.id == loggedUserInfo.id) {
         const originalUser = users[editingUserIndex];
         const changedFields = getChangedFields(originalUser, form);
@@ -203,16 +197,17 @@ const AddUser = () => {
       const postUsers = async () => {
         try {
           const { data } = await api.post("users", form);
+          setUsers((prev) => [...prev, data]);
+          setModal(true);
+          setModalTitle("User registered");
+          setModalBody(
+            "User was successfully registered and can now be used to login"
+          );
         } catch (err) {
           console.log(err);
         }
       };
       postUsers();
-      setModal(true);
-      setModalTitle("User registered");
-      setModalBody(
-        "User was successfully registered and can now be used to login"
-      );
     }
     handleResetForm();
   };

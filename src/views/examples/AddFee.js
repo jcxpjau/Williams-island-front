@@ -75,7 +75,6 @@ const CATEGORY_OPTIONS = [
 
 const AddFee = () => {
   const initialState = {
-    id: "",
     identifier: "",
     category: "",
     type: "",
@@ -104,7 +103,6 @@ const AddFee = () => {
     const fetchFees = async () => {
       try {
         const { data } = await api.get("fees");
-        console.log(data);
         if (!data || data.length == 0) {
           return;
         }
@@ -152,12 +150,13 @@ const AddFee = () => {
 
     const feeValue = parseFloat(form.value);
     if (isNaN(feeValue) || feeValue < 0) {
-      alert("Please enter a valid positive number for the Fee Value.");
+      setModalTitle("Invalid register");
+      setModalBody("Please enter a valid positive number for the Fee Value.");
       return;
     }
 
     if (editingFeeIndex !== null) {
-      const originalFee= fees[editingFeeIndex];
+      const originalFee = fees[editingFeeIndex];
       const changedFields = getChangedFields(originalFee, form);
       const putFees = async () => {
         try {
@@ -177,8 +176,11 @@ const AddFee = () => {
       const postFees = async () => {
         try {
           const { data } = await api.post("fees", form);
-          setFees((prev) => [...prev, form]);
-          alert("Fee successfully registered!");
+          setFees((prev) => [...prev, data]);
+          setModalTitle("Fee sucessfully registered!");
+          setModalBody(
+            "You can edit its details by clicking the pencil icon next to its name if you need"
+          );
         } catch (err) {
           console.log(err);
         }
@@ -303,11 +305,11 @@ const AddFee = () => {
                       onChange={handleChange}
                       options={[
                         {
-                          value: "fixed",
+                          value: "Fixed",
                           label: "Fixed",
                         },
                         {
-                          value: "percentual",
+                          value: "Percentual",
                           label: "Percentage",
                         },
                       ]}
