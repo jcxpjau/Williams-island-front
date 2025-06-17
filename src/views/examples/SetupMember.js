@@ -37,7 +37,6 @@ import {
 import {
   BsFillPersonFill,
   BsPersonVcard,
-  BsBuilding,
   BsAt,
   BsTelephone,
   BsPinMap,
@@ -49,8 +48,6 @@ import {
   BsHash,
   BsPlusCircle,
   BsDashCircle,
-  BsCardImage,
-  BsCartDash,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -101,9 +98,9 @@ const getIconForRelationship = (rel) => {
 
 const SetupMember = () => {
   const [activeTab, setActiveTab] = useState("member");
+
   // shows existing units
   const [units, setUnits] = useState([]);
-
   useEffect(() => {
     const fetchUnits = async () => {
       try {
@@ -124,9 +121,7 @@ const SetupMember = () => {
     fetchUnits();
   }, []);
 
-  // dependant control states
-  const [dependants, setDependants] = useState([]);
-  const [editingDependantIndex, setEditingDependantIndex] = useState(null);
+  // member control states
   const initialMemberFormState = {
     name: "",
     surname: "",
@@ -139,34 +134,34 @@ const SetupMember = () => {
     dateJoined: "",
     lockerShare: "Sim",
   };
-
-  const initialDependantFormState = {
-    firstName: "",
-    surname: "",
-    birthday: "",
-    dateJoined: "",
-    relationship: "",
-    email: "",
-    phone: "",
-  };
-
-  const initialPropertyFormState = {
-    unitId: "",
-    number: "",
-    address: "",
-  };
-
-  const [dependantForm, setDependantForm] = useState(initialDependantFormState);
-  const dependantFileInputRef = useRef(null);
-  const [dependantPreview, setDependantPreview] = useState(null);
-
-  // member control states
   const [memberForm, setMemberForm] = useState(initialMemberFormState);
   const memberFileInputRef = useRef(null);
   const [memberPreview, setMemberPreview] = useState(null);
   const [loadedMember, setLoadedMember] = useState(null);
 
+  // dependant control states
+  const initialDependantFormState = {
+    name: "",
+    surname: "",
+    dateOfBirth: "",
+    dateJoined: "",
+    relationship: "",
+    email: "",
+    tel: "",
+    associatedMemberId:"",
+  };
+  const [editingDependantIndex, setEditingDependantIndex] = useState(null);
+  const [dependantForm, setDependantForm] = useState(initialDependantFormState);
+  const dependantFileInputRef = useRef(null);
+  const [dependantPreview, setDependantPreview] = useState(null);
+  const [loadedDependants, setLoadedDependants] = useState([]);
+
   // property control states
+  const initialPropertyFormState = {
+    unitId: "",
+    number: "",
+    address: "",
+  };
   const [propertiesForm, setPropertiesForm] = useState([
     initialPropertyFormState,
   ]);
@@ -178,7 +173,7 @@ const SetupMember = () => {
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
-  const [modalBtnTitle, setModalBtnTitle] = useState([]);
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
   //Modal controls
   const resetModal = () => {
@@ -215,7 +210,7 @@ const SetupMember = () => {
   const handleNewMemberForm = () => {
     setMemberForm(initialMemberFormState);
     setMemberPreview(null);
-    setDependants([]);
+    setLoadedDependants([]);
     setHeaderCards([]);
     setPropertiesForm([initialPropertyFormState]);
     setDependantForm(initialDependantFormState);
@@ -346,12 +341,11 @@ const SetupMember = () => {
       "dateOfBirth",
       "dateJoined",
     ];
-
     const hasEmptyField = requiredFields.some(
       (field) => !memberForm[field]?.trim()
     );
 
-    const hasEmptyFieldsInProperties = (propertiesForm) => {
+    const hasEmptyFieldsInProperties=()=> {
       return propertiesForm.some((property) =>
         Object.values(property).some(
           (value) => value === "" || value === null || value === undefined
@@ -359,7 +353,7 @@ const SetupMember = () => {
       );
     };
 
-    if (hasEmptyField || hasEmptyFieldsInProperties) {
+    if (hasEmptyField || hasEmptyFieldsInProperties()) {
       setModal(true);
       setModalTitle("Incomplete register.");
       setModalBody(
@@ -389,7 +383,6 @@ const SetupMember = () => {
       };
       patchMember();
     } else {
-     
       const postMemberAndProperties = async () => {
         let newMember = null;
         try {
@@ -424,7 +417,7 @@ const SetupMember = () => {
             },
             {
               title: "Number of Dependants",
-              value: dependants.length,
+              value: loadedDependants.length,
               Icon: MdOutlineFamilyRestroom,
               iconBg: "bg-info",
               footerText: false,
@@ -503,52 +496,66 @@ const SetupMember = () => {
   };
 
   const handleSaveDependant = () => {
-    const requiredFields = ["firstName", "surname", "relationship"];
+    const requiredFields = ["name", "surname", "relationship"];
     const hasEmptyField = requiredFields.some(
       (field) => !dependantForm[field]?.trim()
     );
 
-    setModal(true);
     if (hasEmptyField) {
+      setModal(true);
       setModalTitle("Incomplete register.");
       setModalBody("Please fill in all required fields for the dependant");
       return;
     }
 
     if (editingDependantIndex !== null) {
-      const updatedDependants = [...dependants];
-      updatedDependants[editingDependantIndex] = dependantForm;
-      setDependants(updatedDependants);
-      setEditingDependantIndex(null);
-      setModal(true);
-      setModalTitle("Dependant updated");
-      setModalBody(
-        "The registration information for this dependant was sucessfully updated"
-      );
+     const originalDependant = loadedDependants[editingDependantIndex];
+     const changedFields = getChangedFields(originalDependant, dependantForm);
+     const patchDependants = async () => {
+        try {
+          const { data } = await api.patch(`dependants/${dependantForm.id}`, changedFields);
+          const updatedDependants = [...loadedDependants];
+          updatedDependants[editingDependantIndex] = dependantForm;
+          setLoadedDependants(updatedDependants);
+          setModal(true);
+          setModalTitle("Dependant sucessfully updated!");
+          setModalBody(`Dependant '${dependantForm.name} ${dependantForm.surname}' was sucessfully updated`);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      patchDependants();
     } else {
-      const isDuplicate = dependants.some(
-        (d) =>
-          d.firstName === dependantForm.firstName &&
-          d.surname === dependantForm.surname &&
-          d.relationship === dependantForm.relationship
-      );
-
-      if (!isDuplicate) {
-        setDependants((prev) => [...prev, dependantForm]);
-        setModalTitle("Dependant sucessfully registered!");
-        setModalBody(
-          "You can edit their details by clicking the pencil icon next to their name if you need"
-        );
-      } else {
-        setModalTitle("Duplicated dependant");
-        setModalBody(
-          "There is already a dependant with the same name and relationship to the property owner. You can verify this in the list of dependants on the column to the right"
-        );
-      }
+      dependantForm['associatedMemberId']=loadedMember.id;
+      const postDependants = async () => {
+        try {
+          const { data } = await api.post("dependants", dependantForm);
+          setLoadedDependants((prev) => [...prev, data]);
+          setModal(true);
+          setModalTitle("Dependant sucessfully registered!");
+          setModalBody(
+            "You can edit their details by clicking the pencil icon next to its name if you need"
+          );
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      postDependants();
     }
     setDependantForm(initialDependantFormState);
     setDependantPreview(null);
-    setModal(true);
+  };
+
+  const handleDeleteDependant = (dependant, index) => {
+    const id = dependant.id;
+    const deleteDependant = async () => {
+      await api.delete(`dependants/${id}`);
+      setLoadedDependants((prevItems) => prevItems.filter((item) => item.id != id));
+      setModal(true);
+      setModalTitle("Dependant deleted");
+      setModalBody(`Dependant ${dependant.name} ${dependant.surname} was successfully deleted`);
+    };
+    deleteDependant();
   };
 
   const handleEditDependant = (dependantToEdit, index) => {
@@ -628,17 +635,18 @@ const SetupMember = () => {
                     </span>
                   )}
 
-                  {dependants.length > 0 && (
+                  {loadedDependants.length > 0 && (
                     <h5 className="mt-4 mb-2 text-muted">Dependants:</h5>
                   )}
-                  {dependants.map((d, idx) => (
+                  {loadedDependants.map((d, idx) => (
                     <ListExistingItems.Item
                       key={idx}
                       onEdit={() => handleEditDependant(d, idx)}
+                      onDelete={()=>handleDeleteDependant(d,idx)}
                     >
                       {getIconForRelationship(d.relationship)}
                       <span>
-                        {d.firstName} {d.surname} ({d.relationship})
+                        {d.name} {d.surname} ({d.relationship})
                       </span>
                     </ListExistingItems.Item>
                   ))}
@@ -890,10 +898,10 @@ const SetupMember = () => {
                         />
                         <div className="col-lg-9 d-flex flex-column">
                           <RegistrationForm.Field
-                            id="firstName"
+                            id="name"
                             label="First Name"
                             type="text"
-                            value={dependantForm.firstName}
+                            value={dependantForm.name}
                             onChange={handleDependantChange}
                             placeholder="First Name"
                           />
@@ -906,10 +914,10 @@ const SetupMember = () => {
                             placeholder="Surname"
                           />
                           <RegistrationForm.Field
-                            id="birthday"
+                            id="dateOfBirth"
                             label="Date of birth"
                             type="date"
-                            value={dependantForm.birthday}
+                            value={dependantForm.dateOfBirth}
                             onChange={handleDependantChange}
                           />
                           <RegistrationForm.Field
@@ -944,10 +952,10 @@ const SetupMember = () => {
                         />
 
                         <RegistrationForm.Field
-                          id="phone"
+                          id="tel"
                           label="Phone number"
                           type="tel"
-                          value={dependantForm.phone}
+                          value={dependantForm.tel}
                           onChange={handleDependantChange}
                           placeholder="123-456-7890"
                           pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
