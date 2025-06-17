@@ -151,7 +151,7 @@ const SetupMember = () => {
   };
 
   const initialPropertyFormState = {
-    unit: "",
+    unitId: "",
     number: "",
     address: "",
   };
@@ -167,22 +167,24 @@ const SetupMember = () => {
   const [loadedMember, setLoadedMember] = useState(null);
 
   // property control states
-  const [properties, setProperties] = useState([initialPropertyFormState]);
+  const [propertiesForm, setPropertiesForm] = useState([
+    initialPropertyFormState,
+  ]);
+  const [loadedProperties, setLoadedProperties] = useState([]);
 
   // state for header cards
   const [headerCards, setHeaderCards] = useState([]);
-
   // modal state
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
-  const [modalBtnTitle, setModalBtnTitle] = useState(null);
+  const [modalBtnTitle, setModalBtnTitle] = useState([]);
 
   //Modal controls
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
-    setModalBody("");
+    setModalBtnTitle(null);
   };
 
   // Helper functions
@@ -215,11 +217,104 @@ const SetupMember = () => {
     setMemberPreview(null);
     setDependants([]);
     setHeaderCards([]);
-    setProperties([initialPropertyFormState]);
+    setPropertiesForm([initialPropertyFormState]);
     setDependantForm(initialDependantFormState);
     setDependantPreview(null);
     setEditingDependantIndex(null);
     setActiveTab("member");
+  };
+
+  // Property controls
+  const handlePropertyChange = (index, e) => {
+    const { id, value } = e.target;
+    setPropertiesForm((prev) => {
+      const updated = [...prev];
+      updated[index][id] = value;
+      return updated;
+    });
+  };
+
+  const addProperty = () => {
+    setPropertiesForm((prev) => [...prev, initialPropertyFormState]);
+  };
+
+  const removeProperty = (indexToRemove) => {
+    setPropertiesForm((prevProperties) =>
+      prevProperties.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+  const handleSaveProperties = async (data) => {
+    const updatedPropertiesForm = propertiesForm.map((property) => ({
+      ...property,
+      memberId: data.id,
+    }));
+
+    const postProperty = async (form) => {
+      try {
+        const { data } = await api.post("properties", form);
+        setLoadedProperties((prev) => [...prev, data]);
+      } catch (err) {
+        console.log("Error creating property:", err);
+      }
+    };
+
+    const putProperty = async (id, changes) => {
+      try {
+        const { data } = await api.put(`properties/${id}`, changes);
+        setLoadedProperties((prev) =>
+          prev.map((prop) => (prop.id === id ? data : prop))
+        );
+      } catch (err) {
+        console.log("Error updating property:", err);
+      }
+    };
+
+    const deleteProperty = async (id) => {
+      try {
+        await api.delete(`properties/${id}`);
+        setLoadedProperties((prev) => prev.filter((prop) => prop.id !== id));
+      } catch (err) {
+        console.log(`Error deleting property id ${id}:`, err);
+      }
+    };
+
+    try {
+      if (loadedProperties && loadedProperties.length > 0) {
+        const formIds = updatedPropertiesForm
+          .filter((p) => p.id)
+          .map((p) => p.id);
+
+        const deletedProperties = loadedProperties.filter(
+          (prop) => !formIds.includes(prop.id)
+        );
+
+        for (const prop of deletedProperties) {
+          await deleteProperty(prop.id);
+        }
+      }
+
+      for (const updatedProperty of updatedPropertiesForm) {
+        if (updatedProperty.id) {
+          const originalProperty = loadedProperties.find(
+            (p) => p.id === updatedProperty.id
+          );
+          if (originalProperty) {
+            const changedFields = getChangedFields(
+              originalProperty,
+              updatedProperty
+            );
+            if (Object.keys(changedFields).length > 0) {
+              await putProperty(updatedProperty.id, changedFields);
+            }
+          }
+        } else {
+          await postProperty(updatedProperty);
+        }
+      }
+    } catch (err) {
+      console.log("Error processing properties:", err);
+    }
   };
 
   // member controls
@@ -251,11 +346,20 @@ const SetupMember = () => {
       "dateOfBirth",
       "dateJoined",
     ];
+
     const hasEmptyField = requiredFields.some(
       (field) => !memberForm[field]?.trim()
     );
 
-    if (hasEmptyField) {
+    const hasEmptyFieldsInProperties = (propertiesForm) => {
+      return propertiesForm.some((property) =>
+        Object.values(property).some(
+          (value) => value === "" || value === null || value === undefined
+        )
+      );
+    };
+
+    if (hasEmptyField || hasEmptyFieldsInProperties) {
       setModal(true);
       setModalTitle("Incomplete register.");
       setModalBody(
@@ -272,6 +376,7 @@ const SetupMember = () => {
             `members/${memberForm.id}`,
             changedFields
           );
+          await handleSaveProperties(data);
           setModal(true);
           setLoadedMember(memberForm);
           setModalTitle("Member sucessfully updated!");
@@ -284,17 +389,21 @@ const SetupMember = () => {
       };
       patchMember();
     } else {
-      const postMembers = async () => {
+     
+      const postMemberAndProperties = async () => {
+        let newMember = null;
         try {
-          console.log(memberForm);
           const { data } = await api.post("members", memberForm);
-          console.log(data);
+          newMember = data;
+
+          await handleSaveProperties(data);
           setLoadedMember(data);
           setModal(true);
           setModalTitle("Property owner successfully registered.");
           setModalBody(
             "You can now register dependants or search for existing members."
           );
+
           const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
           setHeaderCards([
             {
@@ -331,10 +440,27 @@ const SetupMember = () => {
             },
           ]);
         } catch (err) {
-          console.log(err);
+          console.log("Error saving member or properties:", err);
+          if (newMember && newMember.id) {
+            try {
+              await api.delete(`members/${newMember.id}`);
+              console.log(`Rollback: Member with id ${newMember.id} deleted.`);
+            } catch (deleteErr) {
+              console.log(
+                `Rollback failed: Could not delete member id ${newMember.id}:`,
+                deleteErr
+              );
+            }
+          }
+
+          setModal(true);
+          setModalTitle("Error during registration.");
+          setModalBody(
+            "There was an error saving the properties. Member creation has been cancelled."
+          );
         }
       };
-      postMembers();
+      postMemberAndProperties();
     }
   };
 
@@ -343,7 +469,7 @@ const SetupMember = () => {
     setModalTitle("Delete member");
     setModalBtnTitle("Confirm");
     setModalBody(
-      `Are you sure you want to delete unit ${memberToDelete.name} ${memberToDelete.surname}? This may impact other registers`
+      `Are you sure you want to delete member ${memberToDelete.name} ${memberToDelete.surname}? This may impact other registers`
     );
   };
 
@@ -437,26 +563,6 @@ const SetupMember = () => {
     setActiveTab("dependant");
   };
 
-  // Property controls
-  const handlePropertyChange = (index, e) => {
-    const { id, value } = e.target;
-    setProperties((prev) => {
-      const updated = [...prev];
-      updated[index][id] = value;
-      return updated;
-    });
-  };
-
-  const addProperty = () => {
-    setProperties((prev) => [...prev, initialPropertyFormState]);
-  };
-
-  const removeProperty = (indexToRemove) => {
-    setProperties((prevProperties) =>
-      prevProperties.filter((_, index) => index !== indexToRemove)
-    );
-  };
-
   const tabs = [
     { id: "member", label: "Property Owner Registration", disabled: false },
     {
@@ -504,13 +610,15 @@ const SetupMember = () => {
                       onEdit={() => {
                         setActiveTab("member");
                         setMemberForm(loadedMember);
+                        setPropertiesForm(loadedProperties);
                       }}
                       onDelete={() => handleConfirmDeleteMember(loadedMember)}
                       isOwner={true}
                     >
                       <BsFillPersonFill className="mr-2" size={20} />
                       <span>
-                        {loadedMember.name} {loadedMember.surname} (property owner)
+                        {loadedMember.name} {loadedMember.surname} (property
+                        owner)
                       </span>
                     </ListExistingItems.Item>
                   ) : (
@@ -713,7 +821,7 @@ const SetupMember = () => {
                           </div>
                         }
                       >
-                        {properties.map((property, index) => (
+                        {propertiesForm.map((property, index) => (
                           <>
                             <div className="d-flex w-100 flex-row justify-content-between mr-4 mt-1">
                               <h4 className="my-4"> Property #{index + 1}</h4>
@@ -755,8 +863,8 @@ const SetupMember = () => {
                               <RegistrationForm.Field
                                 key={index}
                                 label="Unit"
-                                id="unit"
-                                value={property.unit}
+                                id="unitId"
+                                value={property.unitId}
                                 onChange={(e) => handlePropertyChange(index, e)}
                                 placeholder="Your unit"
                                 md="6"
