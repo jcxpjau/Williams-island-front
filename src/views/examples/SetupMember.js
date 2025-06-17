@@ -63,72 +63,6 @@ import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
 
-const familyData = [
-  {
-    propertyOwner: {
-      firstName: "John",
-      surname: "Doe",
-      unit: "A101",
-      birthday: "1980-05-15",
-      dateJoined: "2020-01-01",
-      address: "123 Main St",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      secondaryAddress: "456 Side Ave",
-      city: "Springfield",
-      country: "USA",
-      postalCode: "12345",
-    },
-    dependants: [
-      {
-        firstName: "Jane",
-        surname: "Doe",
-        birthday: "2010-03-20",
-        dateJoined: "2020-01-01",
-        relationship: "child",
-        email: "jane.doe@example.com",
-        phone: "123-456-7890",
-      },
-      {
-        firstName: "Robert",
-        surname: "Doe",
-        birthday: "1982-11-01",
-        dateJoined: "2020-01-01",
-        relationship: "spouse",
-        email: "robert.doe@example.com",
-        phone: "123-456-7890",
-      },
-    ],
-  },
-  {
-    propertyOwner: {
-      firstName: "Alice",
-      surname: "Smith",
-      unit: "B202",
-      birthday: "1975-01-20",
-      dateJoined: "2019-06-10",
-      address: "789 Oak Ave",
-      email: "alice.smith@example.com",
-      phone: "987-654-3210",
-      secondaryAddress: "",
-      city: "Shelbyville",
-      country: "USA",
-      postalCode: "54321",
-    },
-    dependants: [
-      {
-        firstName: "Bob",
-        surname: "Smith",
-        birthday: "2005-09-05",
-        dateJoined: "2019-06-10",
-        relationship: "child",
-        email: "bob.smith@example.com",
-        phone: "987-654-3210",
-      },
-    ],
-  },
-];
-
 const RELATIONSHIP_OPTIONS = [
   { value: "", label: "Select a relationship" },
   { value: "child", label: "Child", icon: <FaChild size={16} /> },
@@ -230,13 +164,10 @@ const SetupMember = () => {
   const [memberForm, setMemberForm] = useState(initialMemberFormState);
   const memberFileInputRef = useRef(null);
   const [memberPreview, setMemberPreview] = useState(null);
-  const [isOwnerLoaded, setIsOwnerLoaded] = useState(false);
+  const [loadedMember, setLoadedMember] = useState(null);
 
   // property control states
   const [properties, setProperties] = useState([initialPropertyFormState]);
-
-  // search control states
-  const [searchTerm, setSearchTerm] = useState("");
 
   // state for header cards
   const [headerCards, setHeaderCards] = useState([]);
@@ -245,30 +176,58 @@ const SetupMember = () => {
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
   //Modal controls
-
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
     setModalBody("");
   };
 
-  // Dependent & owner controls
+  // Helper functions
+  const calculateYearsAndDays = (startDateString) => {
+    if (!startDateString) return { years: 0, days: 0 };
+    const startDate = new Date(startDateString);
+    const today = new Date();
+    const diffTime = Math.abs(today - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const years = Math.floor(diffDays / 365);
+    const remainingDays = diffDays % 365;
+
+    return { years, days: remainingDays };
+  };
+
+  const getChangedFields = (original, updated) => {
+    const changes = {};
+    for (const key in updated) {
+      if (updated[key] !== original[key]) {
+        changes[key] = updated[key];
+      }
+    }
+    return changes;
+  };
+
+  // Reseting handler
+  const handleNewMemberForm = () => {
+    setMemberForm(initialMemberFormState);
+    setMemberPreview(null);
+    setDependants([]);
+    setHeaderCards([]);
+    setProperties([initialPropertyFormState]);
+    setDependantForm(initialDependantFormState);
+    setDependantPreview(null);
+    setEditingDependantIndex(null);
+    setActiveTab("member");
+  };
+
+  // member controls
   const handleMemberFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
       const imageURL = URL.createObjectURL(file);
       setMemberPreview(imageURL);
-    }
-  };
-
-  // handle form change
-  const handleDependantFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      const imageURL = URL.createObjectURL(file);
-      setDependantPreview(imageURL);
     }
   };
 
@@ -280,34 +239,6 @@ const SetupMember = () => {
     }));
   };
 
-  const handleDependantChange = (e) => {
-    const { id, value } = e.target;
-    setDependantForm((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  };
-
-  const handlePropertyChange = (index, e) => {
-    const { id, value } = e.target;
-    setProperties((prev) => {
-      const updated = [...prev];
-      updated[index][id] = value;
-      return updated;
-    });
-  };
-
-  const addProperty = () => {
-    setProperties((prev) => [...prev, initialPropertyFormState]);
-  };
-
-  const removeProperty = (indexToRemove) => {
-    setProperties((prevProperties) =>
-      prevProperties.filter((_, index) => index !== indexToRemove)
-    );
-  };
-
-  // save profiles (member or dependant)
   const handleSaveMember = () => {
     const requiredFields = [
       "name",
@@ -324,8 +255,8 @@ const SetupMember = () => {
       (field) => !memberForm[field]?.trim()
     );
 
-    setModal(true);
     if (hasEmptyField) {
+      setModal(true);
       setModalTitle("Incomplete register.");
       setModalBody(
         "Please fill in all required fields for the property owner."
@@ -333,60 +264,118 @@ const SetupMember = () => {
       return;
     }
 
-    const postMembers = async () => {
-      try {
-        console.log(memberForm);
-        const { data } = await api.post("members", memberForm);
-        console.log(data);
-        setIsOwnerLoaded(true);
-        setMemberForm(data);
-        setModal(true);
-        setModalTitle("Property owner successfully registered.");
-        setModalBody(
-          "You can now register dependants or search for existing members."
-        );
-         const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
-      setHeaderCards([
-        {
-          title: "Property owner",
-          value: `${memberForm.name} ${memberForm.surname}`,
-          Icon: BsPersonFill,
-          iconBg: "bg-primary",
-          footerText: false,
-        },
-        {
-          title: "Member for",
-          value: `${years} Yrs, ${days} Days`,
-          Icon: BsCalendar,
-          iconBg: "bg-success",
-          footerText: true,
-          footerColor: "text-black",
-          footerNote: `since ${memberForm.dateJoined}`,
-        },
-        {
-          title: "Number of Dependants",
-          value: dependants.length,
-          Icon: MdOutlineFamilyRestroom,
-          iconBg: "bg-info",
-          footerText: false,
-        },
-        {
-          title: "Expenses",
-          value: "$2740",
-          Icon: BsCurrencyDollar,
-          iconBg: "bg-success",
-          footerText: true,
-          footerColor: "text-black",
-          footerNote: "in the last three months",
-        },
-      ]);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    postMembers();
+    if (memberForm.id) {
+      const changedFields = getChangedFields(loadedMember, memberForm);
+      const patchMember = async () => {
+        try {
+          const { data } = await api.patch(
+            `members/${memberForm.id}`,
+            changedFields
+          );
+          setModal(true);
+          setLoadedMember(memberForm);
+          setModalTitle("Member sucessfully updated!");
+          setModalBody(
+            `Member '${memberForm.name} ${memberForm.surname}' was sucessfully updated`
+          );
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      patchMember();
+    } else {
+      const postMembers = async () => {
+        try {
+          console.log(memberForm);
+          const { data } = await api.post("members", memberForm);
+          console.log(data);
+          setLoadedMember(data);
+          setModal(true);
+          setModalTitle("Property owner successfully registered.");
+          setModalBody(
+            "You can now register dependants or search for existing members."
+          );
+          const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
+          setHeaderCards([
+            {
+              title: "Property owner",
+              value: `${memberForm.name} ${memberForm.surname}`,
+              Icon: BsPersonFill,
+              iconBg: "bg-primary",
+              footerText: false,
+            },
+            {
+              title: "Member for",
+              value: `${years} Yrs, ${days} Days`,
+              Icon: BsCalendar,
+              iconBg: "bg-success",
+              footerText: true,
+              footerColor: "text-black",
+              footerNote: `since ${memberForm.dateJoined}`,
+            },
+            {
+              title: "Number of Dependants",
+              value: dependants.length,
+              Icon: MdOutlineFamilyRestroom,
+              iconBg: "bg-info",
+              footerText: false,
+            },
+            {
+              title: "Expenses",
+              value: "$2740",
+              Icon: BsCurrencyDollar,
+              iconBg: "bg-success",
+              footerText: true,
+              footerColor: "text-black",
+              footerNote: "in the last three months",
+            },
+          ]);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      postMembers();
+    }
   };
-  
+
+  const handleConfirmDeleteMember = (memberToDelete) => {
+    setModal(true);
+    setModalTitle("Delete member");
+    setModalBtnTitle("Confirm");
+    setModalBody(
+      `Are you sure you want to delete unit ${memberToDelete.name} ${memberToDelete.surname}? This may impact other registers`
+    );
+  };
+
+  const handleDeleteMember = () => {
+    const id = loadedMember.id;
+    const deleteMember = async () => {
+      await api.delete(`members/${id}`);
+      setLoadedMember(null);
+    };
+    deleteMember();
+    setModal(false);
+    resetModal();
+    handleNewMemberForm();
+  };
+
+  // Dependent controls
+  const handleDependantFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const imageURL = URL.createObjectURL(file);
+      setDependantPreview(imageURL);
+    }
+  };
+
+  const handleDependantChange = (e) => {
+    const { id, value } = e.target;
+    setDependantForm((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
   const handleSaveDependant = () => {
     const requiredFields = ["firstName", "surname", "relationship"];
     const hasEmptyField = requiredFields.some(
@@ -437,7 +426,7 @@ const SetupMember = () => {
   };
 
   const handleEditDependant = (dependantToEdit, index) => {
-    if (!isOwnerLoaded) {
+    if (!loadedMember) {
       setModal(true);
       setModalTitle("Property owner not registered");
       setModalBody("Please save or load a property owner first.");
@@ -448,126 +437,24 @@ const SetupMember = () => {
     setActiveTab("dependant");
   };
 
-  // Helper function to calculate years and days
-  const calculateYearsAndDays = (startDateString) => {
-    if (!startDateString) return { years: 0, days: 0 };
-    const startDate = new Date(startDateString);
-    const today = new Date();
-    const diffTime = Math.abs(today - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    const years = Math.floor(diffDays / 365);
-    const remainingDays = diffDays % 365;
-
-    return { years, days: remainingDays };
+  // Property controls
+  const handlePropertyChange = (index, e) => {
+    const { id, value } = e.target;
+    setProperties((prev) => {
+      const updated = [...prev];
+      updated[index][id] = value;
+      return updated;
+    });
   };
 
-  // Searchbar handlers
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const addProperty = () => {
+    setProperties((prev) => [...prev, initialPropertyFormState]);
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody(
-        "Please enter a search term (e.g., a dependant's name or email)."
-      );
-      return;
-    }
-    let foundOwner = null;
-    let foundDependant = null;
-    let foundFamily = null;
-
-    foundOwner = familyData.find(
-      (family) =>
-        family.propertyOwner.firstName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        family.propertyOwner.surname
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        family.propertyOwner.email
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-    )?.propertyOwner;
-
-    if (!foundOwner) {
-      foundFamily = familyData.find((family) =>
-        family.dependants.some(
-          (dep) =>
-            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      if (foundFamily) {
-        foundDependant = foundFamily.dependants.find(
-          (dep) =>
-            dep.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dep.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-    }
-    setModal(true);
-    if (foundOwner) {
-      setIsOwnerLoaded(true);
-      setMemberForm(foundOwner);
-      setDependants(
-        familyData.find((f) => f.propertyOwner === foundOwner).dependants
-      );
-      setEditingDependantIndex(null);
-      setActiveTab("member");
-      setModalTitle(
-        `Property owner found:  ${foundOwner.firstName} ${foundOwner.surname}`
-      );
-      setModalBody(
-        `We have loaded their data to the form. You can edit fields as you wish`
-      );
-    } else if (foundDependant && foundFamily) {
-      setIsOwnerLoaded(true);
-      setMemberForm(foundFamily.propertyOwner);
-      setDependants(foundFamily.dependants);
-      const indexToEdit = foundFamily.dependants.findIndex(
-        (dep) =>
-          dep.firstName.toLowerCase() ===
-            foundDependant.firstName.toLowerCase() &&
-          dep.surname.toLowerCase() === foundDependant.surname.toLowerCase()
-      );
-      setDependantForm(foundDependant);
-      setEditingDependantIndex(indexToEdit !== -1 ? indexToEdit : null);
-      setActiveTab("dependant");
-      setModalTitle(
-        `Dependant found: ${foundDependant.firstName} ${foundDependant.surname} `
-      );
-      setModalBody(
-        `This dependant is associated with the property owne ${foundFamily.propertyOwner.firstName} ${foundFamily.propertyOwner.surname}. We have loaded their data to the form. You can edit fields as you wish`
-      );
-    } else {
-      setModalTitle("No members found");
-      setModalBody(
-        "Check your search terms for spelling or search for another name"
-      );
-      /* 
-      setMemberForm(initialMemberFormState);
-      setDependants([]);
-      setDependantForm(initialDependantFormState);
-      setEditingDependantIndex(null); */
-    }
-    setSearchTerm("");
-  };
-
-  // Reseting handler
-  const handleNewMemberForm = () => {
-    setMemberForm(initialMemberFormState);
-    setMemberPreview(null);
-    setDependants([]);
-    setDependantForm(initialDependantFormState);
-    setDependantPreview(null);
-    setEditingDependantIndex(null);
-    setActiveTab("member");
+  const removeProperty = (indexToRemove) => {
+    setProperties((prevProperties) =>
+      prevProperties.filter((_, index) => index !== indexToRemove)
+    );
   };
 
   const tabs = [
@@ -575,7 +462,7 @@ const SetupMember = () => {
     {
       id: "dependant",
       label: "Dependant Registration",
-      disabled: !isOwnerLoaded,
+      disabled: !loadedMember,
     },
   ];
 
@@ -593,7 +480,6 @@ const SetupMember = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
-                {/* --- Search Bar --- */}
                 <div className="mt-3">
                   <InputGroup className="input-group-alternative">
                     <InputGroupAddon addonType="prepend">
@@ -602,40 +488,29 @@ const SetupMember = () => {
                       </InputGroupText>
                     </InputGroupAddon>
                     <Input
-                      placeholder="Search dependant or owner (e.g., name, email)"
+                      placeholder="Search by name, email, id...."
                       type="text"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleSearch();
-                        }
-                      }}
                     />
-                    <Button
-                      color="primary"
-                      onClick={handleSearch}
-                      className="ml-2"
-                    >
+                    <Button color="primary" className="ml-2">
                       Search
                     </Button>
                   </InputGroup>
                 </div>
-                {/* --- End Search Bar --- */}
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {isOwnerLoaded ? (
+                  {loadedMember ? (
                     <ListExistingItems.Item
                       onEdit={() => {
                         setActiveTab("member");
+                        setMemberForm(loadedMember);
                       }}
+                      onDelete={() => handleConfirmDeleteMember(loadedMember)}
                       isOwner={true}
                     >
                       <BsFillPersonFill className="mr-2" size={20} />
                       <span>
-                        {memberForm.name} {memberForm.surname} (property
-                        owner)
+                        {loadedMember.name} {loadedMember.surname} (property owner)
                       </span>
                     </ListExistingItems.Item>
                   ) : (
@@ -659,12 +534,12 @@ const SetupMember = () => {
                       </span>
                     </ListExistingItems.Item>
                   ))}
-                  {isOwnerLoaded && (
+                  {loadedMember && (
                     <ListExistingItems.Button className="mt-2">
                       <Button
                         className="border-0 shadow-0 m-0"
                         onClick={() => {
-                          if (isOwnerLoaded) {
+                          if (loadedMember) {
                             setActiveTab("dependant");
                             setDependantForm(initialDependantFormState);
                             setDependantPreview(null);
@@ -986,6 +861,12 @@ const SetupMember = () => {
       <Modal.Root isOpen={modal} toggle={resetModal}>
         <Modal.Header toggle={resetModal} title={modalTitle} />
         <Modal.Body>{modalBody}</Modal.Body>
+        {modalBtnTitle && (
+          <Modal.Footer
+            label={modalBtnTitle}
+            onClick={handleDeleteMember}
+          ></Modal.Footer>
+        )}
       </Modal.Root>
     </>
   );
