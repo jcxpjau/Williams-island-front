@@ -115,7 +115,7 @@ const SetupMember = () => {
         }));
         setUnits(mappedData);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
     fetchUnits();
@@ -298,7 +298,7 @@ const SetupMember = () => {
         const { data } = await api.post("properties", form);
         setLoadedProperties((prev) => [...prev, data]);
       } catch (err) {
-        console.log("Error creating property:", err);
+        console.error("Error creating property:", err);
       }
     };
 
@@ -309,7 +309,7 @@ const SetupMember = () => {
           prev.map((prop) => (prop.id === id ? data : prop))
         );
       } catch (err) {
-        console.log("Error updating property:", err);
+        console.error("Error updating property:", err);
       }
     };
 
@@ -318,7 +318,7 @@ const SetupMember = () => {
         await api.delete(`properties/${id}`);
         setLoadedProperties((prev) => prev.filter((prop) => prop.id !== id));
       } catch (err) {
-        console.log(`Error deleting property id ${id}:`, err);
+        console.error(`Error deleting property id ${id}:`, err);
       }
     };
 
@@ -356,7 +356,7 @@ const SetupMember = () => {
         }
       }
     } catch (err) {
-      console.log("Error processing properties:", err);
+      console.error("Error processing properties:", err);
     }
   };
 
@@ -426,7 +426,7 @@ const SetupMember = () => {
             `Member '${memberForm.name} ${memberForm.surname}' was sucessfully updated`
           );
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       };
       patchMember();
@@ -445,19 +445,18 @@ const SetupMember = () => {
             "You can now register dependants or search for existing members."
           );
         } catch (err) {
-          console.log("Error saving member or properties:", err);
+          console.error("Error saving member or properties:", err);
           if (newMember && newMember.id) {
             try {
               await api.delete(`members/${newMember.id}`);
               console.log(`Rollback: Member with id ${newMember.id} deleted.`);
             } catch (deleteErr) {
-              console.log(
+              console.error(
                 `Rollback failed: Could not delete member id ${newMember.id}:`,
                 deleteErr
               );
             }
           }
-
           setModal(true);
           setModalTitle("Error during registration.");
           setModalBody(
@@ -538,7 +537,7 @@ const SetupMember = () => {
             `Dependant '${dependantForm.name} ${dependantForm.surname}' was sucessfully updated`
           );
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       };
       patchDependants();
@@ -554,7 +553,7 @@ const SetupMember = () => {
             "You can edit their details by clicking the pencil icon next to its name if you need"
           );
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       };
       postDependants();
@@ -593,12 +592,10 @@ const SetupMember = () => {
 
   // search controls
   const handleSelection = async (selectedData) => {
-    // Renamed parameter to selectedData
-    // Clear previous results/forms first, but keep search term for potential re-search
     setLoadedProperties([]);
     setLoadedDependants([]);
-    setFoundMembersByName([]); // Clear the list of search results
-    setSearchTerm(""); 
+    setFoundMembersByName([]);
+    setSearchTerm("");
 
     let memberToLoad = null;
     let memberId = null;
@@ -658,20 +655,18 @@ const SetupMember = () => {
 
     if (searchType === "member") {
       if (isIdSearch) {
+        console.log(parsedSearchTerm);
         const fetchMemberById = async () => {
           try {
             const { data: memberData } = await api.get(
               `members/${parsedSearchTerm}`
             );
-            if (memberData && memberData.id) {
-              handleSelection(memberData);
-            } else {
-              setModal(true);
-              setModalTitle("Membro Não Encontrado");
-              setModalBody("Nenhum membro encontrado com o ID fornecido.");
-            }
+            handleSelection(memberData);
           } catch (err) {
-            console.error("Erro na busca de membro por ID:", err);
+            console.error(err);
+            setModal(true);
+            setModalTitle("Member not found");
+            setModalBody("No member found for the provided ID.");
           }
         };
         fetchMemberById();
@@ -694,7 +689,7 @@ const SetupMember = () => {
               setModalBody("No member was found with this search term");
             }
           } catch (err) {
-            console.error("Erro na busca de membro por nome:", err);
+            console.error(err);
             setModal(true);
           }
         };
@@ -727,7 +722,10 @@ const SetupMember = () => {
             setModalBody("No dependant was found for this search term.");
           }
         } catch (err) {
-          console.error("Erro na busca de dependente:", err);
+          console.error(err);
+          setModal(true);
+          setModalTitle("Dependant not found");
+          setModalBody("No dependant was found for this ID.");
         }
       };
       fetchDependant();
