@@ -178,7 +178,6 @@ const SetupMember = () => {
   //search states
   const [searchTerm, setSearchTerm] = useState("");
   const [foundMembersByName, setFoundMembersByName] = useState([]);
-  const [searchType, setSearchType] = useState("member");
 
   //Modal controls
   const resetModal = () => {
@@ -601,21 +600,20 @@ const SetupMember = () => {
     let memberId = null;
 
     try {
-      if (searchType === "member") {
+      if (selectedData.type === "member") {
         memberToLoad = selectedData;
         memberId = selectedData.id;
         setLoadedMember(memberToLoad);
         setMemberForm(memberToLoad);
-      } else if (searchType === "dependant") {
+      } else if (selectedData.type === "dependant") {
         const dependant = selectedData;
-        setDependantForm(selectedData);
-
-        if (dependant && dependant.associatedMemberId) {
+        setDependantForm(dependant);
+        setActiveTab('dependant')
+        if (dependant.associatedMemberId) {
           const { data: associatedMemberData } = await api.get(
             `members/${dependant.associatedMemberId}`
           );
-
-          if (associatedMemberData && associatedMemberData.id) {
+          if (associatedMemberData) {
             memberToLoad = associatedMemberData;
             memberId = associatedMemberData.id;
             setLoadedMember(memberToLoad);
@@ -629,6 +627,7 @@ const SetupMember = () => {
           `dependants/member/${memberId}`
         );
         setLoadedDependants(allDependantsOfMember);
+
         const { data: propertiesData } = await api.get(
           `properties/member/${memberId}`
         );
@@ -636,99 +635,87 @@ const SetupMember = () => {
         setPropertiesForm(propertiesData);
       }
     } catch (err) {
-      console.error("Erro na seleção ou carregamento de dados:", err);
+      console.error( err);
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     handleNewMemberForm();
 
     if (!searchTerm.trim()) {
       setModal(true);
-      setModalTitle("Busca Incompleta");
-      setModalBody("Por favor, digite um termo de busca (nome ou ID).");
+      setModalTitle("Incomplete search");
+      setModalBody("Please type a search term (name or ID).");
       return;
     }
 
     const parsedSearchTerm = parseInt(searchTerm.trim(), 10);
     const isIdSearch = Number.isInteger(parsedSearchTerm);
 
-    if (searchType === "member") {
+    try {
+      const foundResults = [];
+
+      // Buscar membros
       if (isIdSearch) {
-        console.log(parsedSearchTerm);
-        const fetchMemberById = async () => {
-          try {
-            const { data: memberData } = await api.get(
-              `members/${parsedSearchTerm}`
-            );
-            handleSelection(memberData);
-          } catch (err) {
-            console.error(err);
-            setModal(true);
-            setModalTitle("Member not found");
-            setModalBody("No member found for the provided ID.");
-          }
-        };
-        fetchMemberById();
-      } else {
-        const fetchMemberByName = async () => {
-          try {
-            const { data: membersFound } = await api.get(`members`, {
-              params: { name: searchTerm.trim() },
-            });
-
-            if (membersFound && membersFound.length > 0) {
-              if (membersFound.length === 1) {
-                handleSelection(membersFound[0]);
-              } else {
-                setFoundMembersByName(membersFound);
-              }
-            } else {
-              setModal(true);
-              setModalTitle("No member found");
-              setModalBody("No member was found with this search term");
-            }
-          } catch (err) {
-            console.error(err);
-            setModal(true);
-          }
-        };
-        fetchMemberByName();
-      }
-    } else if (searchType === "dependant") {
-      const fetchDependant = async () => {
         try {
-          let dependantsFound = [];
-          if (isIdSearch) {
-            const { data } = await api.get(`dependants/${parsedSearchTerm}`);
-            dependantsFound = data ? [data] : [];
-          } else {
-            const { data } = await api.get(`dependants`, {
-              params: { name: searchTerm.trim() },
-            });
-            dependantsFound = data;
-          }
-
-          if (dependantsFound && dependantsFound.length > 0) {
-            if (dependantsFound.length === 1) {
-              const dependant = dependantsFound[0];
-              handleSelection(dependant);
-            } else {
-              setFoundMembersByName(dependantsFound);
-            }
-          } else {
-            setModal(true);
-            setModalTitle("Dependant not found");
-            setModalBody("No dependant was found for this search term.");
+          const { data: memberData } = await api.get(
+            `members/${parsedSearchTerm}`
+          );
+          if (memberData) {
+            foundResults.push({ type: "member", ...memberData });
           }
         } catch (err) {
-          console.error(err);
-          setModal(true);
-          setModalTitle("Dependant not found");
-          setModalBody("No dependant was found for this ID.");
+          console.log("No member with that ID.");
         }
-      };
-      fetchDependant();
+      } else {
+        try {
+          const { data: membersByName } = await api.get(`members`, {
+            params: { name: searchTerm.trim() },
+          });
+          membersByName.forEach((member) => {
+            foundResults.push({ type: "member", ...member });
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      // Buscar dependentes
+      if (isIdSearch) {
+        try {
+          const { data: dependantData } = await api.get(
+            `dependants/${parsedSearchTerm}`
+          );
+          if (dependantData) {
+            foundResults.push({ type: "dependant", ...dependantData });
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        try {
+          const { data: dependantsByName } = await api.get(`dependants`, {
+            params: { name: searchTerm.trim() },
+          });
+          dependantsByName.forEach((dependant) => {
+            foundResults.push({ type: "dependant", ...dependant });
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      if (foundResults.length > 0) {
+        setFoundMembersByName(foundResults);
+      } else {
+        setModal(true);
+        setModalTitle("No results");
+        setModalBody(
+          "No member or dependant was found for this search term"
+        );
+      }
+    } catch (err) {
+      console.error( err);
     }
   };
 
@@ -755,53 +742,22 @@ const SetupMember = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
-                <FormGroup row className="mb-3 align-items-center">
-                  <Label sm={3} className="mb-0">
-                    Search For:
-                  </Label>
-                  <Col sm={9}>
-                    <FormGroup check inline>
-                      <Input
-                        type="radio"
-                        name="searchType"
-                        value="member"
-                        checked={searchType === "member"}
-                        onChange={() => setSearchType("member")}
-                        id="radioMember"
-                      />
-                      <Label check for="radioMember">
-                        Member
-                      </Label>
-                    </FormGroup>
-                    <FormGroup check inline className="ml-3">
-                      <Input
-                        type="radio"
-                        name="searchType"
-                        value="dependant"
-                        checked={searchType === "dependant"}
-                        onChange={() => setSearchType("dependant")}
-                        id="radioDependant"
-                      />
-                      <Label check for="radioDependant">
-                        Dependant
-                      </Label>
-                    </FormGroup>
-                  </Col>
-                </FormGroup>
+
                 <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
                   placeholder={"Search by name or memberId"}
-                  foundMembers={foundMembersByName}
+                  foundResults={foundMembersByName}
                   onMemberSelect={handleSelection}
-                  setFoundMembers={setFoundMembersByName}
+                  setFoundResults={setFoundMembersByName}
                 />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
                   {loadedMember ? (
                     <ListExistingItems.Item
+                      key={`member-${loadedMember.id}`}
                       onEdit={() => {
                         setActiveTab("member");
                         setMemberForm(loadedMember);
@@ -817,50 +773,45 @@ const SetupMember = () => {
                       </span>
                     </ListExistingItems.Item>
                   ) : (
-                    <span>
-                      {" "}
-                      No property owner loaded. Search, select or add a new one.{" "}
+                    <span className="text-muted">
+                      No property owner loaded. Search, select or add a new one.
                     </span>
                   )}
 
                   {loadedDependants.length > 0 && (
-                    <h5 className="mt-4 mb-2 text-muted">Dependants:</h5>
+                    <>
+                      <h5 className="mt-4 mb-2 text-muted">Dependants:</h5>
+                      {loadedDependants.map((d, idx) => (
+                        <ListExistingItems.Item
+                          key={`dependant-${d.id || idx}`}
+                          onEdit={() => handleEditDependant(d, idx)}
+                          onDelete={() => handleDeleteDependant(d, idx)}
+                        >
+                          {getIconForRelationship(d.relationship)}
+                          <span>
+                            {d.name} {d.surname} ({d.relationship})
+                          </span>
+                        </ListExistingItems.Item>
+                      ))}
+                    </>
                   )}
-                  {loadedDependants.map((d, idx) => (
-                    <ListExistingItems.Item
-                      key={idx}
-                      onEdit={() => handleEditDependant(d, idx)}
-                      onDelete={() => handleDeleteDependant(d, idx)}
-                    >
-                      {getIconForRelationship(d.relationship)}
-                      <span>
-                        {d.name} {d.surname} ({d.relationship})
-                      </span>
-                    </ListExistingItems.Item>
-                  ))}
+
                   {loadedMember && (
                     <ListExistingItems.Button className="mt-2">
                       <Button
                         className="border-0 shadow-0 m-0"
                         onClick={() => {
-                          if (loadedMember) {
-                            setActiveTab("dependant");
-                            setDependantForm(initialDependantFormState);
-                            setDependantPreview(null);
-                            setEditingDependantIndex(null);
-                          } else {
-                            setModal(true);
-                            setModalTitle("Property owner not registered");
-                            setModalBody(
-                              "Please save or load a property owner first."
-                            );
-                          }
+                          setActiveTab("dependant");
+                          setDependantForm(initialDependantFormState);
+                          setDependantPreview(null);
+                          setEditingDependantIndex(null);
                         }}
                       >
                         + New dependant
                       </Button>
                     </ListExistingItems.Button>
                   )}
+
                   <ListExistingItems.Button className="mt-4">
                     <Button
                       className="border-0 shadow-0 m-0"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -7,27 +7,34 @@ import {
   Button,
 } from "reactstrap";
 import { BsSearch } from "react-icons/bs";
+import { BsFillPersonFill, BsPeopleFill } from "react-icons/bs";
 
 function SearchEntity({
   handleSearch,
   searchTerm,
   setSearchTerm,
   placeholder = "Search...",
-  foundMembers = [],
+  foundResults = [],
   onMemberSelect,
-  setFoundMembers, 
+  setFoundResults,
 }) {
   const handleSearchChange = (e) => {
     e.preventDefault();
     setSearchTerm(e.target.value);
-    if (foundMembers.length > 0) {
-      setFoundMembers([]);
+    if (foundResults.length > 0) {
+      setFoundResults([]);
     }
   };
 
-  const handleMemberClick = (member) => {
-    onMemberSelect(member);
-    setFoundMembers([]); 
+  const handleResultClick = (item) => {
+    onMemberSelect(item);
+    setFoundResults([]);
+  };
+
+  const getIconForType = (type) => {
+    if (type === "member") return <BsFillPersonFill className="mr-2" />;
+    if (type === "dependant") return <BsPeopleFill className="mr-2" />;
+    return null;
   };
 
   return (
@@ -54,17 +61,21 @@ function SearchEntity({
         </Button>
       </InputGroup>
 
-      {foundMembers.length > 0 && (
-        <div className="list-group mt-2"> 
-          {foundMembers.map((member) => (
+      {foundResults.length > 0 && (
+        <div className="list-group mt-2">
+          {foundResults.map((item) => (
             <button
-              key={member.id || member.memberId} members
+              key={`${item.type}-${item.id || item.memberId}`}
               type="button"
-              className="list-group-item list-group-item-action"
-              onClick={() => handleMemberClick(member)}
-              style={{ cursor: 'pointer' }} 
+              className="list-group-item list-group-item-action d-flex align-items-center"
+              onClick={() => handleResultClick(item)}
             >
-              {member.name} {member.surname} (ID: {member.id || member.memberId})
+              {getIconForType(item.type)}
+              <span>
+                {item.name} {item.surname} –{" "}
+                {item.type === "member" ? "Member" : "Dependant"} (ID:{" "}
+                {item.id || item.memberId})
+              </span>
             </button>
           ))}
         </div>
