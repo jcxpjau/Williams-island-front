@@ -15,7 +15,6 @@ function SearchEntity({
   setSearchTerm,
   placeholder = "Search...",
   foundResults = [],
-  onMemberSelect,
   setFoundResults,
 }) {
   const handleSearchChange = (e) => {
@@ -26,16 +25,6 @@ function SearchEntity({
     }
   };
 
-  const handleResultClick = (item) => {
-    onMemberSelect(item);
-    setFoundResults([]);
-  };
-
-  const getIconForType = (type) => {
-    if (type === "member") return <BsFillPersonFill className="mr-2" />;
-    if (type === "dependant") return <BsPeopleFill className="mr-2" />;
-    return null;
-  };
 
   return (
     <div className="mt-3">
@@ -61,25 +50,6 @@ function SearchEntity({
         </Button>
       </InputGroup>
 
-      {foundResults.length > 0 && (
-        <div className="list-group mt-2">
-          {foundResults.map((item) => (
-            <button
-              key={`${item.type}-${item.id || item.memberId}`}
-              type="button"
-              className="list-group-item list-group-item-action d-flex align-items-center"
-              onClick={() => handleResultClick(item)}
-            >
-              {getIconForType(item.type)}
-              <span>
-                {item.name} {item.surname} –{" "}
-                {item.type === "member" ? "Member" : "Dependant"} (ID:{" "}
-                {item.id || item.memberId})
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

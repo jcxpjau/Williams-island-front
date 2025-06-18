@@ -47,6 +47,7 @@ import {
   BsHash,
   BsPlusCircle,
   BsDashCircle,
+  BsPeopleFill,
 } from "react-icons/bs";
 
 //import UserHeader from "components/Headers/UserHeader.js";
@@ -94,6 +95,12 @@ const getIconForRelationship = (rel) => {
     default:
       return <BsPersonVcard className="mr-2" size={size} />;
   }
+};
+
+const getIconForType = (type) => {
+  if (type === "member") return <BsFillPersonFill className="mr-2" />;
+  if (type === "dependant") return <BsPeopleFill className="mr-2" />;
+  return null;
 };
 
 const SetupMember = () => {
@@ -608,7 +615,7 @@ const SetupMember = () => {
       } else if (selectedData.type === "dependant") {
         const dependant = selectedData;
         setDependantForm(dependant);
-        setActiveTab('dependant')
+        setActiveTab("dependant");
         if (dependant.associatedMemberId) {
           const { data: associatedMemberData } = await api.get(
             `members/${dependant.associatedMemberId}`
@@ -635,7 +642,7 @@ const SetupMember = () => {
         setPropertiesForm(propertiesData);
       }
     } catch (err) {
-      console.error( err);
+      console.error(err);
     }
   };
 
@@ -710,12 +717,10 @@ const SetupMember = () => {
       } else {
         setModal(true);
         setModalTitle("No results");
-        setModalBody(
-          "No member or dependant was found for this search term"
-        );
+        setModalBody("No member or dependant was found for this search term");
       }
     } catch (err) {
-      console.error( err);
+      console.error(err);
     }
   };
 
@@ -752,6 +757,28 @@ const SetupMember = () => {
                   onMemberSelect={handleSelection}
                   setFoundResults={setFoundMembersByName}
                 />
+                {foundMembersByName.length > 0 && (
+                  <div className="list-group mt-2">
+                    {foundMembersByName.map((item) => (
+                      <button
+                        key={`${item.type}-${item.id || item.memberId}`}
+                        type="button"
+                        className="list-group-item list-group-item-action d-flex align-items-center"
+                        onClick={() => {
+                          handleSelection(item);
+                          setFoundMembersByName([]);
+                        }}
+                      >
+                        {getIconForType(item.type)}
+                        <span>
+                          {item.name} {item.surname} –{" "}
+                          {item.type === "member" ? "Member" : "Dependant"} (ID:{" "}
+                          {item.id || item.memberId})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
