@@ -58,6 +58,7 @@ import { FaChild } from "react-icons/fa";
 import { GiBigDiamondRing } from "react-icons/gi";
 import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 import { ModalCustom as Modal } from "components/MessagePopUp";
+import SearchEntity from "./SearchEntity";
 import api from "services/api";
 
 const RELATIONSHIP_OPTIONS = [
@@ -148,7 +149,7 @@ const SetupMember = () => {
     relationship: "",
     email: "",
     tel: "",
-    associatedMemberId:"",
+    associatedMemberId: "",
   };
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
   const [dependantForm, setDependantForm] = useState(initialDependantFormState);
@@ -175,6 +176,9 @@ const SetupMember = () => {
   const [modalBody, setModalBody] = useState("");
   const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
+  //search states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [foundMembersByName, setFoundMembersByName] = useState([]);
   //Modal controls
   const resetModal = () => {
     setModal(!modal);
@@ -196,6 +200,45 @@ const SetupMember = () => {
     return { years, days: remainingDays };
   };
 
+  useEffect(() => {
+    if (loadedMember) {
+      const { years, days } = calculateYearsAndDays(loadedMember.dateJoined);
+      setHeaderCards([
+        {
+          title: "Property owner",
+          value: `${loadedMember.name} ${loadedMember.surname}`,
+          Icon: BsPersonFill,
+          iconBg: "bg-primary",
+          footerText: false,
+        },
+        {
+          title: "Member for",
+          value: `${years} Yrs, ${days} Days`,
+          Icon: BsCalendar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: `since ${loadedMember.dateJoined}`,
+        },
+        {
+          title: "Number of Dependants",
+          value: loadedDependants.length,
+          Icon: MdOutlineFamilyRestroom,
+          iconBg: "bg-info",
+          footerText: false,
+        },
+        {
+          title: "Expenses",
+          value: "$2740",
+          Icon: BsCurrencyDollar,
+          iconBg: "bg-success",
+          footerText: true,
+          footerColor: "text-black",
+          footerNote: "in the last three months",
+        },
+      ]);
+    }
+  }, [loadedMember, loadedDependants]);
   const getChangedFields = (original, updated) => {
     const changes = {};
     for (const key in updated) {
@@ -209,13 +252,16 @@ const SetupMember = () => {
   // Reseting handler
   const handleNewMemberForm = () => {
     setMemberForm(initialMemberFormState);
-    setMemberPreview(null);
-    setLoadedDependants([]);
-    setHeaderCards([]);
     setPropertiesForm([initialPropertyFormState]);
     setDependantForm(initialDependantFormState);
+    setLoadedDependants([]);
+    setLoadedMember(null);
+    setLoadedProperties([]);
+    setHeaderCards([]);
+    setMemberPreview(null);
     setDependantPreview(null);
     setEditingDependantIndex(null);
+    setSearchTerm("");
     setActiveTab("member");
   };
 
@@ -345,7 +391,7 @@ const SetupMember = () => {
       (field) => !memberForm[field]?.trim()
     );
 
-    const hasEmptyFieldsInProperties=()=> {
+    const hasEmptyFieldsInProperties = () => {
       return propertiesForm.some((property) =>
         Object.values(property).some(
           (value) => value === "" || value === null || value === undefined
@@ -396,42 +442,6 @@ const SetupMember = () => {
           setModalBody(
             "You can now register dependants or search for existing members."
           );
-
-          const { years, days } = calculateYearsAndDays(memberForm.dateJoined);
-          setHeaderCards([
-            {
-              title: "Property owner",
-              value: `${memberForm.name} ${memberForm.surname}`,
-              Icon: BsPersonFill,
-              iconBg: "bg-primary",
-              footerText: false,
-            },
-            {
-              title: "Member for",
-              value: `${years} Yrs, ${days} Days`,
-              Icon: BsCalendar,
-              iconBg: "bg-success",
-              footerText: true,
-              footerColor: "text-black",
-              footerNote: `since ${memberForm.dateJoined}`,
-            },
-            {
-              title: "Number of Dependants",
-              value: loadedDependants.length,
-              Icon: MdOutlineFamilyRestroom,
-              iconBg: "bg-info",
-              footerText: false,
-            },
-            {
-              title: "Expenses",
-              value: "$2740",
-              Icon: BsCurrencyDollar,
-              iconBg: "bg-success",
-              footerText: true,
-              footerColor: "text-black",
-              footerNote: "in the last three months",
-            },
-          ]);
         } catch (err) {
           console.log("Error saving member or properties:", err);
           if (newMember && newMember.id) {
@@ -509,24 +519,29 @@ const SetupMember = () => {
     }
 
     if (editingDependantIndex !== null) {
-     const originalDependant = loadedDependants[editingDependantIndex];
-     const changedFields = getChangedFields(originalDependant, dependantForm);
-     const patchDependants = async () => {
+      const originalDependant = loadedDependants[editingDependantIndex];
+      const changedFields = getChangedFields(originalDependant, dependantForm);
+      const patchDependants = async () => {
         try {
-          const { data } = await api.patch(`dependants/${dependantForm.id}`, changedFields);
+          const { data } = await api.patch(
+            `dependants/${dependantForm.id}`,
+            changedFields
+          );
           const updatedDependants = [...loadedDependants];
           updatedDependants[editingDependantIndex] = dependantForm;
           setLoadedDependants(updatedDependants);
           setModal(true);
           setModalTitle("Dependant sucessfully updated!");
-          setModalBody(`Dependant '${dependantForm.name} ${dependantForm.surname}' was sucessfully updated`);
+          setModalBody(
+            `Dependant '${dependantForm.name} ${dependantForm.surname}' was sucessfully updated`
+          );
         } catch (err) {
           console.log(err);
         }
       };
       patchDependants();
     } else {
-      dependantForm['associatedMemberId']=loadedMember.id;
+      dependantForm["associatedMemberId"] = loadedMember.id;
       const postDependants = async () => {
         try {
           const { data } = await api.post("dependants", dependantForm);
@@ -550,10 +565,14 @@ const SetupMember = () => {
     const id = dependant.id;
     const deleteDependant = async () => {
       await api.delete(`dependants/${id}`);
-      setLoadedDependants((prevItems) => prevItems.filter((item) => item.id != id));
+      setLoadedDependants((prevItems) =>
+        prevItems.filter((item) => item.id != id)
+      );
       setModal(true);
       setModalTitle("Dependant deleted");
-      setModalBody(`Dependant ${dependant.name} ${dependant.surname} was successfully deleted`);
+      setModalBody(
+        `Dependant ${dependant.name} ${dependant.surname} was successfully deleted`
+      );
     };
     deleteDependant();
   };
@@ -568,6 +587,88 @@ const SetupMember = () => {
     setDependantForm(dependantToEdit);
     setEditingDependantIndex(index);
     setActiveTab("dependant");
+  };
+
+  // search controls
+  const handleMemberSelection = async (selectedMember) => {
+    setSearchTerm("");
+
+    setLoadedMember(selectedMember);
+    setMemberForm(selectedMember);
+
+    if (selectedMember && selectedMember.id) {
+      const id = selectedMember.id;
+      try {
+        const { data: propertiesData } = await api.get(
+          `properties/member/${id}`
+        );
+        setLoadedProperties(propertiesData);
+        setPropertiesForm(propertiesData);
+
+        const { data: dependantsData } = await api.get(
+          `dependants/member/${id}`
+        );
+        setLoadedDependants(dependantsData);
+      } catch (err) {
+        console.error("Error fetching properties or dependants:", err);
+        setModal(true);
+        setModalTitle("Erro ao carregar dados");
+        setModalBody(
+          "Ocorreu um erro ao carregar as propriedades ou dependentes."
+        );
+      }
+    }
+  };
+
+  const handleSearch = () => {
+    handleNewMemberForm();
+    if (!searchTerm.trim()) {
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody(
+        "Please enter a search term (e.g., a dependant's name or memberId)."
+      );
+      return;
+    }
+
+    const parsedSearchTerm = parseInt(searchTerm.trim(), 10);
+
+    if (Number.isInteger(parsedSearchTerm)) {
+      const fetchById = async () => {
+        try {
+          const { data: memberData } = await api.get(`members/${searchTerm}`);
+          handleMemberSelection(memberData);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      fetchById();
+    } else {
+      const fetchByMember = async () => {
+        try {
+          const { data: memberData } = await api.get(`members`, {
+            params: {
+              name: searchTerm,
+            },
+          });
+          if (memberData && memberData.length > 0) {
+            if (memberData.length === 1) {
+              handleMemberSelection(memberData[0]);
+            } else {
+              setFoundMembersByName(memberData);
+            }
+          } else {
+            // No results
+            setModal(true);
+            setModalTitle("Membro não encontrado");
+            setModalBody("Nenhum membro encontrado com o nome fornecido.");
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      fetchByMember();
+    }
   };
 
   const tabs = [
@@ -593,22 +694,15 @@ const SetupMember = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
-                <div className="mt-3">
-                  <InputGroup className="input-group-alternative">
-                    <InputGroupAddon addonType="prepend">
-                      <InputGroupText>
-                        <BsSearch />
-                      </InputGroupText>
-                    </InputGroupAddon>
-                    <Input
-                      placeholder="Search by name, email, id...."
-                      type="text"
-                    />
-                    <Button color="primary" className="ml-2">
-                      Search
-                    </Button>
-                  </InputGroup>
-                </div>
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder={"Search by name or memberId"}
+                  foundMembers={foundMembersByName}
+                  onMemberSelect={handleMemberSelection}
+                  setFoundMembers={setFoundMembersByName}
+                />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
@@ -631,7 +725,7 @@ const SetupMember = () => {
                   ) : (
                     <span>
                       {" "}
-                      No property owner loaded. Search or add a new one.{" "}
+                      No property owner loaded. Search, select or add a new one.{" "}
                     </span>
                   )}
 
@@ -642,7 +736,7 @@ const SetupMember = () => {
                     <ListExistingItems.Item
                       key={idx}
                       onEdit={() => handleEditDependant(d, idx)}
-                      onDelete={()=>handleDeleteDependant(d,idx)}
+                      onDelete={() => handleDeleteDependant(d, idx)}
                     >
                       {getIconForRelationship(d.relationship)}
                       <span>
