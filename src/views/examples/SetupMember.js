@@ -29,9 +29,8 @@ import {
   NavItem,
   TabContent,
   TabPane,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
+  FormGroup,
+  Label,
   Input,
 } from "reactstrap";
 import {
@@ -179,6 +178,8 @@ const SetupMember = () => {
   //search states
   const [searchTerm, setSearchTerm] = useState("");
   const [foundMembersByName, setFoundMembersByName] = useState([]);
+  const [searchType, setSearchType] = useState("member");
+
   //Modal controls
   const resetModal = () => {
     setModal(!modal);
@@ -239,6 +240,7 @@ const SetupMember = () => {
       ]);
     }
   }, [loadedMember, loadedDependants]);
+
   const getChangedFields = (original, updated) => {
     const changes = {};
     for (const key in updated) {
@@ -590,84 +592,145 @@ const SetupMember = () => {
   };
 
   // search controls
-  const handleMemberSelection = async (selectedMember) => {
-    setSearchTerm("");
+  const handleSelection = async (selectedData) => {
+    // Renamed parameter to selectedData
+    // Clear previous results/forms first, but keep search term for potential re-search
+    setLoadedProperties([]);
+    setLoadedDependants([]);
+    setFoundMembersByName([]); // Clear the list of search results
+    setSearchTerm(""); 
 
-    setLoadedMember(selectedMember);
-    setMemberForm(selectedMember);
+    let memberToLoad = null;
+    let memberId = null;
 
-    if (selectedMember && selectedMember.id) {
-      const id = selectedMember.id;
-      try {
+    try {
+      if (searchType === "member") {
+        memberToLoad = selectedData;
+        memberId = selectedData.id;
+        setLoadedMember(memberToLoad);
+        setMemberForm(memberToLoad);
+      } else if (searchType === "dependant") {
+        const dependant = selectedData;
+        setDependantForm(selectedData);
+
+        if (dependant && dependant.associatedMemberId) {
+          const { data: associatedMemberData } = await api.get(
+            `members/${dependant.associatedMemberId}`
+          );
+
+          if (associatedMemberData && associatedMemberData.id) {
+            memberToLoad = associatedMemberData;
+            memberId = associatedMemberData.id;
+            setLoadedMember(memberToLoad);
+            setMemberForm(memberToLoad);
+          }
+        }
+      }
+
+      if (memberToLoad && memberId) {
+        const { data: allDependantsOfMember } = await api.get(
+          `dependants/member/${memberId}`
+        );
+        setLoadedDependants(allDependantsOfMember);
         const { data: propertiesData } = await api.get(
-          `properties/member/${id}`
+          `properties/member/${memberId}`
         );
         setLoadedProperties(propertiesData);
         setPropertiesForm(propertiesData);
-
-        const { data: dependantsData } = await api.get(
-          `dependants/member/${id}`
-        );
-        setLoadedDependants(dependantsData);
-      } catch (err) {
-        console.error("Error fetching properties or dependants:", err);
-        setModal(true);
-        setModalTitle("Erro ao carregar dados");
-        setModalBody(
-          "Ocorreu um erro ao carregar as propriedades ou dependentes."
-        );
       }
+    } catch (err) {
+      console.error("Erro na seleção ou carregamento de dados:", err);
     }
   };
 
   const handleSearch = () => {
     handleNewMemberForm();
+
     if (!searchTerm.trim()) {
       setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody(
-        "Please enter a search term (e.g., a dependant's name or memberId)."
-      );
+      setModalTitle("Busca Incompleta");
+      setModalBody("Por favor, digite um termo de busca (nome ou ID).");
       return;
     }
 
     const parsedSearchTerm = parseInt(searchTerm.trim(), 10);
+    const isIdSearch = Number.isInteger(parsedSearchTerm);
 
-    if (Number.isInteger(parsedSearchTerm)) {
-      const fetchById = async () => {
-        try {
-          const { data: memberData } = await api.get(`members/${searchTerm}`);
-          handleMemberSelection(memberData);
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      fetchById();
-    } else {
-      const fetchByMember = async () => {
-        try {
-          const { data: memberData } = await api.get(`members`, {
-            params: {
-              name: searchTerm,
-            },
-          });
-          if (memberData && memberData.length > 0) {
-            if (memberData.length === 1) {
-              handleMemberSelection(memberData[0]);
+    if (searchType === "member") {
+      if (isIdSearch) {
+        const fetchMemberById = async () => {
+          try {
+            const { data: memberData } = await api.get(
+              `members/${parsedSearchTerm}`
+            );
+            if (memberData && memberData.id) {
+              handleSelection(memberData);
             } else {
-              setFoundMembersByName(memberData);
+              setModal(true);
+              setModalTitle("Membro Não Encontrado");
+              setModalBody("Nenhum membro encontrado com o ID fornecido.");
+            }
+          } catch (err) {
+            console.error("Erro na busca de membro por ID:", err);
+          }
+        };
+        fetchMemberById();
+      } else {
+        const fetchMemberByName = async () => {
+          try {
+            const { data: membersFound } = await api.get(`members`, {
+              params: { name: searchTerm.trim() },
+            });
+
+            if (membersFound && membersFound.length > 0) {
+              if (membersFound.length === 1) {
+                handleSelection(membersFound[0]);
+              } else {
+                setFoundMembersByName(membersFound);
+              }
+            } else {
+              setModal(true);
+              setModalTitle("No member found");
+              setModalBody("No member was found with this search term");
+            }
+          } catch (err) {
+            console.error("Erro na busca de membro por nome:", err);
+            setModal(true);
+          }
+        };
+        fetchMemberByName();
+      }
+    } else if (searchType === "dependant") {
+      const fetchDependant = async () => {
+        try {
+          let dependantsFound = [];
+          if (isIdSearch) {
+            const { data } = await api.get(`dependants/${parsedSearchTerm}`);
+            dependantsFound = data ? [data] : [];
+          } else {
+            const { data } = await api.get(`dependants`, {
+              params: { name: searchTerm.trim() },
+            });
+            dependantsFound = data;
+          }
+
+          if (dependantsFound && dependantsFound.length > 0) {
+            if (dependantsFound.length === 1) {
+              const dependant = dependantsFound[0];
+              handleSelection(dependant);
+            } else {
+              setFoundMembersByName(dependantsFound);
             }
           } else {
-            // No results
             setModal(true);
-            setModalTitle("Membro não encontrado");
-            setModalBody("Nenhum membro encontrado com o nome fornecido.");
+            setModalTitle("Dependant not found");
+            setModalBody("No dependant was found for this search term.");
           }
         } catch (err) {
-          console.log(err);
+          console.error("Erro na busca de dependente:", err);
         }
       };
-      fetchByMember();
+      fetchDependant();
     }
   };
 
@@ -694,13 +757,46 @@ const SetupMember = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit member information</h3>
+                <FormGroup row className="mb-3 align-items-center">
+                  <Label sm={3} className="mb-0">
+                    Search For:
+                  </Label>
+                  <Col sm={9}>
+                    <FormGroup check inline>
+                      <Input
+                        type="radio"
+                        name="searchType"
+                        value="member"
+                        checked={searchType === "member"}
+                        onChange={() => setSearchType("member")}
+                        id="radioMember"
+                      />
+                      <Label check for="radioMember">
+                        Member
+                      </Label>
+                    </FormGroup>
+                    <FormGroup check inline className="ml-3">
+                      <Input
+                        type="radio"
+                        name="searchType"
+                        value="dependant"
+                        checked={searchType === "dependant"}
+                        onChange={() => setSearchType("dependant")}
+                        id="radioDependant"
+                      />
+                      <Label check for="radioDependant">
+                        Dependant
+                      </Label>
+                    </FormGroup>
+                  </Col>
+                </FormGroup>
                 <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
                   placeholder={"Search by name or memberId"}
                   foundMembers={foundMembersByName}
-                  onMemberSelect={handleMemberSelection}
+                  onMemberSelect={handleSelection}
                   setFoundMembers={setFoundMembersByName}
                 />
               </CardHeader>
