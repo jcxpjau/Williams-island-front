@@ -33,7 +33,7 @@ import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
 import { ModalCustom as Modal } from "components/MessagePopUp";
-import { setUser } from "context/auth/authSlice";
+import SearchEntity from "./SearchEntity"; 
 
 const AddUser = () => {
   const initialState = {
@@ -48,13 +48,16 @@ const AddUser = () => {
   // control form
   const [form, setForm] = useState(initialState);
   // control editing and deleting
-  const [editingUserIndex, setEditingUserIndex] = useState(-1);
-  const [deletingUserIndex, setDeletingUserIndex] = useState(-1);
+  const [editingUserId, setEditingUserIndex] = useState(null); 
+  const [deletingUserId, setDeletingUserId] = useState(null); 
   // control hidden password
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState(null);
+  const [originalPasswordForComparison, setOriginalPasswordForComparison] =
+    useState("");
   // control user list
   const [users, setUsers] = useState([]);
+  const [displayUsers, setDisplayUsers] = useState([]); 
   // save logged user
   const [loggedUserInfo, setLoggedUserInfo] = useState("");
 
@@ -62,13 +65,15 @@ const AddUser = () => {
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
-  const [modalBtnTitle, setModalBtnTitle] = useState(null);
+  const [modalBtnTitle, setModalBtnTitle] = useState(null); 
+  // search state
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const { data } = await api.get("users");
-        if (!data || data.length == 0) {
+        if (!data || data.length === 0) {
           return;
         }
 
@@ -82,6 +87,7 @@ const AddUser = () => {
           type: item.type,
         }));
         setUsers(mappedData);
+        setDisplayUsers(mappedData); 
       } catch (err) {
         console.log(err);
       }
@@ -90,7 +96,7 @@ const AddUser = () => {
     const fetchMe = async () => {
       try {
         const { data } = await api.get("users/me");
-        if (!data || data.length == 0) {
+        if (!data || data.length === 0) {
           return;
         }
         setLoggedUserInfo(data);
@@ -103,16 +109,27 @@ const AddUser = () => {
     fetchUsers();
   }, []);
 
+
   useEffect(() => {
-    setCurrentPassword(null);
-    setCurrentPasswordVisible(null);
-  }, [editingUserIndex]);
+    if (editingUserIndex === null) {
+      setCurrentPasswordVisible(false);
+      setCurrentPassword(null);
+      setOriginalPasswordForComparison("");
+    } else {
+      const userToEdit = users.find((user) => user.id === editingUserIndex);
+      if (userToEdit) {
+        setOriginalPasswordForComparison(userToEdit.password);
+        setCurrentPasswordVisible(false); 
+        setCurrentPassword(null); 
+      }
+    }
+  }, [editingUserId, users]); 
 
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
     setModalBody("");
-    setModalBtnTitle("");
+    setModalBtnTitle(null); 
   };
 
   const handleChange = (e) => {
@@ -136,8 +153,8 @@ const AddUser = () => {
       !form.surname ||
       !form.phone ||
       !form.email ||
-      !form.password ||
-      !form.type
+      !form.type || 
+      (!editingUserIndex && !form.password) 
     ) {
       setModal(true);
       setModalTitle("Incomplete register");
@@ -145,59 +162,107 @@ const AddUser = () => {
       return;
     }
 
-    if (editingUserIndex !== -1) {
-      if (form.id == loggedUserInfo.id) {
-        const originalUser = users[editingUserIndex];
+    if (editingUserIndex !== null) {
+      const currentUser = users.find((user) => user.id === editingUserIndex)
+
+      if (currentUser && currentUser.id === loggedUserInfo.id) {
+        const originalUser = currentUser; 
         const changedFields = getChangedFields(originalUser, form);
         const { password, ...fieldsToSend } = changedFields;
 
-        if (password) {
+        if (
+          password &&
+          password.trim() !== "" &&
+          password !== originalPasswordForComparison
+        ) {
+          if (!currentPassword) {
+            setModal(true);
+            setModalTitle("Password update required");
+            setModalBody("Please confirm your current password to update.");
+            return;
+          }
+
           const patchPassword = async () => {
             try {
               const { data } = await api.patch("users/me/password", {
                 currentPassword: currentPassword,
                 newPassword: password,
               });
+              setModal(true);
+              setModalTitle("Password updated");
+              setModalBody(
+                "User password successfully updated. You must use it from now on to login"
+              );
             } catch (err) {
               console.log(err);
+              setModal(true);
+              setModalTitle("Password update failed");
+              setModalBody(
+                "Failed to update password. Please check your current password."
+              );
             }
           };
           patchPassword();
-          setModal(true);
-          setModalTitle("Password updated");
-          setModalBody(
-            "User password sucessfully updated. You must use it from now on to login"
-          );
         }
 
-        if (Object.keys(fieldsToSend).length === 0) {
+        if (
+          Object.keys(fieldsToSend).length === 0 &&
+          (!password ||
+            password.trim() === "" ||
+            password === originalPasswordForComparison)
+        ) {
+          setModal(true);
+          setModalTitle("No changes detected");
+          setModalBody("No information was changed for this user.");
           return;
-        } else {
+        } else if (Object.keys(fieldsToSend).length > 0) {
           const patchChanges = async () => {
             try {
               const { data } = await api.patch("users/me", fieldsToSend);
-              const updatedUsers = [...users];
-              updatedUsers[editingUserIndex] = form;
+              const updatedUsers = users.map(
+                (user) =>
+                  user.id === editingUserIndex
+                    ? { ...form, password: user.password }
+                    : user 
+              );
               setUsers(updatedUsers);
+
+              const lowerCaseSearchTerm = searchTerm.toLowerCase();
+              const filteredDisplay = updatedUsers.filter((user) => {
+                const name = user.name ? user.name.toLowerCase() : "";
+                const surname = user.surname ? user.surname.toLowerCase() : "";
+                const email = user.email ? user.email.toLowerCase() : "";
+                return (
+                  name.includes(lowerCaseSearchTerm) ||
+                  surname.includes(lowerCaseSearchTerm) ||
+                  email.includes(lowerCaseSearchTerm)
+                );
+              });
+              setDisplayUsers(filteredDisplay);
+
+              setModal(true);
+              setModalTitle("User updated");
+              setModalBody("User information has been successfully updated");
             } catch (err) {
               console.log(err);
+              setModal(true);
+              setModalTitle("Update failed");
+              setModalBody("Failed to update user information.");
             }
           };
           patchChanges();
-          setModal(true);
-          setModalTitle("User updated");
-          setModalBody("User information has been sucessfully updated");
         }
       } else {
         setModal(true);
         setModalTitle("Unauthorized changes");
-        setModalBody("You don't have pemission to edit this user");
+        setModalBody("You don't have permission to edit this user.");
       }
     } else {
       const postUsers = async () => {
         try {
           const { data } = await api.post("users", form);
           setUsers((prev) => [...prev, data]);
+          setDisplayUsers((prev) => [...prev, data]); 
           setModal(true);
           setModalTitle("User registered");
           setModalBody(
@@ -205,6 +270,9 @@ const AddUser = () => {
           );
         } catch (err) {
           console.log(err);
+          setModal(true);
+          setModalTitle("Registration failed");
+          setModalBody("Failed to register new user. Please try again.");
         }
       };
       postUsers();
@@ -213,26 +281,44 @@ const AddUser = () => {
   };
 
   const handleDeleteUser = () => {
-    const id = users[deletingUserIndex].id;
+    const userIdToDelete = deletingUserId;
+
     const deleteUser = async () => {
-      await api.delete(`users/${id}`);
-      setUsers((prevItems) => prevItems.filter((item) => item.id != id));
+      try {
+        await api.delete(`users/${userIdToDelete}`);
+        const updatedUsers = users.filter((user) => user.id !== userIdToDelete);
+        setUsers(updatedUsers);
+
+        const updatedDisplay = displayUsers.filter(
+          (user) => user.id !== userIdToDelete
+        );
+        setDisplayUsers(updatedDisplay);
+        resetModal();
+      } catch (err) {
+        console.log(err);
+        setModal(true);
+        setModalTitle("Deletion failed");
+        setModalBody("Failed to delete user.");
+        setModalBtnTitle(null);
+      }
     };
     deleteUser();
-    setModal(false);
-    setDeletingUserIndex(null);
-    resetModal();
+    setDeletingUserId(null);
+    setForm(initialState);
   };
 
-  const handleEditUser = (userToEdit, index) => {
+  const handleEditUser = (userToEdit) => {
     setForm(userToEdit);
-    setEditingUserIndex(index);
+    setEditingUserIndex(userToEdit.id);
+    setOriginalPasswordForComparison(userToEdit.password); 
+    setCurrentPasswordVisible(false); 
+    setCurrentPassword(null); 
   };
 
   const handleConfirmDeleteUser = (userToEdit, index) => {
     setModal(true);
     setModalTitle("Delete user");
-    setDeletingUserIndex(index);
+    setDeletingUserId(userToEdit.id); 
     setModalBtnTitle("Confirm");
     setModalBody(
       `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
@@ -241,7 +327,40 @@ const AddUser = () => {
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingUserIndex(-1);
+    setEditingUserIndex(null); 
+    setOriginalPasswordForComparison(""); 
+    setCurrentPasswordVisible(false); 
+    setCurrentPassword(null); 
+  };
+
+  // search controls
+  const handleSearch = () => {
+    if (searchTerm === "") {
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody("Please enter a valid name, surname, or email.");
+      return;
+    }
+
+    const filteredUsers = users.filter((user) => {
+      
+      const name = user.name ? user.name.toLowerCase() : "";
+      const surname = user.surname ? user.surname.toLowerCase() : "";
+      const id = user.id ? user.id.toLowerCase() : "";
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+      return (
+        name.includes(lowerCaseSearchTerm) ||
+        surname.includes(lowerCaseSearchTerm) ||
+        id.includes(lowerCaseSearchTerm)
+      );
+    });
+    setDisplayUsers(filteredUsers);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setDisplayUsers(users); 
   };
 
   return (
@@ -250,31 +369,43 @@ const AddUser = () => {
         title="Add User"
         description="In this page you can add a new user or change their information."
       />
-      {/* Page content */}
+  
       <Container className="mt--7" fluid>
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit user information</h3>
+              
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder="Search by name, surname or email"
+                  onClearSearch={searchTerm ? clearSearch : null} 
+                />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {users.length === 0 ? (
+                  {displayUsers.length === 0 ? ( 
                     <span> No users registered yet. </span>
                   ) : (
-                    users.map((user, index) => (
-                      <ListExistingItems.Item
-                        key={index}
-                        onEdit={() => handleEditUser(user, index)}
-                        showDelete={user.id != loggedUserInfo.id}
-                        onDelete={() => handleConfirmDeleteUser(user, index)}
-                      >
-                        <span>
-                          {user.name} {user.surname}
-                        </span>
-                      </ListExistingItems.Item>
-                    ))
+                    displayUsers.map(
+                      (
+                        user 
+                      ) => (
+                        <ListExistingItems.Item
+                          key={user.id} 
+                          onEdit={() => handleEditUser(user)}
+                          showDelete={user.id !== loggedUserInfo.id}
+                          onDelete={() => handleConfirmDeleteUser(user)}
+                        >
+                          <span>
+                            {user.name} {user.surname}
+                          </span>
+                        </ListExistingItems.Item>
+                      )
+                    )
                   )}
                   <ListExistingItems.Button className="mt-4">
                     <Button
@@ -352,13 +483,27 @@ const AddUser = () => {
                       label="Password"
                       id="password"
                       value={form.password}
-                      placeholder=""
+                      placeholder={
+                        editingUserIndex !== null
+                          ? "Leave blank to keep current"
+                          : ""
+                      }
                       type="password"
                       onChange={(e) => {
-                        handleChange(e);
-                        setCurrentPasswordVisible(
-                          e.target.value.trim() !== "" && editingUserIndex + 1
-                        );
+                        handleChange(e); 
+                        const isPasswordModified =
+                          editingUserIndex !== null &&
+                          (e.target.value !== originalPasswordForComparison ||
+                            (originalPasswordForComparison === "" &&
+                              e.target.value.trim() !== ""));
+
+                        setCurrentPasswordVisible(isPasswordModified);
+                        if (
+                          editingUserIndex !== null &&
+                          e.target.value === originalPasswordForComparison
+                        ) {
+                          setCurrentPassword(null);
+                        }
                       }}
                       lg={6}
                       icon={<MdLockOutline className="mr-2" size={20} />}
@@ -371,7 +516,7 @@ const AddUser = () => {
                       <RegistrationForm.Field
                         label="Confirm current password"
                         id="currentPassword"
-                        value={currentPassword}
+                        value={currentPassword || ""}
                         type="password"
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         lg={6}
