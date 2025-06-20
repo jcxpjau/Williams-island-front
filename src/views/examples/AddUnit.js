@@ -90,7 +90,7 @@ const AddUnit = () => {
         }));
         setUnits(mappedData);
         setDisplayUnits(mappedData);
-        setLoading(false)
+        setLoading(false);
       } catch (err) {
         console.log(err);
       }
@@ -235,6 +235,7 @@ const AddUnit = () => {
 
   const handleResetForm = () => {
     setEditingUnitId(null);
+    setForm(initialState)
   };
 
   // search controls
@@ -287,6 +288,18 @@ const AddUnit = () => {
                   placeholder="Search by denomination or id"
                   onClearSearch={clearSearch}
                 />
+                <div className="d-flex justify-content-end">
+                  <ListExistingItems.Root>
+                    <ListExistingItems.Button className="mt-4">
+                      <Button
+                        className="border-0 shadow-0 m-0"
+                        onClick={handleResetForm}
+                      >
+                        + New unit
+                      </Button>
+                    </ListExistingItems.Button>
+                  </ListExistingItems.Root>
+                </div>
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
@@ -296,6 +309,7 @@ const AddUnit = () => {
                     displayUnits.map((unit, index) => (
                       <ListExistingItems.Item
                         key={index}
+                        highlight={unit.id === editingUnitId}
                         onEdit={() => handleEditUnit(unit, index)}
                         onDelete={() => handleConfirmDeleteUnit(unit, unit.id)}
                       >
@@ -306,20 +320,12 @@ const AddUnit = () => {
                       </ListExistingItems.Item>
                     ))
                   )}
-                   {loading && (
+                  {loading && (
                     <div className="d-flex flex-column align-items-center justify-content-center">
                       <Spinner> </Spinner>
                       <p> Loading units </p>
                     </div>
                   )}
-                  <ListExistingItems.Button className="mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={handleResetForm}
-                    >
-                      + New unit
-                    </Button>
-                  </ListExistingItems.Button>
                 </ListExistingItems.Root>
               </CardBody>
             </Card>

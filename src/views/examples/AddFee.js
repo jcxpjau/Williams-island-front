@@ -298,7 +298,7 @@ const AddFee = () => {
                         className="border-0 shadow-0 m-0"
                         onClick={handleResetForm}
                       >
-                        + New user
+                        + New fee
                       </Button>
                     </ListExistingItems.Button>
                   </ListExistingItems.Root>
