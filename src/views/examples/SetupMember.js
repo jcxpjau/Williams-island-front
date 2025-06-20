@@ -647,7 +647,6 @@ const SetupMember = () => {
   };
 
   const handleSearch = async () => {
-    handleNewMemberForm();
 
     if (!searchTerm.trim()) {
       setModal(true);

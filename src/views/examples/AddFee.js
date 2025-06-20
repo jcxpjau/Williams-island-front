@@ -15,11 +15,17 @@ import { ListExistingItems } from "components/ListExisting";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
 import SearchEntity from "./SearchEntity";
+import { FaHome } from "react-icons/fa";
+import { MdPets } from "react-icons/md";
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
-  { value: "Default", label: "Default" },
-  { value: "Pets", label: "Pets" },
+  {
+    value: "Default",
+    label: "Default",
+    icon: <FaHome size={16} />,
+  },
+  { value: "Pets", label: "Pets", icon: <MdPets size={16} /> },
 ];
 
 const AddFee = () => {
@@ -65,7 +71,7 @@ const AddFee = () => {
     }
     return changes;
   };
-
+  
   const handleSaveFee = async () => {
     if (!form.identifier || !form.category || !form.value) {
       setModal(true);
@@ -95,6 +101,7 @@ const AddFee = () => {
     } else {
       try {
         const { data } = await api.post("fees", form);
+        console.log(data)
         setLoadedFee(data);
         setModal(true);
         setModalTitle("Fee registered");
@@ -103,7 +110,6 @@ const AddFee = () => {
         console.log(err);
       }
     }
-    handleResetForm();
   };
 
   const handleResetForm = () => {
@@ -181,14 +187,14 @@ const AddFee = () => {
         setModal(true);
         setModalTitle("No fees found");
         setModalBody("No fee matches this search term.");
+        setSearchTerm("");
       }
     } catch (err) {
       console.error("Search error:", err);
     }
   };
 
-  // ... (imports, states e funções permanecem iguais)
-
+  console.log(loadedFee)
   return (
     <>
       <UserHeader
@@ -197,7 +203,6 @@ const AddFee = () => {
       />
       <Container className="mt--7" fluid>
         <Row>
-          {/* ---- Formulário na Esquerda ---- */}
           <Col xl="8" className="order-xl-1">
             <Card className="bg-secondary shadow">
               <CardHeader>
@@ -257,7 +262,6 @@ const AddFee = () => {
             </Card>
           </Col>
 
-          {/* ---- Search + Lista na Direita ---- */}
           <Col xl="4" className="order-xl-2 mb-5 mb-xl-0">
             <Card className="bg-secondary shadow">
               <CardHeader>

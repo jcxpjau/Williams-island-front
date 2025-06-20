@@ -7,7 +7,6 @@ export const Item = ({
   children,
   onEdit,
   onDelete,
-  showDelete = true,
 }) => {
   return (
     <ListGroupItem className="d-flex justify-content-between align-items-center">
@@ -16,8 +15,8 @@ export const Item = ({
         <span>{children}</span>
       </div>
       <div>
-        <BsPencil size={18} style={{ cursor: "pointer" }} onClick={onEdit} />
-        {showDelete && (
+        {onEdit && (<BsPencil size={18} style={{ cursor: "pointer" }} onClick={onEdit} />)}
+        {onDelete && (
           <BsTrash
             className="ml-4"
             size={18}

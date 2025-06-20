@@ -154,7 +154,6 @@ const AddUnit = () => {
       const postUnits = async () => {
         try {
           const { data } = await api.post("units", form);
-          console.log(data);
           setLoadedUnit(data);
           setModal(true);
           setModalTitle("Unit sucessfully registered!");
@@ -243,8 +242,6 @@ const AddUnit = () => {
   };
 
   const handleSearch = async () => {
-    setForm(initialState);
-    setLoadedUnit(null);
     if (!searchTerm.trim()) {
       setModal(true);
       setModalTitle("Incomplete search");
