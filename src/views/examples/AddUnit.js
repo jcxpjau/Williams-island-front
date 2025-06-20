@@ -259,6 +259,10 @@ const AddUnit = () => {
     setDisplayUnits(filteredUnits);
   };
 
+  const clearSearch = () =>{
+    setDisplayUnits(units);
+  }
+
   return (
     <>
       <UserHeader
@@ -277,6 +281,7 @@ const AddUnit = () => {
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
                   placeholder="Search by denomination or id"
+                  onClearSearch={clearSearch}
                 />
               </CardHeader>
               <CardBody>

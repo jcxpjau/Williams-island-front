@@ -7,22 +7,19 @@ import {
   Button,
 } from "reactstrap";
 import { BsSearch } from "react-icons/bs";
-import { BsFillPersonFill, BsPeopleFill } from "react-icons/bs";
+import { BsX } from "react-icons/bs";
 
 function SearchEntity({
   handleSearch,
   searchTerm,
   setSearchTerm,
   placeholder = "Search...",
+  onClearSearch
 }) {
   const handleSearchChange = (e) => {
     e.preventDefault();
     setSearchTerm(e.target.value);
-    /* if (foundResults.length > 0) {
-      setFoundResults([]);
-    } */
   };
-
 
   return (
     <div className="mt-3">
@@ -43,11 +40,21 @@ function SearchEntity({
             }
           }}
         />
+
+        {onClearSearch && searchTerm && (
+          <InputGroupAddon addonType="append">
+            <InputGroupText
+              style={{ cursor: "pointer" }}
+              onClick={onClearSearch}
+            >
+              <BsX />
+            </InputGroupText>
+          </InputGroupAddon>
+        )}
         <Button color="primary" onClick={handleSearch} className="ml-2">
           Search
         </Button>
       </InputGroup>
-
     </div>
   );
 }
