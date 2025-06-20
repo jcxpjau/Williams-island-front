@@ -1,21 +1,4 @@
-/*!
-
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-design-system-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -25,52 +8,18 @@ import {
   Row,
   Col,
 } from "reactstrap";
-import {
-  MdFastfood,
-  MdOutlineFitnessCenter,
-  MdPets,
-  MdSportsFootball,
-} from "react-icons/md";
-import { FaCocktail, FaCoffee, FaHome, FaSpa } from "react-icons/fa";
-import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
-
+import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
 import UserHeader from "components/Headers/UserHeader.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
-import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
-
-/* const CATEGORY_OPTIONS = [
-  { value: "", label: "Select a category" },
-  {
-    value: "poa",
-    label: "Property Owners Association",
-    icon: <FaHome size={16} />,
-  },
-  { value: "sports", label: "Sports", icon: <MdSportsFootball size={16} /> },
-  { value: "restaurant", label: "Restaurant", icon: <MdFastfood size={16} /> },
-  { value: "cafe", label: "Cafe", icon: <FaCoffee size={16} /> },
-  { value: "bar", label: "Bar", icon: <FaCocktail size={16} /> },
-  { value: "pet", label: "Pets", icon: <MdPets size={16} /> },
-  { value: "spa", label: "Spa", icon: <FaSpa size={16} /> },
-  { value: "pool", label: "Pool", icon: <FaPersonSwimming size={16} /> },
-  {
-    value: "fitness",
-    label: "Fitness",
-    icon: <MdOutlineFitnessCenter size={16} />,
-  },
-  { value: "marina", label: "Marina", icon: <FaSailboat size={16} /> },
-]; */
+import SearchEntity from "./SearchEntity";
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
-  {
-    value: "Default",
-    label: "Default",
-    icon: <FaHome size={16} />,
-  },
-  { value: "Pets", label: "Pets", icon: <MdPets size={16} /> },
+  { value: "Default", label: "Default" },
+  { value: "Pets", label: "Pets" },
 ];
 
 const AddFee = () => {
@@ -82,16 +31,19 @@ const AddFee = () => {
   };
 
   const [form, setForm] = useState(initialState);
-  const [fees, setFees] = useState([]);
+  const [loadedFee, setLoadedFee] = useState(null);
   const [editingFeeIndex, setEditingFeeIndex] = useState(null);
-  const [deletingFeeIndex, setDeletingFeeIndex] = useState(0);
-  // modal state
+
+  // Modal
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
   const [modalBtnTitle, setModalBtnTitle] = useState(null);
 
-  //Modal controls
+  // Search states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [foundResults, setFoundResults] = useState([]);
+
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
@@ -99,35 +51,9 @@ const AddFee = () => {
     setModalBtnTitle(null);
   };
 
-  useEffect(() => {
-    const fetchFees = async () => {
-      try {
-        const { data } = await api.get("fees");
-        if (!data || data.length == 0) {
-          return;
-        }
-        const mappedData = data.map((item) => ({
-          id: item.id,
-          identifier: item.identifier,
-          category: item.category,
-          type: item.type,
-          value: item.value,
-        }));
-        setFees(mappedData);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchFees();
-  }, []);
-
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setForm((prevData) => ({
-      ...prevData,
-      [id]: value,
-    }));
+    setForm((prev) => ({ ...prev, [id]: value }));
   };
 
   const getChangedFields = (original, updated) => {
@@ -140,8 +66,8 @@ const AddFee = () => {
     return changes;
   };
 
-  const handleSaveFee = () => {
-    if (!form.category || !form.value || !form.identifier) {
+  const handleSaveFee = async () => {
+    if (!form.identifier || !form.category || !form.value) {
       setModal(true);
       setModalTitle("Incomplete register");
       setModalBody("Please fill in all required fields.");
@@ -150,126 +76,134 @@ const AddFee = () => {
 
     const feeValue = parseFloat(form.value);
     if (isNaN(feeValue) || feeValue < 0) {
-      setModalTitle("Invalid register");
+      setModalTitle("Invalid value");
       setModalBody("Please enter a valid positive number for the Fee Value.");
       return;
     }
 
-    if (editingFeeIndex !== null) {
-      const originalFee = fees[editingFeeIndex];
-      const changedFields = getChangedFields(originalFee, form);
-      const putFees = async () => {
-        try {
-          const { data } = await api.put(`fees/${form.id}`, changedFields);
-          const updatedFees = [...fees];
-          updatedFees[editingFeeIndex] = form;
-          setFees(updatedFees);
-          setModal(true);
-          setModalTitle("Fee sucessfully updated!");
-          setModalBody(`Fee '${form.identifier}' was sucessfully updated`);
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      putFees();
+    if (loadedFee) {
+      const changedFields = getChangedFields(loadedFee, form);
+      try {
+        const { data } = await api.put(`fees/${loadedFee.id}`, changedFields);
+        setLoadedFee(data);
+        setModal(true);
+        setModalTitle("Fee updated");
+        setModalBody(`Fee '${form.identifier}' was updated.`);
+      } catch (err) {
+        console.log(err);
+      }
     } else {
-      const postFees = async () => {
-        try {
-          const { data } = await api.post("fees", form);
-          setFees((prev) => [...prev, data]);
-          setModalTitle("Fee sucessfully registered!");
-          setModalBody(
-            "You can edit its details by clicking the pencil icon next to its name if you need"
-          );
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      postFees();
+      try {
+        const { data } = await api.post("fees", form);
+        setLoadedFee(data);
+        setModal(true);
+        setModalTitle("Fee registered");
+        setModalBody("You can edit or delete it using the list on the left.");
+      } catch (err) {
+        console.log(err);
+      }
     }
-
     handleResetForm();
-  };
-
-  const handleConfirmDeleteFee = (feeToEdit, index) => {
-    setModal(true);
-    setModalTitle("Delete fee");
-    setDeletingFeeIndex(index);
-    setModalBtnTitle("Confirm");
-    setModalBody(`Are you sure you want to delete ${feeToEdit.identifier}?`);
-  };
-
-  const handleDeleteFee = () => {
-    const id = fees[deletingFeeIndex].id;
-    const deleteFee = async () => {
-      await api.delete(`fees/${id}`);
-      setFees((prevItems) => prevItems.filter((item) => item.id != id));
-    };
-    deleteFee();
-    setModal(false);
-    setDeletingFeeIndex(null);
-    resetModal();
-  };
-
-  const handleEditFee = (feeToEdit, index) => {
-    setForm(feeToEdit);
-    setEditingFeeIndex(index);
   };
 
   const handleResetForm = () => {
     setForm(initialState);
+    setLoadedFee(null);
     setEditingFeeIndex(null);
   };
+
+  const handleConfirmDeleteFee = () => {
+    setModal(true);
+    setModalTitle("Delete fee");
+    setModalBtnTitle("Confirm");
+    setModalBody(
+      `Are you sure you want to delete fee '${loadedFee.identifier}'? This action cannot be undone.`
+    );
+  };
+
+  const handleDeleteFee = async () => {
+    try {
+      await api.delete(`fees/${loadedFee.id}`);
+      setLoadedFee(null);
+      handleResetForm();
+      resetModal();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSelection = (fee) => {
+    setFoundResults([]);
+    setSearchTerm("");
+    setLoadedFee(fee);
+    setForm(fee);
+  };
+
+  const handleSearch = async () => {
+    handleResetForm();
+
+    if (!searchTerm.trim()) {
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody("Please type a search term (identifier or ID).");
+      return;
+    }
+
+    const parsedId = parseInt(searchTerm.trim(), 10);
+    const isIdSearch = Number.isInteger(parsedId);
+
+    let foundFees = [];
+
+    try {
+      if (isIdSearch) {
+        try {
+          const { data: feeData } = await api.get(`fees/${parsedId}`);
+          if (feeData) foundFees.push(feeData);
+        } catch (err) {
+          console.log("No fee found with this ID.");
+        }
+      } else {
+        try {
+          const { data: feeList } = await api.get("fees", {
+            params: { identifier: searchTerm },
+          });
+          if (feeList && feeList.length > 0) {
+            foundFees = feeList;
+          }
+        } catch (err) {
+          console.log("Error fetching fees by identifier.");
+        }
+      }
+
+      if (foundFees.length > 0) {
+        setFoundResults(foundFees);
+      } else {
+        setModal(true);
+        setModalTitle("No fees found");
+        setModalBody("No fee matches this search term.");
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+    }
+  };
+
+  // ... (imports, states e funções permanecem iguais)
 
   return (
     <>
       <UserHeader
         title="Add Fee"
-        description="In this page you can register and set up new fees."
+        description="In this page you can register and edit fees."
       />
-      {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
-          <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
+          {/* ---- Formulário na Esquerda ---- */}
+          <Col xl="8" className="order-xl-1">
             <Card className="bg-secondary shadow">
-              <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
-                <h3 className="mb-0">Edit fees</h3>
-              </CardHeader>
-              <CardBody>
-                <ListExistingItems.Root>
-                  {fees.length === 0 ? (
-                    <span> No fees registered yet. </span>
-                  ) : (
-                    fees.map((fee, index) => (
-                      <ListExistingItems.Item
-                        key={index}
-                        onEdit={() => handleEditFee(fee, index)}
-                        onDelete={() => handleConfirmDeleteFee(fee, index)}
-                      >
-                        <span>{fee.identifier}</span>
-                      </ListExistingItems.Item>
-                    ))
-                  )}
-                  <ListExistingItems.Button className="mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={handleResetForm}
-                    >
-                      + New fee
-                    </Button>
-                  </ListExistingItems.Button>
-                </ListExistingItems.Root>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col className="order-xl-1" xl="8">
-            <Card className="bg-secondary shadow">
-              <CardHeader className="bg-white border-0">
-                <Col className="p-0" xs="12">
-                  <h3 className="mb-0">
-                    {editingFeeIndex !== null ? "Edit Fee" : "Fee Registration"}
-                  </h3>
-                </Col>
+              <CardHeader>
+                <h3 className="mb-0">
+                  {loadedFee ? "Edit Fee" : "Fee Registration"}
+                </h3>
               </CardHeader>
               <CardBody>
                 <RegistrationForm.Root>
@@ -289,60 +223,93 @@ const AddFee = () => {
                       label="Category"
                       type="select"
                       lg={6}
-                      placeholder="Category"
                       value={form.category}
                       onChange={handleChange}
                       options={CATEGORY_OPTIONS}
                     />
-
                     <RegistrationForm.Field
                       id="type"
                       label="Type"
                       type="select"
                       lg={3}
-                      placeholder="Type"
                       value={form.type}
                       onChange={handleChange}
                       options={[
-                        {
-                          value: "Fixed",
-                          label: "Fixed",
-                        },
-                        {
-                          value: "Percentual",
-                          label: "Percentage",
-                        },
+                        { value: "Fixed", label: "Fixed" },
+                        { value: "Percentual", label: "Percentage" },
                       ]}
                       icon={<BsCurrencyDollar size={18} />}
                     />
-
                     <RegistrationForm.Field
                       id="value"
                       label="Value"
                       type="number"
                       lg={3}
-                      placeholder="0.0"
                       value={form.value}
                       onChange={handleChange}
+                      placeholder="0.0"
                       icon={<BsCurrencyDollar size={18} />}
                     />
                   </RegistrationForm.Section>
-
                   <RegistrationForm.SubmitBtn onClick={handleSaveFee} />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>
           </Col>
+
+          {/* ---- Search + Lista na Direita ---- */}
+          <Col xl="4" className="order-xl-2 mb-5 mb-xl-0">
+            <Card className="bg-secondary shadow">
+              <CardHeader>
+                <h3 className="mb-0">Search and Select Fee</h3>
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder={"Search by identifier or ID"}
+                  foundResults={foundResults}
+                  onMemberSelect={handleSelection}
+                  setFoundResults={setFoundResults}
+                />
+                {foundResults.map((fee) => (
+                  <button
+                    key={fee.id}
+                    className="list-group-item list-group-item-action"
+                    onClick={() => handleSelection(fee)}
+                  >
+                    {fee.identifier} (ID: {fee.id})
+                  </button>
+                ))}
+              </CardHeader>
+              <CardBody>
+                <ListExistingItems.Root>
+                  {loadedFee ? (
+                    <ListExistingItems.Item onDelete={handleConfirmDeleteFee}>
+                      <span>{loadedFee.identifier}</span>
+                    </ListExistingItems.Item>
+                  ) : (
+                    <span>No fee selected.</span>
+                  )}
+                  <ListExistingItems.Button className="mt-4">
+                    <Button
+                      className="border-0 shadow-0 m-0"
+                      onClick={handleResetForm}
+                    >
+                      + New Fee
+                    </Button>
+                  </ListExistingItems.Button>
+                </ListExistingItems.Root>
+              </CardBody>
+            </Card>
+          </Col>
         </Row>
       </Container>
+
       <Modal.Root isOpen={modal} toggle={resetModal}>
         <Modal.Header toggle={resetModal} title={modalTitle} />
         <Modal.Body>{modalBody}</Modal.Body>
         {modalBtnTitle && (
-          <Modal.Footer
-            label={modalBtnTitle}
-            onClick={handleDeleteFee}
-          ></Modal.Footer>
+          <Modal.Footer label={modalBtnTitle} onClick={handleDeleteFee} />
         )}
       </Modal.Root>
     </>
