@@ -34,8 +34,7 @@ import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
 import { ModalCustom as Modal } from "components/MessagePopUp";
-import { setUser } from "context/auth/authSlice";
-import SearchEntity from "./SearchEntity"; // Import the SearchEntity component
+import SearchEntity from "./SearchEntity"; 
 
 const AddUser = () => {
   const initialState = {
@@ -369,9 +368,7 @@ const AddUser = () => {
   };
 
   const clearSearch = () => {
-    setLoading(true);
     setSearchTerm("");
-    setLoading(false);
     setDisplayUsers(users);
   };
 
@@ -411,7 +408,7 @@ const AddUser = () => {
               <CardBody>
                 <ListExistingItems.Root>
                   {displayUsers.length === 0 && !loading ? (
-                    <span> No users registered yet. </span>
+                    <span> No users found. </span>
                   ) : (
                     displayUsers.map((user) => (
                       <ListExistingItems.Item

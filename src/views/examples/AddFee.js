@@ -24,13 +24,9 @@ import {
   Container,
   Row,
   Col,
+  Spinner,
 } from "reactstrap";
-import {
-  MdFastfood,
-  MdOutlineFitnessCenter,
-  MdPets,
-  MdSportsFootball,
-} from "react-icons/md";
+import { MdPets } from "react-icons/md";
 import { FaCocktail, FaCoffee, FaHome, FaSpa } from "react-icons/fa";
 import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
 
@@ -82,9 +78,14 @@ const AddFee = () => {
     value: "",
   };
 
+  // loading state
+  const [loading, setLoading] = useState(false);
+  //control form
   const [form, setForm] = useState(initialState);
+  // control fee list
   const [fees, setFees] = useState([]);
-  const [displayFees, setDisplayFees] = useState([]); 
+  const [displayFees, setDisplayFees] = useState([]);
+  // control editing and deleting
   const [editingFeeId, setEditingFeeId] = useState(null);
   const [deletingFeeId, setDeletingFeeId] = useState(0);
   // modal state
@@ -119,6 +120,7 @@ const AddFee = () => {
         }));
         setFees(mappedData);
         setDisplayFees(mappedData);
+        setLoading(false);
       } catch (err) {
         console.log(err);
       }
@@ -168,7 +170,7 @@ const AddFee = () => {
           const { data } = await api.put(`fees/${form.id}`, changedFields);
           const updatedFees = fees.map((fee) =>
             fee.id === form.id ? form : fee
-          ); 
+          );
           setFees(updatedFees);
 
           const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -197,7 +199,7 @@ const AddFee = () => {
         try {
           const { data } = await api.post("fees", form);
           setFees((prev) => [...prev, data]);
-          setDisplayFees((prev) => [...prev, data]); 
+          setDisplayFees((prev) => [...prev, data]);
           setModal(true);
           setModalTitle("Fee successfully registered!");
           setModalBody(
@@ -214,7 +216,7 @@ const AddFee = () => {
   const handleConfirmDeleteFee = (feeToEdit, index) => {
     setModal(true);
     setModalTitle("Delete fee");
-    setDeletingFeeId(feeToEdit.id); 
+    setDeletingFeeId(feeToEdit.id);
     setModalBtnTitle("Confirm");
     setModalBody(`Are you sure you want to delete ${feeToEdit.identifier}?`);
   };
@@ -222,7 +224,7 @@ const AddFee = () => {
   const handleDeleteFee = () => {
     const deleteFee = async () => {
       try {
-        await api.delete(`fees/${deletingFeeId}`); 
+        await api.delete(`fees/${deletingFeeId}`);
         const updatedFees = fees.filter((fee) => fee.id !== deletingFeeId);
         setFees(updatedFees);
 
@@ -237,7 +239,7 @@ const AddFee = () => {
     deleteFee();
     setModal(false);
     setDeletingFeeId(null);
-    setForm(initialState); 
+    setForm(initialState);
     resetModal();
   };
 
@@ -252,18 +254,17 @@ const AddFee = () => {
   };
 
   // search controls
-  const handleSearch = () => {
-    if (searchTerm === "") {
-      setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody("Please enter a valid name or ID.");
+  const handleSearch = (searchTerm) => {
+    const trimmedTerm = searchTerm.trim();
+    if (trimmedTerm === "") {
+      setDisplayFees(fees);
       return;
     }
+    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
 
     const filteredFees = fees.filter((fee) => {
       const identifier = fee.identifier ? fee.identifier.toLowerCase() : "";
       const id = fee.id ? fee.id.toString().toLowerCase() : "";
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
       return (
         identifier.includes(lowerCaseSearchTerm) ||
@@ -274,8 +275,8 @@ const AddFee = () => {
   };
 
   const clearSearch = () => {
-    setSearchTerm(""); 
-    setDisplayFees(fees); 
+    setSearchTerm("");
+    setDisplayFees(fees);
   };
 
   return (
@@ -294,18 +295,18 @@ const AddFee = () => {
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
-                  placeholder="Search by identifier or id"
-                  onClearSearch={searchTerm ? clearSearch : null} 
+                  placeholder="Search by description or id"
+                  onClearSearch={clearSearch}
                 />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {displayFees.length === 0 ? (
-                    <span> No fees registered yet. </span>
+                  {displayFees.length === 0 && !loading ? (
+                    <span> No fees found. </span>
                   ) : (
                     displayFees.map((fee, index) => (
                       <ListExistingItems.Item
-                        key={fee.id} 
+                        key={fee.id}
                         onEdit={() => handleEditFee(fee)}
                         onDelete={() => handleConfirmDeleteFee(fee, fee.id)}
                       >
@@ -317,6 +318,12 @@ const AddFee = () => {
                         <span className="ml-2">{fee.identifier}</span>
                       </ListExistingItems.Item>
                     ))
+                  )}
+                  {loading && (
+                    <div className="d-flex flex-column align-items-center justify-content-center">
+                      <Spinner> </Spinner>
+                      <p> Loading fees </p>
+                    </div>
                   )}
                   <ListExistingItems.Button className="mt-4">
                     <Button

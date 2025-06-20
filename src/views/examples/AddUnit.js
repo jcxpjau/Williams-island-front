@@ -25,6 +25,7 @@ import {
   Container,
   Row,
   Col,
+  Spinner,
 } from "reactstrap";
 import { BsBuilding, BsPeopleFill, BsEnvelope } from "react-icons/bs";
 import UserHeader from "components/Headers/UserHeader.js";
@@ -45,9 +46,13 @@ const AddUnit = () => {
     color: null,
   };
 
+  const [loading, setLoading] = useState(false);
+  //control form
   const [form, setForm] = useState(initialState);
+  // control unit list
   const [units, setUnits] = useState([]);
   const [displayUnits, setDisplayUnits] = useState([]);
+  // control editing and deleting
   const [editingUnitId, setEditingUnitId] = useState(null);
   const [deletingUnitId, setDeletingUnitId] = useState(0);
   // modal state
@@ -67,6 +72,7 @@ const AddUnit = () => {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchUnits = async () => {
       try {
         const { data } = await api.get("units");
@@ -84,6 +90,7 @@ const AddUnit = () => {
         }));
         setUnits(mappedData);
         setDisplayUnits(mappedData);
+        setLoading(false)
       } catch (err) {
         console.log(err);
       }
@@ -136,9 +143,7 @@ const AddUnit = () => {
     if (editingUnitId !== null) {
       const putUnits = async () => {
         try {
-          const originalUnit = units.find(
-            (unit) => unit.id === editingUnitId
-          );
+          const originalUnit = units.find((unit) => unit.id === editingUnitId);
           const changedFields = getChangedFields(originalUnit, form);
           await api.put(`units/${form.id}`, changedFields);
           const updatedUnits = units.map((unit) =>
@@ -198,7 +203,6 @@ const AddUnit = () => {
         const updatedUnits = units.filter((unit) => unit.id !== deletingUnitId);
         setUnits(updatedUnits);
 
-        // Mantém o filtro atual (não bagunça a exibição pós-delete)
         const updatedDisplay = displayUnits.filter(
           (unit) => unit.id !== deletingUnitId
         );
@@ -230,38 +234,39 @@ const AddUnit = () => {
   };
 
   const handleResetForm = () => {
-    //setForm(initialState);
     setEditingUnitId(null);
   };
 
   // search controls
-  const handleSearch = () => {
-    if (searchTerm === "") {
-      setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody("Please enter a valid name or id");
+  const handleSearch = (searchTerm) => {
+    const trimmedTerm = searchTerm.trim();
+
+    if (trimmedTerm === "") {
+      setDisplayUnits(units);
       return;
     }
 
-    const filteredUnits = displayUnits.filter((unit) => {
+    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
+
+    const filteredUnits = units.filter((unit) => {
       const denomination = unit.denomination
         ? unit.denomination.toLowerCase()
         : "";
       const id = unit.id ? unit.id.toString().toLowerCase() : "";
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
       return (
         denomination.includes(lowerCaseSearchTerm) ||
         id.includes(lowerCaseSearchTerm)
       );
     });
-    console.log(filteredUnits);
+
     setDisplayUnits(filteredUnits);
   };
 
-  const clearSearch = () =>{
+  const clearSearch = () => {
+    setSearchTerm("");
     setDisplayUnits(units);
-  }
+  };
 
   return (
     <>
@@ -269,7 +274,6 @@ const AddUnit = () => {
         title="Add Unit"
         description="In this page you can add residential units or edit their information."
       />
-      {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
@@ -286,8 +290,8 @@ const AddUnit = () => {
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {displayUnits.length === 0 ? (
-                    <span> No units registered yet. </span>
+                  {displayUnits.length === 0 && !loading ? (
+                    <span> No units found. </span>
                   ) : (
                     displayUnits.map((unit, index) => (
                       <ListExistingItems.Item
@@ -301,6 +305,12 @@ const AddUnit = () => {
                         </span>
                       </ListExistingItems.Item>
                     ))
+                  )}
+                   {loading && (
+                    <div className="d-flex flex-column align-items-center justify-content-center">
+                      <Spinner> </Spinner>
+                      <p> Loading units </p>
+                    </div>
                   )}
                   <ListExistingItems.Button className="mt-4">
                     <Button
@@ -319,9 +329,7 @@ const AddUnit = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingUnitId !== null
-                      ? "Edit Unit"
-                      : "Unit Registration"}
+                    {editingUnitId !== null ? "Edit Unit" : "Unit Registration"}
                   </h3>
                 </Col>
               </CardHeader>
