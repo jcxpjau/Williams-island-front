@@ -19,26 +19,25 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-    response => {
-        return response;
-    },
+    response => response,
     async (error) => {
+        console.log( process.env.REACT_APP_API_URL);
         const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (
+            error.response?.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry &&
+            !originalRequest.url?.includes('/auth/refresh')
+        ) {
             originalRequest._retry = true;
+            console.log( process.env.REACT_APP_API_URL);
             try {
-                const response = await axios.post(
-                    "auth/refresh",
-                    {},
-                    { withCredentials: true }
-                );
-                const { accessToken } = response.data;
-                let remember = false;
-                if (localStorage.getItem('wi.token')) {
-                    remember = true;
+                const res = await api.post('/auth/refresh', {}, { withCredentials: true });
+                const newAccessToken = res.data.access_token;
+                store.dispatch(login({ token: newAccessToken, remember: true }));
+                if (originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 }
-                store.dispatch(login({ token: accessToken, remember: remember }));
-                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 store.dispatch(logout());
@@ -48,5 +47,4 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
 export default api;
