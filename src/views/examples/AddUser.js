@@ -33,7 +33,8 @@ import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
 import { MdLockOutline } from "react-icons/md";
 import api from "services/api";
 import { ModalCustom as Modal } from "components/MessagePopUp";
-import SearchEntity from "./SearchEntity"; 
+import { setUser } from "context/auth/authSlice";
+import SearchEntity from "./SearchEntity"; // Import the SearchEntity component
 
 const AddUser = () => {
   const initialState = {
@@ -48,7 +49,7 @@ const AddUser = () => {
   // control form
   const [form, setForm] = useState(initialState);
   // control editing and deleting
-  const [editingUserId, setEditingUserIndex] = useState(null); 
+  const [editingUserId, setEditingUserId] = useState(null); 
   const [deletingUserId, setDeletingUserId] = useState(null); 
   // control hidden password
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
@@ -111,12 +112,12 @@ const AddUser = () => {
 
 
   useEffect(() => {
-    if (editingUserIndex === null) {
+    if (editingUserId === null) {
       setCurrentPasswordVisible(false);
       setCurrentPassword(null);
       setOriginalPasswordForComparison("");
     } else {
-      const userToEdit = users.find((user) => user.id === editingUserIndex);
+      const userToEdit = users.find((user) => user.id === editingUserId);
       if (userToEdit) {
         setOriginalPasswordForComparison(userToEdit.password);
         setCurrentPasswordVisible(false); 
@@ -154,7 +155,7 @@ const AddUser = () => {
       !form.phone ||
       !form.email ||
       !form.type || 
-      (!editingUserIndex && !form.password) 
+      (!editingUserId && !form.password) 
     ) {
       setModal(true);
       setModalTitle("Incomplete register");
@@ -162,8 +163,8 @@ const AddUser = () => {
       return;
     }
 
-    if (editingUserIndex !== null) {
-      const currentUser = users.find((user) => user.id === editingUserIndex)
+    if (editingUserId !== null) {
+      const currentUser = users.find((user) => user.id === editingUserId)
 
       if (currentUser && currentUser.id === loggedUserInfo.id) {
         const originalUser = currentUser; 
@@ -221,7 +222,7 @@ const AddUser = () => {
               const { data } = await api.patch("users/me", fieldsToSend);
               const updatedUsers = users.map(
                 (user) =>
-                  user.id === editingUserIndex
+                  user.id === editingUserId
                     ? { ...form, password: user.password }
                     : user 
               );
@@ -309,7 +310,7 @@ const AddUser = () => {
 
   const handleEditUser = (userToEdit) => {
     setForm(userToEdit);
-    setEditingUserIndex(userToEdit.id);
+    setEditingUserId(userToEdit.id);
     setOriginalPasswordForComparison(userToEdit.password); 
     setCurrentPasswordVisible(false); 
     setCurrentPassword(null); 
@@ -327,7 +328,7 @@ const AddUser = () => {
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingUserIndex(null); 
+    setEditingUserId(null); 
     setOriginalPasswordForComparison(""); 
     setCurrentPasswordVisible(false); 
     setCurrentPassword(null); 
@@ -425,7 +426,7 @@ const AddUser = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingUserIndex !== null
+                    {editingUserId !== null
                       ? "Edit User"
                       : "User Registration"}
                   </h3>
@@ -484,7 +485,7 @@ const AddUser = () => {
                       id="password"
                       value={form.password}
                       placeholder={
-                        editingUserIndex !== null
+                        editingUserId !== null
                           ? "Leave blank to keep current"
                           : ""
                       }
@@ -492,14 +493,14 @@ const AddUser = () => {
                       onChange={(e) => {
                         handleChange(e); 
                         const isPasswordModified =
-                          editingUserIndex !== null &&
+                          editingUserId !== null &&
                           (e.target.value !== originalPasswordForComparison ||
                             (originalPasswordForComparison === "" &&
                               e.target.value.trim() !== ""));
 
                         setCurrentPasswordVisible(isPasswordModified);
                         if (
-                          editingUserIndex !== null &&
+                          editingUserId !== null &&
                           e.target.value === originalPasswordForComparison
                         ) {
                           setCurrentPassword(null);

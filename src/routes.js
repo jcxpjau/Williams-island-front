@@ -52,12 +52,14 @@ var routes = [
     icon: "ni ni-tv-2",
     component: <Index />,
     layout: "/admin",
+    active: true
   },
   {
     name: "Membership",
     icon: "ni ni-paper-diploma",
     collapse: true,
     state: "membershipCollapse",
+    active: true,
     views: [
       {
         path: "/membership/list",
@@ -73,25 +75,100 @@ var routes = [
         component: <SetupMember />,
         active: true,
       },
+    ],
+  },
+  {
+    name: "Communications",
+    icon: "ni ni-notification-70",
+    collapse: true,
+    state: "communitcationCollapse",
+    active: true,
+    views: [
       {
-        path: "/membership/edit",
-        name: "Edit Member",
+        path: "/communication/event/management",
+        name: "Ads",
         layout: "/admin",
-        component: <EditMember />,
+        component: <Ads />,
+        hideFooter: true,
+        active: true,
+      },
+      {
+        path: "/communication/builder",
+        name: "Form Builder",
+        layout: "/admin",
+        component: <Profile />,
         active: false,
       },
       {
-        path: "/membership/passes",
-        name: "Members Passes",
+        path: "/communication/Emails",
+        name: "Emails",
         layout: "/admin",
-        component: <MemberPasses />,
+        component: <Profile />,
         active: false,
       },
       {
-        path: "/membership/report",
-        name: "Report",
+        path: "/communication/group",
+        name: "Group Messaging",
+        layout: "/admin",
+        component: <Profile />,
+        active: false,
+      },
+      {
+        path: "/communication/geomarketing",
+        name: "Geo-marketing",
+        layout: "/admin",
+        component: <Profile />,
+        active: false,
+      },
+      {
+        path: "/communication/demographic/reports",
+        name: "Demographic Reports",
         layout: "/admin",
         component: <Report />,
+        active: false,
+      },
+    ],
+  },
+  {
+    name: "Administration",
+    icon: "ni ni-money-coins",
+    collapse: true,
+    state: "adminCollapse",
+    active: true,
+    views: [
+      {
+        path: "/users/list",
+        name: "Add user",
+        layout: "/admin",
+        component: <AddUser />,
+        active: true,
+      },
+      {
+        path: "/accounting/fees/add",
+        name: "Add fees",
+        layout: "/admin",
+        component: <AddFee />,
+        active: true,
+      },
+      {
+        path: "/administrations/units/add",
+        name: "Add units",
+        layout: "/admin",
+        component: <AddUnit />,
+        active: true,
+      },
+      {
+        path: "/administrations/demographic/add",
+        name: "Add Demographic",
+        layout: "/admin",
+        component: <Profile />,
+        active: false,
+      },
+      {
+        path: "/administrations/delivery",
+        name: "Delivery",
+        layout: "/admin",
+        component: <Profile />,
         active: false,
       },
     ],
@@ -101,6 +178,7 @@ var routes = [
     icon: "ni ni-collection",
     collapse: true,
     state: "accountingCollapse",
+    active: false,
     views: [
       {
         path: "/accounting/fees",
@@ -137,6 +215,7 @@ var routes = [
     icon: "ni ni-building",
     collapse: true,
     state: "invetoryCollapse",
+    active: false,
     views: [
       {
         path: "/inventory/list",
@@ -180,6 +259,7 @@ var routes = [
     icon: "ni ni-calendar-grid-58",
     collapse: true,
     state: "activitiesCollapse",
+    active: false,
     views: [
       {
         path: "/booking",
@@ -206,6 +286,7 @@ var routes = [
     icon: "ni ni-book-bookmark",
     collapse: true,
     state: "eventCollapse",
+    active: false,
     views: [
       {
         path: "/events/list",
@@ -262,6 +343,7 @@ var routes = [
     icon: "ni ni-books",
     collapse: true,
     state: "hrCollapse",
+    active: false,
     views: [
       {
         path: "/administration/employees/list",
@@ -329,104 +411,11 @@ var routes = [
     ],
   },
   {
-    name: "Communications",
-    icon: "ni ni-notification-70",
-    collapse: true,
-    state: "communitcationCollapse",
-    views: [
-      {
-        path: "/communication/event/management",
-        name: "Ads",
-        layout: "/admin",
-        component: <Ads />,
-        hideFooter: true,
-        active: true,
-      },
-      {
-        path: "/communication/builder",
-        name: "Form Builder",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-      {
-        path: "/communication/Emails",
-        name: "Emails",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-      {
-        path: "/communication/group",
-        name: "Group Messaging",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-      {
-        path: "/communication/geomarketing",
-        name: "Geo-marketing",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-      {
-        path: "/communication/demographic/reports",
-        name: "Demographic Reports",
-        layout: "/admin",
-        component: <Report />,
-        active: false,
-      },
-    ],
-  },
-  {
-    name: "Administration",
-    icon: "ni ni-money-coins",
-    collapse: true,
-    state: "adminCollapse",
-    views: [
-      {
-        path: "/users/list",
-        name: "Add new user",
-        layout: "/admin",
-        component: <AddUser />,
-        active: true,
-      },
-      {
-        path: "/accounting/fees/add",
-        name: "Add new fees",
-        layout: "/admin",
-        component: <AddFee />,
-        active: true,
-      },
-      {
-        path: "/administrations/units/add",
-        name: "Add Unit",
-        layout: "/admin",
-        component: <AddUnit />,
-        active: true,
-      },
-      {
-        path: "/administrations/demographic/add",
-        name: "Add Demographic",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-      {
-        path: "/administrations/delivery",
-        name: "Delivery",
-        layout: "/admin",
-        component: <Profile />,
-        active: false,
-      },
-    ],
-  },
-  {
     name: "Security",
     icon: "ni ni-lock-circle-open",
     collapse: true,
     state: "securityCollapse",
+    active: false,
     views: [
       {
         path: "/security/parking/passes",

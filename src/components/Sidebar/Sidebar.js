@@ -34,15 +34,12 @@ import {
 
 const Sidebar = (props) => {
   const [collapseOpen, setCollapseOpen] = useState();
-  // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
     return props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
   };
-  // toggles collapse between opened and closed (true/false)
   const toggleCollapse = () => {
     setCollapseOpen((data) => !data);
   };
-  // closes the collapse
   const closeCollapse = () => {
     setCollapseOpen(false);
   };
@@ -56,45 +53,72 @@ const Sidebar = (props) => {
     }));
   };
 
-  const createLinks = (routes) => {
+  const createLinks = () => {
     return routes.map((route, key) => {
-      // Handle collapsible routes (main parent links)
       if (route.collapse && route.views) {
-        // Determine if the parent route link is currently active
         const isParentActiveRoute =
           activeRoute(route.layout + route.path) === "active";
-        const isParentClickable = route.active !== false;
+    
+        const isParentClickable = route.active; 
 
         return (
           <div key={key} className="nav-item">
-            <a
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                toggleCollapseItem(route.state);
-              }}
-              className={`nav-link ${isParentActiveRoute ? "active" : ""} ${
-                !isParentClickable ? "disabled" : ""
-              }`}
-              style={{
-                color: isParentClickable ? "#1a174d" : "gray",
-                fontWeight: isParentActiveRoute ? "bold" : "normal", 
-                borderLeft: "none",
-                cursor: isParentClickable ? "pointer" : "not-allowed",
-              }}
-            >
-              <i className={route.icon} style={{ color: "#1a174d" }} />
-              <span>{route.name}</span>
-              <i
-                className={
-                  collapseStates[route.state]
-                    ? "fa fa-chevron-up"
-                    : "fa fa-chevron-down"
-                }
-                aria-hidden="true"
-                style={{ position: "absolute", right: 0, color: "#1a174d" }}
-              />
-            </a>
+            
+            {isParentClickable ? (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault(); 
+                  toggleCollapseItem(route.state); 
+                }}
+                className={`nav-link ${isParentActiveRoute ? "active" : ""}`}
+                style={{
+                  color: "#1a174d", 
+                  fontWeight: isParentActiveRoute ? "bold" : "normal", 
+                  borderLeft: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <i className={route.icon} style={{ color: "#1a174d" }} />
+                <span>{route.name}</span>
+                <i
+                  className={
+                    collapseStates[route.state]
+                      ? "fa fa-chevron-up"
+                      : "fa fa-chevron-down"
+                  }
+                  aria-hidden="true"
+                  style={{ position: "absolute", right: 0, color: "#1a174d" }}
+                />
+              </a>
+            ) : (
+             
+              <a
+                href="#" 
+                onClick={(e) => e.preventDefault()} 
+                className="nav-link disabled" 
+                style={{
+                  color: "gray", 
+                  fontWeight: "normal", 
+                  borderLeft: "none",
+                  cursor: "not-allowed", 
+                  backgroundColor: "transparent",
+                }}
+              >
+                <i className={route.icon} style={{ color: "#A7A7B9" }} />
+                <span>{route.name}</span>
+                <i
+                  className={
+                    collapseStates[route.state]
+                      ? "fa fa-chevron-up"
+                      : "fa fa-chevron-down"
+                  }
+                  aria-hidden="true"
+                  style={{ position: "absolute", right: 0, color: "#A7A7B9" }} 
+                />
+              </a>
+            )}
+
             <div
               className={`collapse ${
                 collapseStates[route.state] ? "show" : ""
@@ -104,7 +128,7 @@ const Sidebar = (props) => {
                 {route.views.map((subRoute, idx) => {
                   const isActiveSubRoute =
                     activeRoute(subRoute.layout + subRoute.path) === "active";
-                  const isSubClickable = subRoute.active; 
+                  const isSubClickable = subRoute.active;
 
                   return (
                     <div className="nav-item" key={idx}>
@@ -121,24 +145,23 @@ const Sidebar = (props) => {
                             backgroundColor: isActiveSubRoute
                               ? "#f6f9fc"
                               : "transparent",
-                            color: '#1a174d',
+                            color: "#1a174d",
                             fontWeight: isActiveSubRoute ? "bold" : "normal",
                           }}
                         >
                           {subRoute.name}
                         </NavLinkRRD>
                       ) : (
-                
                         <a
-                          href="#" 
+                          href="#"
                           onClick={(e) => e.preventDefault()}
-                          className="nav-link subitem disabled" 
+                          className="nav-link subitem disabled"
                           style={{
                             marginLeft: "-1.5rem",
-                            borderLeft: "none", 
+                            borderLeft: "none",
                             backgroundColor: "transparent",
-                            color: "#A7A7B9",
-                            fontWeight: "normal", 
+                            color: "#A7A7B9", // Lighter gray for inactive sub-items
+                            fontWeight: "normal",
                             cursor: "not-allowed",
                           }}
                         >
@@ -153,26 +176,24 @@ const Sidebar = (props) => {
           </div>
         );
       } else {
-        // Handle non-collapsible top-level routes
+        // Handle non-collapsible top-level routes (like 'Dashboard')
         const isTopLevelActiveRoute =
           activeRoute(route.layout + route.path) === "active";
-        const isTopLevelClickable = route.active !== false; // Assuming true by default
+        const isTopLevelClickable = route.active; // Use route.active directly
 
         return (
           <div className="nav-item" key={key}>
-            {" "}
-            {/* Corresponds to <NavItem> */}
             {isTopLevelClickable ? (
               <NavLinkRRD
                 to={route.layout + route.path}
                 onClick={closeCollapse}
                 className={`nav-link ${isTopLevelActiveRoute ? "active" : ""}`}
                 style={{
-                  borderLeft: "none", // Ensure no border
+                  borderLeft: "none",
                   backgroundColor: isTopLevelActiveRoute
                     ? "#f6f9fc"
                     : "transparent",
-                  color: isTopLevelActiveRoute ? "#1a174d" : "inherit",
+                  color: "#1a174d", // Default color for active top-level
                   fontWeight: isTopLevelActiveRoute ? "bold" : "normal",
                 }}
               >
@@ -185,9 +206,9 @@ const Sidebar = (props) => {
                 onClick={(e) => e.preventDefault()}
                 className="nav-link disabled"
                 style={{
-                  borderLeft: "none", // Ensure no border
+                  borderLeft: "none",
                   backgroundColor: "transparent",
-                  color: "gray",
+                  color: "gray", // Gray text for inactive top-level
                   fontWeight: "normal",
                   cursor: "not-allowed",
                 }}
@@ -201,7 +222,6 @@ const Sidebar = (props) => {
       }
     });
   };
-
   const { bgColor, routes, logo } = props;
   let navbarBrandProps;
   if (logo && logo.innerLink) {
