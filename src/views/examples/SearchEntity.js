@@ -1,24 +1,46 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   Input,
-  Button,
 } from "reactstrap";
-import { BsSearch } from "react-icons/bs";
-import { BsX } from "react-icons/bs";
+import { BsSearch, BsX } from "react-icons/bs";
 
 function SearchEntity({
   handleSearch,
   searchTerm,
   setSearchTerm,
   placeholder = "Search...",
-  onClearSearch
+  onClearSearch,
 }) {
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (debouncedSearchTerm !== searchTerm) {
+        setDebouncedSearchTerm(searchTerm);
+        handleSearch(searchTerm);
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm, handleSearch, debouncedSearchTerm]);
+
   const handleSearchChange = (e) => {
-    e.preventDefault();
     setSearchTerm(e.target.value);
+  };
+
+  const handleBlur = () => {
+    handleSearch(searchTerm);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch(searchTerm);
+      e.target.blur();
+    }
   };
 
   return (
@@ -34,14 +56,11 @@ function SearchEntity({
           type="text"
           value={searchTerm}
           onChange={handleSearchChange}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleSearch();
-            }
-          }}
+          onBlur={handleBlur}
+          onKeyPress={handleKeyPress}
+          innerRef={inputRef}
         />
-
-        {onClearSearch && searchTerm && (
+        {onClearSearch && (
           <InputGroupAddon addonType="append">
             <InputGroupText
               style={{ cursor: "pointer" }}
@@ -51,9 +70,6 @@ function SearchEntity({
             </InputGroupText>
           </InputGroupAddon>
         )}
-        <Button color="primary" onClick={handleSearch} className="ml-2">
-          Search
-        </Button>
       </InputGroup>
     </div>
   );

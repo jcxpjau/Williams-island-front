@@ -25,6 +25,7 @@ export function Field({
   pattern,
   options,
   icon,
+  readOnly=false
 }) {
   const colProps = {};
   if (lg) colProps.lg = lg;
@@ -87,6 +88,7 @@ export function Field({
         onChange={onChange}
         placeholder={placeholder}
         pattern={pattern}
+        readOnly={readOnly}
       />
     );
 

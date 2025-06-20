@@ -21,7 +21,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     response => response,
     async (error) => {
-        console.log( process.env.REACT_APP_API_URL);
+       /*  console.log( process.env.REACT_APP_API_URL); */
         const originalRequest = error.config;
         if (
             error.response?.status === 401 &&

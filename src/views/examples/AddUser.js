@@ -24,6 +24,7 @@ import {
   Container,
   Row,
   Col,
+  Spinner,
 } from "reactstrap";
 
 import UserHeader from "components/Headers/UserHeader.js";
@@ -46,11 +47,13 @@ const AddUser = () => {
     type: "",
   };
 
+  // loading state
+  const [loading, setLoading] = useState(false);
   // control form
   const [form, setForm] = useState(initialState);
   // control editing and deleting
-  const [editingUserId, setEditingUserId] = useState(null); 
-  const [deletingUserId, setDeletingUserId] = useState(null); 
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null);
   // control hidden password
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState(null);
@@ -58,7 +61,7 @@ const AddUser = () => {
     useState("");
   // control user list
   const [users, setUsers] = useState([]);
-  const [displayUsers, setDisplayUsers] = useState([]); 
+  const [displayUsers, setDisplayUsers] = useState([]);
   // save logged user
   const [loggedUserInfo, setLoggedUserInfo] = useState("");
 
@@ -66,11 +69,12 @@ const AddUser = () => {
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
-  const [modalBtnTitle, setModalBtnTitle] = useState(null); 
+  const [modalBtnTitle, setModalBtnTitle] = useState(null);
   // search state
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    setLoading(true);
     const fetchUsers = async () => {
       try {
         const { data } = await api.get("users");
@@ -88,7 +92,8 @@ const AddUser = () => {
           type: item.type,
         }));
         setUsers(mappedData);
-        setDisplayUsers(mappedData); 
+        setDisplayUsers(mappedData);
+        setLoading(false);
       } catch (err) {
         console.log(err);
       }
@@ -110,7 +115,6 @@ const AddUser = () => {
     fetchUsers();
   }, []);
 
-
   useEffect(() => {
     if (editingUserId === null) {
       setCurrentPasswordVisible(false);
@@ -120,17 +124,17 @@ const AddUser = () => {
       const userToEdit = users.find((user) => user.id === editingUserId);
       if (userToEdit) {
         setOriginalPasswordForComparison(userToEdit.password);
-        setCurrentPasswordVisible(false); 
-        setCurrentPassword(null); 
+        setCurrentPasswordVisible(false);
+        setCurrentPassword(null);
       }
     }
-  }, [editingUserId, users]); 
+  }, [editingUserId, users]);
 
   const resetModal = () => {
     setModal(!modal);
     setModalTitle("");
     setModalBody("");
-    setModalBtnTitle(null); 
+    setModalBtnTitle(null);
   };
 
   const handleChange = (e) => {
@@ -154,8 +158,8 @@ const AddUser = () => {
       !form.surname ||
       !form.phone ||
       !form.email ||
-      !form.type || 
-      (!editingUserId && !form.password) 
+      !form.type ||
+      (!editingUserId && !form.password)
     ) {
       setModal(true);
       setModalTitle("Incomplete register");
@@ -164,10 +168,10 @@ const AddUser = () => {
     }
 
     if (editingUserId !== null) {
-      const currentUser = users.find((user) => user.id === editingUserId)
+      const currentUser = users.find((user) => user.id === editingUserId);
 
       if (currentUser && currentUser.id === loggedUserInfo.id) {
-        const originalUser = currentUser; 
+        const originalUser = currentUser;
         const changedFields = getChangedFields(originalUser, form);
         const { password, ...fieldsToSend } = changedFields;
 
@@ -220,11 +224,10 @@ const AddUser = () => {
           const patchChanges = async () => {
             try {
               const { data } = await api.patch("users/me", fieldsToSend);
-              const updatedUsers = users.map(
-                (user) =>
-                  user.id === editingUserId
-                    ? { ...form, password: user.password }
-                    : user 
+              const updatedUsers = users.map((user) =>
+                user.id === editingUserId
+                  ? { ...form, password: user.password }
+                  : user
               );
               setUsers(updatedUsers);
 
@@ -263,7 +266,7 @@ const AddUser = () => {
         try {
           const { data } = await api.post("users", form);
           setUsers((prev) => [...prev, data]);
-          setDisplayUsers((prev) => [...prev, data]); 
+          setDisplayUsers((prev) => [...prev, data]);
           setModal(true);
           setModalTitle("User registered");
           setModalBody(
@@ -311,15 +314,15 @@ const AddUser = () => {
   const handleEditUser = (userToEdit) => {
     setForm(userToEdit);
     setEditingUserId(userToEdit.id);
-    setOriginalPasswordForComparison(userToEdit.password); 
-    setCurrentPasswordVisible(false); 
-    setCurrentPassword(null); 
+    setOriginalPasswordForComparison(userToEdit.password);
+    setCurrentPasswordVisible(false);
+    setCurrentPassword(null);
   };
 
-  const handleConfirmDeleteUser = (userToEdit, index) => {
+  const handleConfirmDeleteUser = (userToEdit) => {
     setModal(true);
     setModalTitle("Delete user");
-    setDeletingUserId(userToEdit.id); 
+    setDeletingUserId(userToEdit.id);
     setModalBtnTitle("Confirm");
     setModalBody(
       `Are you sure you want to delete user ${userToEdit.name} ${userToEdit.surname}? They will no longer be able to log into this system`
@@ -328,40 +331,48 @@ const AddUser = () => {
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingUserId(null); 
-    setOriginalPasswordForComparison(""); 
-    setCurrentPasswordVisible(false); 
-    setCurrentPassword(null); 
+    setEditingUserId(null);
+    setOriginalPasswordForComparison("");
+    setCurrentPasswordVisible(false);
+    setCurrentPassword(null);
   };
 
   // search controls
-  const handleSearch = () => {
-    if (searchTerm === "") {
-      setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody("Please enter a valid name, surname, or email.");
+  const handleSearch = (searchTerm) => {
+    setLoading(true);
+    const trimmedTerm = searchTerm.trim();
+
+    if (trimmedTerm === "") {
+      setDisplayUsers(users);
+      setLoading(false);
       return;
     }
 
+    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
+
     const filteredUsers = users.filter((user) => {
-      
       const name = user.name ? user.name.toLowerCase() : "";
       const surname = user.surname ? user.surname.toLowerCase() : "";
-      const id = user.id ? user.id.toLowerCase() : "";
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      const email = user.email ? user.email.toLowerCase() : "";
+      const id = user.id ? user.id : "";
 
       return (
         name.includes(lowerCaseSearchTerm) ||
         surname.includes(lowerCaseSearchTerm) ||
-        id.includes(lowerCaseSearchTerm)
+        email.includes(lowerCaseSearchTerm) ||
+        id === lowerCaseSearchTerm
       );
     });
+
     setDisplayUsers(filteredUsers);
+    setLoading(false);
   };
 
   const clearSearch = () => {
+    setLoading(true);
     setSearchTerm("");
-    setDisplayUsers(users); 
+    setLoading(false);
+    setDisplayUsers(users);
   };
 
   return (
@@ -370,52 +381,58 @@ const AddUser = () => {
         title="Add User"
         description="In this page you can add a new user or change their information."
       />
-  
+
       <Container className="mt--7" fluid>
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit user information</h3>
-              
+                <div className="d-flex justify-content-end">
+                  <ListExistingItems.Root>
+                    <ListExistingItems.Button className="mt-4">
+                      <Button
+                        className="border-0 shadow-0 m-0"
+                        onClick={handleResetForm}
+                      >
+                        + New user
+                      </Button>
+                    </ListExistingItems.Button>
+                  </ListExistingItems.Root>
+                </div>
                 <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
                   placeholder="Search by name, surname or email"
-                  onClearSearch={searchTerm ? clearSearch : null} 
+                  onClearSearch={clearSearch}
                 />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {displayUsers.length === 0 ? ( 
+                  {displayUsers.length === 0 && !loading ? (
                     <span> No users registered yet. </span>
                   ) : (
-                    displayUsers.map(
-                      (
-                        user 
-                      ) => (
-                        <ListExistingItems.Item
-                          key={user.id} 
-                          onEdit={() => handleEditUser(user)}
-                          showDelete={user.id !== loggedUserInfo.id}
-                          onDelete={() => handleConfirmDeleteUser(user)}
-                        >
-                          <span>
-                            {user.name} {user.surname}
-                          </span>
-                        </ListExistingItems.Item>
-                      )
-                    )
+                    displayUsers.map((user) => (
+                      <ListExistingItems.Item
+                        key={user.id}
+                        highlight={user.id === editingUserId}
+                        onEdit={() => handleEditUser(user)}
+                        showDelete={user.id !== loggedUserInfo.id}
+                        onDelete={() => handleConfirmDeleteUser(user)}
+                      >
+                        <span>
+                          {user.name} {user.surname}
+                        </span>
+                      </ListExistingItems.Item>
+                    ))
                   )}
-                  <ListExistingItems.Button className="mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={handleResetForm}
-                    >
-                      + New user
-                    </Button>
-                  </ListExistingItems.Button>
+                  {loading && (
+                    <div className="d-flex flex-column align-items-center justify-content-center">
+                      <Spinner> </Spinner>
+                      <p> Loading users </p>
+                    </div>
+                  )}
                 </ListExistingItems.Root>
               </CardBody>
             </Card>
@@ -426,15 +443,25 @@ const AddUser = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingUserId !== null
-                      ? "Edit User"
-                      : "User Registration"}
+                    {editingUserId !== null ? "Edit User" : "User Registration"}
                   </h3>
                 </Col>
               </CardHeader>
               <CardBody>
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title="Personal information">
+                    {editingUserId && (
+                      <div className="w-100">
+                        <RegistrationForm.Field
+                          label="Id"
+                          id="id"
+                          value={form.id}
+                          type="text"
+                          lg={1}
+                          readOnly={true}
+                        />
+                      </div>
+                    )}
                     <RegistrationForm.Field
                       label="First name"
                       id="name"
@@ -491,7 +518,7 @@ const AddUser = () => {
                       }
                       type="password"
                       onChange={(e) => {
-                        handleChange(e); 
+                        handleChange(e);
                         const isPasswordModified =
                           editingUserId !== null &&
                           (e.target.value !== originalPasswordForComparison ||
