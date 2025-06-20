@@ -751,10 +751,8 @@ const SetupMember = () => {
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
-                  placeholder={"Search by name or memberId"}
-                  foundResults={foundMembersByName}
+                  placeholder={"Search by name or id"}
                   onMemberSelect={handleSelection}
-                  setFoundResults={setFoundMembersByName}
                 />
                 {foundMembersByName.length > 0 && (
                   <div className="list-group mt-2">

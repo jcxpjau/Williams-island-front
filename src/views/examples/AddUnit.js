@@ -33,6 +33,7 @@ import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
 import { ListExistingItems } from "components/ListExisting";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
+import SearchEntity from "./SearchEntity";
 
 const AddUnit = () => {
   const initialState = {
@@ -46,6 +47,7 @@ const AddUnit = () => {
 
   const [form, setForm] = useState(initialState);
   const [units, setUnits] = useState([]);
+  const [displayUnits, setDisplayUnits] = useState([]);
   const [editingUnitIndex, setEditingUnitIndex] = useState(null);
   const [deletingUnitIndex, setDeletingUnitIndex] = useState(0);
   // modal state
@@ -53,6 +55,8 @@ const AddUnit = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
   const [modalBtnTitle, setModalBtnTitle] = useState(null);
+  // search state
+  const [searchTerm, setSearchTerm] = useState("");
 
   //Modal controls
   const resetModal = () => {
@@ -79,6 +83,7 @@ const AddUnit = () => {
           color: item.color,
         }));
         setUnits(mappedData);
+        setDisplayUnits(mappedData);
       } catch (err) {
         console.log(err);
       }
@@ -87,6 +92,7 @@ const AddUnit = () => {
     fetchUnits();
   }, []);
 
+  // form handlers
   const handleChange = (e) => {
     const { id, value } = e.target;
     setForm((prevForm) => ({
@@ -102,6 +108,7 @@ const AddUnit = () => {
     }));
   };
 
+  // API requests
   const getChangedFields = (original, updated) => {
     const changes = {};
     for (const key in updated) {
@@ -127,17 +134,24 @@ const AddUnit = () => {
     }
 
     if (editingUnitIndex !== null) {
-      const originalUnit = units[editingUnitIndex];
-      const changedFields = getChangedFields(originalUnit, form);
       const putUnits = async () => {
         try {
-          const { data } = await api.put(`units/${form.id}`, changedFields);
-          const updatedUnits = [...units];
-          updatedUnits[editingUnitIndex] = form;
+          const originalUnit = units.find(
+            (unit) => unit.id === editingUnitIndex
+          );
+          const changedFields = getChangedFields(originalUnit, form);
+          await api.put(`units/${form.id}`, changedFields);
+          const updatedUnits = units.map((unit) =>
+            unit.id === editingUnitIndex ? form : unit
+          );
           setUnits(updatedUnits);
+          const filteredUnits = updatedUnits.filter((unit) =>
+            displayUnits.some((du) => du.id === unit.id)
+          );
+          setDisplayUnits(filteredUnits);
           setModal(true);
-          setModalTitle("Unit sucessfully updated!");
-          setModalBody(`Unit '${form.denomination}' was sucessfully updated`);
+          setModalTitle("Unit successfully updated!");
+          setModalBody(`Unit '${form.denomination}' was successfully updated.`);
         } catch (err) {
           console.log(err);
         }
@@ -160,6 +174,7 @@ const AddUnit = () => {
         const postUnits = async () => {
           try {
             const { data } = await api.post("units", form);
+            setDisplayUnits((prev) => [...prev, data]);
             setUnits((prev) => [...prev, data]);
             setModal(true);
             setModalTitle("Unit sucessfully registered!");
@@ -177,20 +192,31 @@ const AddUnit = () => {
   };
 
   const handleDeleteUnit = () => {
-    const id = units[deletingUnitIndex].id;
     const deleteUnit = async () => {
-      await api.delete(`units/${id}`);
-      setUnits((prevItems) => prevItems.filter((item) => item.id != id));
+      try {
+        await api.delete(`units/${deletingUnitIndex}`);
+        const updatedUnits = units.filter((unit) => unit.id !== deletingUnitIndex);
+        setUnits(updatedUnits);
+
+        // Mantém o filtro atual (não bagunça a exibição pós-delete)
+        const updatedDisplay = displayUnits.filter(
+          (unit) => unit.id !== deletingUnitIndex
+        );
+        setDisplayUnits(updatedDisplay);
+      } catch (err) {
+        console.log(err);
+      }
     };
     deleteUnit();
     setModal(false);
     setDeletingUnitIndex(null);
+    setForm(initialState);
     resetModal();
   };
 
   const handleEditUnit = (unitToEdit, index) => {
     setForm(unitToEdit);
-    setEditingUnitIndex(index);
+    setEditingUnitIndex(unitToEdit.id);
   };
 
   const handleConfirmDeleteUnit = (unitToEdit, index) => {
@@ -204,8 +230,33 @@ const AddUnit = () => {
   };
 
   const handleResetForm = () => {
-    setForm(initialState);
+    //setForm(initialState);
     setEditingUnitIndex(null);
+  };
+
+  // search controls
+  const handleSearch = () => {
+    if (searchTerm === "") {
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody("Please enter a valid name or id");
+      return;
+    }
+
+    const filteredUnits = displayUnits.filter((unit) => {
+      const denomination = unit.denomination
+        ? unit.denomination.toLowerCase()
+        : "";
+      const id = unit.id ? unit.id.toString().toLowerCase() : "";
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+      return (
+        denomination.includes(lowerCaseSearchTerm) ||
+        id.includes(lowerCaseSearchTerm)
+      );
+    });
+    console.log(filteredUnits);
+    setDisplayUnits(filteredUnits);
   };
 
   return (
@@ -221,17 +272,23 @@ const AddUnit = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit unit information</h3>
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder="Search by denomination or id"
+                />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {units.length === 0 ? (
+                  {displayUnits.length === 0 ? (
                     <span> No units registered yet. </span>
                   ) : (
-                    units.map((unit, index) => (
+                    displayUnits.map((unit, index) => (
                       <ListExistingItems.Item
                         key={index}
                         onEdit={() => handleEditUnit(unit, index)}
-                        onDelete={() => handleConfirmDeleteUnit(unit, index)}
+                        onDelete={() => handleConfirmDeleteUnit(unit, unit.id)}
                       >
                         <BsBuilding color={unit.color} className="mr-2" />
                         <span style={{ color: unit.color }}>

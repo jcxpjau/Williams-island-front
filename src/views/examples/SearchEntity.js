@@ -14,15 +14,13 @@ function SearchEntity({
   searchTerm,
   setSearchTerm,
   placeholder = "Search...",
-  foundResults = [],
-  setFoundResults,
 }) {
   const handleSearchChange = (e) => {
     e.preventDefault();
     setSearchTerm(e.target.value);
-    if (foundResults.length > 0) {
+    /* if (foundResults.length > 0) {
       setFoundResults([]);
-    }
+    } */
   };
 
 
