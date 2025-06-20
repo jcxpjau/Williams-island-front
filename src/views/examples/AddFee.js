@@ -79,7 +79,7 @@ const AddFee = () => {
   };
 
   // loading state
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   //control form
   const [form, setForm] = useState(initialState);
   // control fee list
@@ -291,6 +291,18 @@ const AddFee = () => {
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit fees</h3>
+                <div className="d-flex justify-content-end">
+                  <ListExistingItems.Root>
+                    <ListExistingItems.Button className="mt-4">
+                      <Button
+                        className="border-0 shadow-0 m-0"
+                        onClick={handleResetForm}
+                      >
+                        + New user
+                      </Button>
+                    </ListExistingItems.Button>
+                  </ListExistingItems.Root>
+                </div>
                 <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
@@ -307,6 +319,7 @@ const AddFee = () => {
                     displayFees.map((fee, index) => (
                       <ListExistingItems.Item
                         key={fee.id}
+                        highlight={fee.id === editingFeeId}
                         onEdit={() => handleEditFee(fee)}
                         onDelete={() => handleConfirmDeleteFee(fee, fee.id)}
                       >
@@ -325,14 +338,6 @@ const AddFee = () => {
                       <p> Loading fees </p>
                     </div>
                   )}
-                  <ListExistingItems.Button className="mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={handleResetForm}
-                    >
-                      + New fee
-                    </Button>
-                  </ListExistingItems.Button>
                 </ListExistingItems.Root>
               </CardBody>
             </Card>
