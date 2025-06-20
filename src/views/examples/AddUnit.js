@@ -48,8 +48,8 @@ const AddUnit = () => {
   const [form, setForm] = useState(initialState);
   const [units, setUnits] = useState([]);
   const [displayUnits, setDisplayUnits] = useState([]);
-  const [editingUnitIndex, setEditingUnitIndex] = useState(null);
-  const [deletingUnitIndex, setDeletingUnitIndex] = useState(0);
+  const [editingUnitId, setEditingUnitId] = useState(null);
+  const [deletingUnitId, setDeletingUnitId] = useState(0);
   // modal state
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -133,16 +133,16 @@ const AddUnit = () => {
       return;
     }
 
-    if (editingUnitIndex !== null) {
+    if (editingUnitId !== null) {
       const putUnits = async () => {
         try {
           const originalUnit = units.find(
-            (unit) => unit.id === editingUnitIndex
+            (unit) => unit.id === editingUnitId
           );
           const changedFields = getChangedFields(originalUnit, form);
           await api.put(`units/${form.id}`, changedFields);
           const updatedUnits = units.map((unit) =>
-            unit.id === editingUnitIndex ? form : unit
+            unit.id === editingUnitId ? form : unit
           );
           setUnits(updatedUnits);
           const filteredUnits = updatedUnits.filter((unit) =>
@@ -194,13 +194,13 @@ const AddUnit = () => {
   const handleDeleteUnit = () => {
     const deleteUnit = async () => {
       try {
-        await api.delete(`units/${deletingUnitIndex}`);
-        const updatedUnits = units.filter((unit) => unit.id !== deletingUnitIndex);
+        await api.delete(`units/${deletingUnitId}`);
+        const updatedUnits = units.filter((unit) => unit.id !== deletingUnitId);
         setUnits(updatedUnits);
 
         // Mantém o filtro atual (não bagunça a exibição pós-delete)
         const updatedDisplay = displayUnits.filter(
-          (unit) => unit.id !== deletingUnitIndex
+          (unit) => unit.id !== deletingUnitId
         );
         setDisplayUnits(updatedDisplay);
       } catch (err) {
@@ -209,20 +209,20 @@ const AddUnit = () => {
     };
     deleteUnit();
     setModal(false);
-    setDeletingUnitIndex(null);
+    setDeletingUnitId(null);
     setForm(initialState);
     resetModal();
   };
 
   const handleEditUnit = (unitToEdit, index) => {
     setForm(unitToEdit);
-    setEditingUnitIndex(unitToEdit.id);
+    setEditingUnitId(unitToEdit.id);
   };
 
   const handleConfirmDeleteUnit = (unitToEdit, index) => {
     setModal(true);
     setModalTitle("Delete unit");
-    setDeletingUnitIndex(index);
+    setDeletingUnitId(index);
     setModalBtnTitle("Confirm");
     setModalBody(
       `Are you sure you want to delete unit ${unitToEdit.denomination}? This may impact other registers`
@@ -231,7 +231,7 @@ const AddUnit = () => {
 
   const handleResetForm = () => {
     //setForm(initialState);
-    setEditingUnitIndex(null);
+    setEditingUnitId(null);
   };
 
   // search controls
@@ -319,7 +319,7 @@ const AddUnit = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingUnitIndex !== null
+                    {editingUnitId !== null
                       ? "Edit Unit"
                       : "Unit Registration"}
                   </h3>

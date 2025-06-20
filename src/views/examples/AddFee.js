@@ -40,6 +40,7 @@ import { ListExistingItems } from "components/ListExisting";
 import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
+import SearchEntity from "./SearchEntity"; // Import the SearchEntity component
 
 /* const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
@@ -83,13 +84,16 @@ const AddFee = () => {
 
   const [form, setForm] = useState(initialState);
   const [fees, setFees] = useState([]);
-  const [editingFeeIndex, setEditingFeeIndex] = useState(null);
-  const [deletingFeeIndex, setDeletingFeeIndex] = useState(0);
+  const [displayFees, setDisplayFees] = useState([]); 
+  const [editingFeeId, setEditingFeeId] = useState(null);
+  const [deletingFeeId, setDeletingFeeId] = useState(0);
   // modal state
   const [modal, setModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalBody, setModalBody] = useState("");
   const [modalBtnTitle, setModalBtnTitle] = useState(null);
+  // search state
+  const [searchTerm, setSearchTerm] = useState("");
 
   //Modal controls
   const resetModal = () => {
@@ -103,7 +107,7 @@ const AddFee = () => {
     const fetchFees = async () => {
       try {
         const { data } = await api.get("fees");
-        if (!data || data.length == 0) {
+        if (!data || data.length === 0) {
           return;
         }
         const mappedData = data.map((item) => ({
@@ -114,6 +118,7 @@ const AddFee = () => {
           value: item.value,
         }));
         setFees(mappedData);
+        setDisplayFees(mappedData);
       } catch (err) {
         console.log(err);
       }
@@ -155,18 +160,33 @@ const AddFee = () => {
       return;
     }
 
-    if (editingFeeIndex !== null) {
-      const originalFee = fees[editingFeeIndex];
+    if (editingFeeId !== null) {
+      const originalFee = fees.find((fee) => fee.id === editingFeeId);
       const changedFields = getChangedFields(originalFee, form);
       const putFees = async () => {
         try {
           const { data } = await api.put(`fees/${form.id}`, changedFields);
-          const updatedFees = [...fees];
-          updatedFees[editingFeeIndex] = form;
+          const updatedFees = fees.map((fee) =>
+            fee.id === form.id ? form : fee
+          ); 
           setFees(updatedFees);
+
+          const lowerCaseSearchTerm = searchTerm.toLowerCase();
+          const filteredDisplay = updatedFees.filter((fee) => {
+            const identifier = fee.identifier
+              ? fee.identifier.toLowerCase()
+              : "";
+            const id = fee.id ? fee.id.toString().toLowerCase() : "";
+            return (
+              identifier.includes(lowerCaseSearchTerm) ||
+              id.includes(lowerCaseSearchTerm)
+            );
+          });
+          setDisplayFees(filteredDisplay);
+
           setModal(true);
-          setModalTitle("Fee sucessfully updated!");
-          setModalBody(`Fee '${form.identifier}' was sucessfully updated`);
+          setModalTitle("Fee successfully updated!");
+          setModalBody(`Fee '${form.identifier}' was successfully updated.`);
         } catch (err) {
           console.log(err);
         }
@@ -177,7 +197,9 @@ const AddFee = () => {
         try {
           const { data } = await api.post("fees", form);
           setFees((prev) => [...prev, data]);
-          setModalTitle("Fee sucessfully registered!");
+          setDisplayFees((prev) => [...prev, data]); 
+          setModal(true);
+          setModalTitle("Fee successfully registered!");
           setModalBody(
             "You can edit its details by clicking the pencil icon next to its name if you need"
           );
@@ -187,38 +209,73 @@ const AddFee = () => {
       };
       postFees();
     }
-
-    handleResetForm();
   };
 
   const handleConfirmDeleteFee = (feeToEdit, index) => {
     setModal(true);
     setModalTitle("Delete fee");
-    setDeletingFeeIndex(index);
+    setDeletingFeeId(feeToEdit.id); 
     setModalBtnTitle("Confirm");
     setModalBody(`Are you sure you want to delete ${feeToEdit.identifier}?`);
   };
 
   const handleDeleteFee = () => {
-    const id = fees[deletingFeeIndex].id;
     const deleteFee = async () => {
-      await api.delete(`fees/${id}`);
-      setFees((prevItems) => prevItems.filter((item) => item.id != id));
+      try {
+        await api.delete(`fees/${deletingFeeId}`); 
+        const updatedFees = fees.filter((fee) => fee.id !== deletingFeeId);
+        setFees(updatedFees);
+
+        const updatedDisplay = displayFees.filter(
+          (fee) => fee.id !== deletingFeeId
+        );
+        setDisplayFees(updatedDisplay);
+      } catch (err) {
+        console.log(err);
+      }
     };
     deleteFee();
     setModal(false);
-    setDeletingFeeIndex(null);
+    setDeletingFeeId(null);
+    setForm(initialState); 
     resetModal();
   };
 
-  const handleEditFee = (feeToEdit, index) => {
+  const handleEditFee = (feeToEdit) => {
     setForm(feeToEdit);
-    setEditingFeeIndex(index);
+    setEditingFeeId(feeToEdit.id);
   };
 
   const handleResetForm = () => {
     setForm(initialState);
-    setEditingFeeIndex(null);
+    setEditingFeeId(null);
+  };
+
+  // search controls
+  const handleSearch = () => {
+    if (searchTerm === "") {
+      setModal(true);
+      setModalTitle("Incomplete search");
+      setModalBody("Please enter a valid name or ID.");
+      return;
+    }
+
+    const filteredFees = fees.filter((fee) => {
+      const identifier = fee.identifier ? fee.identifier.toLowerCase() : "";
+      const id = fee.id ? fee.id.toString().toLowerCase() : "";
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+      return (
+        identifier.includes(lowerCaseSearchTerm) ||
+        id.includes(lowerCaseSearchTerm)
+      );
+    });
+    setDisplayFees(filteredFees);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm(""); 
+    setDisplayFees(fees); 
   };
 
   return (
@@ -227,26 +284,37 @@ const AddFee = () => {
         title="Add Fee"
         description="In this page you can register and set up new fees."
       />
-      {/* Page content */}
       <Container className="mt--7" fluid>
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit fees</h3>
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder="Search by identifier or id"
+                  onClearSearch={searchTerm ? clearSearch : null} 
+                />
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {fees.length === 0 ? (
+                  {displayFees.length === 0 ? (
                     <span> No fees registered yet. </span>
                   ) : (
-                    fees.map((fee, index) => (
+                    displayFees.map((fee, index) => (
                       <ListExistingItems.Item
-                        key={index}
-                        onEdit={() => handleEditFee(fee, index)}
-                        onDelete={() => handleConfirmDeleteFee(fee, index)}
+                        key={fee.id} 
+                        onEdit={() => handleEditFee(fee)}
+                        onDelete={() => handleConfirmDeleteFee(fee, fee.id)}
                       >
-                        <span>{fee.identifier}</span>
+                        {
+                          CATEGORY_OPTIONS.find(
+                            (option) => option.value === fee.category
+                          )?.icon
+                        }
+                        <span className="ml-2">{fee.identifier}</span>
                       </ListExistingItems.Item>
                     ))
                   )}
@@ -267,7 +335,7 @@ const AddFee = () => {
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
-                    {editingFeeIndex !== null ? "Edit Fee" : "Fee Registration"}
+                    {editingFeeId !== null ? "Edit Fee" : "Fee Registration"}
                   </h3>
                 </Col>
               </CardHeader>
