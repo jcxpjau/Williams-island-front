@@ -61,7 +61,7 @@ import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import SearchEntity from "./SearchEntity";
 import api from "services/api";
-import "../custom.css";
+import '../custom.css'
 
 const RELATIONSHIP_OPTIONS = [
   { value: "", label: "Select a relationship" },
@@ -1231,5 +1231,4 @@ const SetupMember = () => {
     </>
   );
 };
-
 export default SetupMember;
