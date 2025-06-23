@@ -32,6 +32,7 @@ import {
   FormGroup,
   Label,
   Input,
+  Spinner,
 } from "reactstrap";
 import {
   BsFillPersonFill,
@@ -184,7 +185,10 @@ const SetupMember = () => {
 
   //search states
   const [searchTerm, setSearchTerm] = useState("");
-  const [foundMembersByName, setFoundMembersByName] = useState([]);
+  const [foundMembers, setFoundMembers] = useState([]);
+
+  // loading
+  const [loading, setLoading] = useState(false);
 
   //Modal controls
   const resetModal = () => {
@@ -598,14 +602,11 @@ const SetupMember = () => {
 
   // search controls
   const handleSelection = async (selectedData) => {
-    setLoadedProperties([]);
-    setLoadedDependants([]);
-    setFoundMembersByName([]);
-    setSearchTerm("");
-
     let memberToLoad = null;
     let memberId = null;
-
+    setFoundMembers([]);
+    setSearchTerm("");
+    setLoading(true);
     try {
       if (selectedData.type === "member") {
         memberToLoad = selectedData;
@@ -644,22 +645,19 @@ const SetupMember = () => {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   };
 
   const handleSearch = async () => {
-
-    if (!searchTerm.trim()) {
-      setModal(true);
-      setModalTitle("Incomplete search");
-      setModalBody("Please type a search term (name or ID).");
-      return;
-    }
-
     const parsedSearchTerm = parseInt(searchTerm.trim(), 10);
     const isIdSearch = Number.isInteger(parsedSearchTerm);
 
     try {
       const foundResults = [];
+      if (searchTerm.trim() === "") {
+        setFoundMembers([]);
+        return;
+      }
 
       // Buscar membros
       if (isIdSearch) {
@@ -710,9 +708,8 @@ const SetupMember = () => {
           console.log(err);
         }
       }
-
       if (foundResults.length > 0) {
-        setFoundMembersByName(foundResults);
+        setFoundMembers(foundResults);
       } else {
         setModal(true);
         setModalTitle("No results");
@@ -721,6 +718,12 @@ const SetupMember = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const clearSearch = () => {
+    setFoundMembers([]);
+    setSearchTerm("");
+    handleNewMemberForm();
   };
 
   const tabs = [
@@ -752,21 +755,23 @@ const SetupMember = () => {
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
                   placeholder={"Search by name or id"}
-                  onMemberSelect={handleSelection}
+                  onClearSearch={clearSearch}
                 />
-                {foundMembersByName.length > 0 && (
+                {loading && (
+                  <div className="d-flex flex-column align-items-center justify-content-center py-5">
+                    <Spinner> </Spinner>
+                    <p> Loading members </p>
+                  </div>
+                )}
+                {(!loadedMember && !loading && foundMembers.length > 0 )? (
                   <div className="list-group mt-2">
-                    {foundMembersByName.map((item) => (
+                    {foundMembers.map((item) => (
                       <button
                         key={`${item.type}-${item.id || item.memberId}`}
                         type="button"
                         className="list-group-item list-group-item-action d-flex align-items-center"
-                        onClick={() => {
-                          handleSelection(item);
-                          setFoundMembersByName([]);
-                        }}
+                        onClick={() => handleSelection(item)}
                       >
-                        {getIconForType(item.type)}
                         <span>
                           {item.name} {item.surname} –{" "}
                           {item.type === "member" ? "Member" : "Dependant"} (ID:{" "}
@@ -775,11 +780,11 @@ const SetupMember = () => {
                       </button>
                     ))}
                   </div>
-                )}
+                ) : null}
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
-                  {loadedMember ? (
+                  {loadedMember && !loading ? (
                     <ListExistingItems.Item
                       key={`member-${loadedMember.id}`}
                       onEdit={() => {
@@ -802,7 +807,7 @@ const SetupMember = () => {
                     </span>
                   )}
 
-                  {loadedDependants.length > 0 && (
+                  {loadedDependants.length > 0 && !loading && (
                     <>
                       <h5 className="mt-4 mb-2 text-muted">Dependants:</h5>
                       {loadedDependants.map((d, idx) => (
@@ -820,7 +825,7 @@ const SetupMember = () => {
                     </>
                   )}
 
-                  {loadedMember && (
+                  {loadedMember && !loading && (
                     <ListExistingItems.Button className="mt-2">
                       <Button
                         className="border-0 shadow-0 m-0"
