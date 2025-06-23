@@ -21,6 +21,7 @@ export function Field({
   type = "text",
   onChange,
   lg,
+  p,
   md,
   pattern,
   options,

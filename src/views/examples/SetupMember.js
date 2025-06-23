@@ -61,6 +61,7 @@ import { MdFamilyRestroom, MdOutlineFamilyRestroom } from "react-icons/md";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import SearchEntity from "./SearchEntity";
 import api from "services/api";
+import '../custom.css'
 
 const RELATIONSHIP_OPTIONS = [
   { value: "", label: "Select a relationship" },
@@ -568,8 +569,6 @@ const SetupMember = () => {
       };
       postDependants();
     }
-    setDependantForm(initialDependantFormState);
-    setDependantPreview(null);
   };
 
   const handleDeleteDependant = (dependant, index) => {
@@ -744,10 +743,10 @@ const SetupMember = () => {
         cards={headerCards}
       />
       <Container className="mt--7" fluid>
-        <Row>
+        <Row className="h-100 d-flex align-items-stretch">
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
-            <Card className="bg-secondary shadow">
-              <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
+            <Card className="bg-secondary shadow h-100 d-flex flex-column">
+              <CardHeader className="border-0 pt-4 pb-0 pb-md-4 position-relative">
                 <h3 className="mb-0">Edit member information</h3>
 
                 <SearchEntity
@@ -763,24 +762,36 @@ const SetupMember = () => {
                     <p> Loading members </p>
                   </div>
                 )}
-                {(!loadedMember && !loading && foundMembers.length > 0 )? (
-                  <div className="list-group mt-2">
-                    {foundMembers.map((item) => (
-                      <button
-                        key={`${item.type}-${item.id || item.memberId}`}
-                        type="button"
-                        className="list-group-item list-group-item-action d-flex align-items-center"
-                        onClick={() => handleSelection(item)}
-                      >
-                        <span>
-                          {item.name} {item.surname} –{" "}
-                          {item.type === "member" ? "Member" : "Dependant"} (ID:{" "}
-                          {item.id || item.memberId})
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
+                <div className="position-relative">
+                  {searchTerm.trim() !== "" && foundMembers.length > 0 && (
+                    <div
+                      className="list-group search-result-dropdown shadow-lg position-absolute"
+                      style={{
+                        maxHeight: "250px",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        overflowY: "auto",
+                        zIndex: 999,
+                      }}
+                    >
+                      {foundMembers.map((item) => (
+                        <button
+                          key={`${item.type}-${item.id || item.memberId}`}
+                          type="button"
+                          className="list-group-item list-group-item-action search-result-item"
+                          onClick={() => handleSelection(item)}
+                        >
+                          <span>
+                            {item.name} {item.surname} –{" "}
+                            {item.type === "member" ? "Member" : "Dependant"}{" "}
+                            (ID: {item.id || item.memberId})
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardBody>
                 <ListExistingItems.Root>
@@ -793,7 +804,7 @@ const SetupMember = () => {
                         setPropertiesForm(loadedProperties);
                       }}
                       onDelete={() => handleConfirmDeleteMember(loadedMember)}
-                      isOwner={true}
+                      highlight={activeTab === "member"}
                     >
                       <BsFillPersonFill className="mr-2" size={20} />
                       <span>
@@ -815,6 +826,10 @@ const SetupMember = () => {
                           key={`dependant-${d.id || idx}`}
                           onEdit={() => handleEditDependant(d, idx)}
                           onDelete={() => handleDeleteDependant(d, idx)}
+                          highlight={
+                            activeTab === "dependant" &&
+                            editingDependantIndex === idx
+                          }
                         >
                           {getIconForRelationship(d.relationship)}
                           <span>
@@ -855,7 +870,7 @@ const SetupMember = () => {
           </Col>
 
           <Col className="order-xl-1" xl="8">
-            <Card className="bg-secondary shadow">
+            <Card className="bg-secondary shadow h-100 d-flex flex-column">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <Nav tabs>
@@ -898,45 +913,63 @@ const SetupMember = () => {
                           handleFileChange={handleMemberFileChange}
                         />
                         <div className="col-lg-9 d-flex flex-column">
-                          <RegistrationForm.Field
-                            label="First Name"
-                            id="name"
-                            value={memberForm.name}
-                            onChange={handleMemberChange}
-                            placeholder="First Name"
-                            icon={<BsPersonVcard size={18} />}
-                          />
-                          <RegistrationForm.Field
-                            label="Surname"
-                            id="surname"
-                            value={memberForm.surname}
-                            onChange={handleMemberChange}
-                            placeholder="Surname"
-                            icon={<BsPersonVcard size={18} />}
-                          />
-                          <RegistrationForm.Field
-                            label="Date of birth"
-                            id="dateOfBirth"
-                            value={memberForm.dateOfBirth}
-                            onChange={handleMemberChange}
-                            type="date"
-                          />
-                          <RegistrationForm.Field
-                            label="Date joined"
-                            id="dateJoined"
-                            value={memberForm.dateJoined}
-                            onChange={handleMemberChange}
-                            type="date"
-                          />
-                          <RegistrationForm.Field
-                            label="Member number"
-                            id="memberNumber"
-                            value={memberForm.memberNumber}
-                            onChange={handleMemberChange}
-                            placeholder="Your Williams Island identification"
-                            type="text"
-                            icon={<BsPersonVcard size={18} />}
-                          />
+                          {loadedMember && (
+                            <div className="row w-100">
+                              <RegistrationForm.Field
+                                label="Id"
+                                id="id"
+                                value={memberForm.id}
+                                type="text"
+                                lg="2"
+                                readOnly={true}
+                              />
+                            </div>
+                          )}
+                          <div className="row w-100">
+                            <RegistrationForm.Field
+                              label="First Name"
+                              id="name"
+                              value={memberForm.name}
+                              onChange={handleMemberChange}
+                              placeholder="First Name"
+                              icon={<BsPersonVcard size={18} />}
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              label="Surname"
+                              id="surname"
+                              value={memberForm.surname}
+                              onChange={handleMemberChange}
+                              placeholder="Surname"
+                              icon={<BsPersonVcard size={18} />}
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              label="Date of birth"
+                              id="dateOfBirth"
+                              value={memberForm.dateOfBirth}
+                              onChange={handleMemberChange}
+                              type="date"
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              label="Date joined"
+                              id="dateJoined"
+                              value={memberForm.dateJoined}
+                              onChange={handleMemberChange}
+                              type="date"
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              label="Member number"
+                              id="memberNumber"
+                              value={memberForm.memberNumber}
+                              onChange={handleMemberChange}
+                              placeholder="Your Williams Island identification"
+                              type="text"
+                              icon={<BsPersonVcard size={18} />}
+                            />
+                          </div>
                         </div>
                       </RegistrationForm.Section>
 
@@ -1065,44 +1098,62 @@ const SetupMember = () => {
                           handleFileChange={handleDependantFileChange}
                         />
                         <div className="col-lg-9 d-flex flex-column">
-                          <RegistrationForm.Field
-                            id="name"
-                            label="First Name"
-                            type="text"
-                            value={dependantForm.name}
-                            onChange={handleDependantChange}
-                            placeholder="First Name"
-                          />
-                          <RegistrationForm.Field
-                            id="surname"
-                            label="Surname"
-                            type="text"
-                            value={dependantForm.surname}
-                            onChange={handleDependantChange}
-                            placeholder="Surname"
-                          />
-                          <RegistrationForm.Field
-                            id="dateOfBirth"
-                            label="Date of birth"
-                            type="date"
-                            value={dependantForm.dateOfBirth}
-                            onChange={handleDependantChange}
-                          />
-                          <RegistrationForm.Field
-                            id="dateJoined"
-                            label="Date joined"
-                            type="date"
-                            value={dependantForm.dateJoined}
-                            onChange={handleDependantChange}
-                          />
-                          <RegistrationForm.Field
-                            id="relationship"
-                            label="Relationship to property owner"
-                            type="select"
-                            value={dependantForm.relationship}
-                            onChange={handleDependantChange}
-                            options={RELATIONSHIP_OPTIONS}
-                          />
+                          {dependantForm.id && (
+                            <div className="row w-100">
+                              <RegistrationForm.Field
+                                label="Id"
+                                id="id"
+                                value={dependantForm.id}
+                                type="text"
+                                lg={2}
+                                readOnly={true}
+                              />
+                            </div>
+                          )}
+                          <div className="row w-100">
+                            <RegistrationForm.Field
+                              id="name"
+                              label="First Name"
+                              type="text"
+                              value={dependantForm.name}
+                              onChange={handleDependantChange}
+                              placeholder="First Name"
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              id="surname"
+                              label="Surname"
+                              type="text"
+                              value={dependantForm.surname}
+                              onChange={handleDependantChange}
+                              placeholder="Surname"
+                              lg="6"
+                            />
+                            <RegistrationForm.Field
+                              id="dateOfBirth"
+                              label="Date of birth"
+                              type="date"
+                              lg="6"
+                              value={dependantForm.dateOfBirth}
+                              onChange={handleDependantChange}
+                            />
+                            <RegistrationForm.Field
+                              id="dateJoined"
+                              label="Date joined"
+                              type="date"
+                              lg="6"
+                              value={dependantForm.dateJoined}
+                              onChange={handleDependantChange}
+                            />
+                            <RegistrationForm.Field
+                              id="relationship"
+                              label="Relationship to property owner"
+                              type="select"
+                              value={dependantForm.relationship}
+                              onChange={handleDependantChange}
+                              options={RELATIONSHIP_OPTIONS}
+                            />
+                          </div>
                         </div>
                       </RegistrationForm.Section>
 
