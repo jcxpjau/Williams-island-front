@@ -276,6 +276,8 @@ const AddFee = () => {
 
   const clearSearch = () => {
     setSearchTerm("");
+    setEditingFeeId(null);
+    setForm(initialState);
     setDisplayFees(fees);
   };
 

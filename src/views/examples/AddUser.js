@@ -369,6 +369,8 @@ const AddUser = () => {
 
   const clearSearch = () => {
     setSearchTerm("");
+    setForm(initialState);
+    setEditingUserId(null);
     setDisplayUsers(users);
   };
 
@@ -385,7 +387,7 @@ const AddUser = () => {
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
               style={{
-                maxHeight: "750px",
+                maxHeight: "1000px",
               }}
             >
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
@@ -449,7 +451,7 @@ const AddUser = () => {
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
               style={{
-                maxHeight: "750px",
+                maxHeight: "1000px",
               }}
             >
               <CardHeader className="bg-white border-0">

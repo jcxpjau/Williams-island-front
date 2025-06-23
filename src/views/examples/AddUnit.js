@@ -266,6 +266,8 @@ const AddUnit = () => {
 
   const clearSearch = () => {
     setSearchTerm("");
+    setEditingUnitId(null);
+    setForm(initialState);
     setDisplayUnits(units);
   };
 

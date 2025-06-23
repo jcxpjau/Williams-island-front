@@ -634,7 +634,12 @@ const SetupMember = () => {
           `dependants/member/${memberId}`
         );
         setLoadedDependants(allDependantsOfMember);
-
+        if (selectedData.type == "dependant") {
+          const selectedId = allDependantsOfMember.findIndex(
+            (item) => item.id === selectedData.id
+          );
+          setEditingDependantIndex(selectedId);
+        }
         const { data: propertiesData } = await api.get(
           `properties/member/${memberId}`
         );
@@ -753,7 +758,18 @@ const SetupMember = () => {
             >
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4 position-relative">
                 <h3 className="mb-0">Edit member information</h3>
-
+                <div className="d-flex justify-content-end">
+                  <ListExistingItems.Root>
+                    <ListExistingItems.Button className="mt-4">
+                      <Button
+                        className="border-0 shadow-0 m-0"
+                        onClick={handleNewMemberForm}
+                      >
+                        + New property owner
+                      </Button>
+                    </ListExistingItems.Button>
+                  </ListExistingItems.Root>
+                </div>
                 <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
@@ -864,15 +880,6 @@ const SetupMember = () => {
                       </Button>
                     </ListExistingItems.Button>
                   )}
-
-                  <ListExistingItems.Button className="mt-4">
-                    <Button
-                      className="border-0 shadow-0 m-0"
-                      onClick={handleNewMemberForm}
-                    >
-                      Setup new property owner
-                    </Button>
-                  </ListExistingItems.Button>
                 </ListExistingItems.Root>
               </CardBody>
             </Card>
