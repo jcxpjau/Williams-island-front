@@ -193,7 +193,6 @@ const AddUnit = () => {
         postUnits();
       }
     }
-    handleResetForm();
   };
 
   const handleDeleteUnit = () => {

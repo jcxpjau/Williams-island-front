@@ -56,8 +56,7 @@ const AddUser = () => {
   // control hidden password
   const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState(null);
-  const [originalPasswordForComparison, setOriginalPasswordForComparison] =
-    useState("");
+
   // control user list
   const [users, setUsers] = useState([]);
   const [displayUsers, setDisplayUsers] = useState([]);
@@ -74,60 +73,82 @@ const AddUser = () => {
 
   useEffect(() => {
     setLoading(true);
-    const fetchUsers = async () => {
+
+    const fetchData = async () => {
       try {
-        const { data } = await api.get("users");
-        if (!data || data.length === 0) {
+        const meResponse = await api.get("users/me");
+        const me = meResponse.data;
+
+        const usersResponse = await api.get("users");
+        const usersData = usersResponse.data;
+
+        if (!usersData || usersData.length === 0) {
+          setLoading(false);
           return;
         }
 
-        const mappedData = data.map((item) => ({
+        const mappedUsers = usersData.map((item) => ({
           id: item.id,
           name: item.name,
           surname: item.surname,
           phone: item.phone,
           email: item.email,
-          password: item.password,
+          password: "",
           type: item.type,
         }));
-        setUsers(mappedData);
-        setDisplayUsers(mappedData);
+
+        // Remove o usuário logado da lista de users, caso ele já esteja lá
+        const filteredUsers = mappedUsers.filter((user) => user.id !== me.id);
+
+        // Agora, adiciona o usuário logado no topo
+        const finalUsers = [
+          {
+            id: me.id,
+            name: me.name,
+            surname: me.surname,
+            phone: me.phone,
+            email: me.email,
+            password: "",
+            type: me.type,
+          },
+          ...filteredUsers,
+        ];
+
+        setLoggedUserInfo(me);
+        setUsers(finalUsers);
+        setDisplayUsers(finalUsers);
         setLoading(false);
       } catch (err) {
         console.log(err);
+        setLoading(false);
       }
     };
 
-    const fetchMe = async () => {
-      try {
-        const { data } = await api.get("users/me");
-        if (!data || data.length === 0) {
-          return;
-        }
-        setLoggedUserInfo(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchMe();
-    fetchUsers();
+    fetchData();
   }, []);
 
   useEffect(() => {
     if (editingUserId === null) {
       setCurrentPasswordVisible(false);
       setCurrentPassword(null);
-      setOriginalPasswordForComparison("");
     } else {
       const userToEdit = users.find((user) => user.id === editingUserId);
       if (userToEdit) {
-        setOriginalPasswordForComparison(userToEdit.password);
         setCurrentPasswordVisible(false);
         setCurrentPassword(null);
       }
     }
   }, [editingUserId, users]);
+
+  useEffect(() => {
+    if (!currentPasswordVisible) {
+      setCurrentPassword(null);
+      setForm((prevForm) => ({
+        ...prevForm,
+        password: "",
+      }));
+    }
+  }, [currentPasswordVisible]);
 
   const resetModal = () => {
     setModal(!modal);
@@ -174,11 +195,7 @@ const AddUser = () => {
         const changedFields = getChangedFields(originalUser, form);
         const { password, ...fieldsToSend } = changedFields;
 
-        if (
-          password &&
-          password.trim() !== "" &&
-          password !== originalPasswordForComparison
-        ) {
+        if (password && password.trim() !== "") {
           if (!currentPassword) {
             setModal(true);
             setModalTitle("Password update required");
@@ -211,9 +228,7 @@ const AddUser = () => {
 
         if (
           Object.keys(fieldsToSend).length === 0 &&
-          (!password ||
-            password.trim() === "" ||
-            password === originalPasswordForComparison)
+          (!password || password.trim() === "")
         ) {
           setModal(true);
           setModalTitle("No changes detected");
@@ -280,7 +295,6 @@ const AddUser = () => {
       };
       postUsers();
     }
-    handleResetForm();
   };
 
   const handleDeleteUser = () => {
@@ -313,7 +327,6 @@ const AddUser = () => {
   const handleEditUser = (userToEdit) => {
     setForm(userToEdit);
     setEditingUserId(userToEdit.id);
-    setOriginalPasswordForComparison(userToEdit.password);
     setCurrentPasswordVisible(false);
     setCurrentPassword(null);
   };
@@ -331,7 +344,6 @@ const AddUser = () => {
   const handleResetForm = () => {
     setForm(initialState);
     setEditingUserId(null);
-    setOriginalPasswordForComparison("");
     setCurrentPasswordVisible(false);
     setCurrentPassword(null);
   };
@@ -451,7 +463,7 @@ const AddUser = () => {
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
               style={{
-                maxHeight: "1000px",
+                maxHeight: "1100px",
               }}
             >
               <CardHeader className="bg-white border-0">
@@ -526,50 +538,58 @@ const AddUser = () => {
                   </RegistrationForm.Section>
 
                   <RegistrationForm.Section title="Account">
-                    <RegistrationForm.Field
-                      label="Password"
-                      id="password"
-                      value={form.password}
-                      placeholder={
-                        editingUserId !== null
-                          ? "Leave blank to keep current"
-                          : ""
-                      }
-                      type="password"
-                      onChange={(e) => {
-                        handleChange(e);
-                        const isPasswordModified =
-                          editingUserId !== null &&
-                          (e.target.value !== originalPasswordForComparison ||
-                            (originalPasswordForComparison === "" &&
-                              e.target.value.trim() !== ""));
-
-                        setCurrentPasswordVisible(isPasswordModified);
-                        if (
-                          editingUserId !== null &&
-                          e.target.value === originalPasswordForComparison
-                        ) {
-                          setCurrentPassword(null);
-                        }
-                      }}
-                      lg={6}
-                      icon={<MdLockOutline className="mr-2" size={20} />}
-                    />
-                    <div
-                      className={`col-lg-6 p-0 ${
-                        !currentPasswordVisible ? "d-none" : ""
-                      }`}
-                    >
+                    {editingUserId && (
+                      <div className="text-center row w-100 pl-3 m-0 mb-3">
+                        <Button
+                          color="secondary"
+                          onClick={() => {
+                            setCurrentPasswordVisible(!currentPasswordVisible);
+                          }}
+                        >
+                          Change password
+                        </Button>
+                        <div
+                          className={` mt-3 w-100 p-0 row ${
+                            !currentPasswordVisible ? "d-none" : ""
+                          }`}
+                        >
+                          <RegistrationForm.Field
+                            label="New password"
+                            id="password"
+                            value={form.password || ""}
+                            type="password"
+                            placeholder={"Set your new password here"}
+                            onChange={handleChange}
+                            lg={6}
+                            icon={<MdLockOutline className="mr-2" size={20} />}
+                          />
+                          <RegistrationForm.Field
+                            label="Current password"
+                            id="currentPassword"
+                            value={currentPassword || ""}
+                            type="password"
+                            placeholder={
+                              "Confirm your current password to carry out the change"
+                            }
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            lg={6}
+                            icon={<MdLockOutline className="mr-2" size={20} />}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!editingUserId && (
                       <RegistrationForm.Field
-                        label="Confirm current password"
-                        id="currentPassword"
-                        value={currentPassword || ""}
+                        label="Password"
+                        id="password"
+                        value={form.password || ""}
                         type="password"
-                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder={"Set the password here"}
+                        onChange={handleChange}
                         lg={6}
                         icon={<MdLockOutline className="mr-2" size={20} />}
                       />
-                    </div>
+                    )}
                     <RegistrationForm.Field
                       label="Type"
                       id="type"

@@ -109,7 +109,7 @@ export function Field({
 
   return (
     <Col {...colProps}>
-      <FormGroup>
+      <FormGroup className="d-flex flex-column align-items-start">
         <Label className="form-control-label" htmlFor={id}>
           {label}
         </Label>
