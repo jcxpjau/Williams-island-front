@@ -235,7 +235,7 @@ const AddUnit = () => {
 
   const handleResetForm = () => {
     setEditingUnitId(null);
-    setForm(initialState)
+    setForm(initialState);
   };
 
   // search controls
@@ -276,18 +276,16 @@ const AddUnit = () => {
         description="In this page you can add residential units or edit their information."
       />
       <Container className="mt--7" fluid>
-        <Row>
+        <Row className="h-100 d-flex align-items-stretch">
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
-            <Card className="bg-secondary shadow">
+            <Card
+              className="bg-secondary shadow h-100 d-flex flex-column"
+              style={{
+                maxHeight: "650px",
+              }}
+            >
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit unit information</h3>
-                <SearchEntity
-                  handleSearch={handleSearch}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  placeholder="Search by denomination or id"
-                  onClearSearch={clearSearch}
-                />
                 <div className="d-flex justify-content-end">
                   <ListExistingItems.Root>
                     <ListExistingItems.Button className="mt-4">
@@ -300,8 +298,20 @@ const AddUnit = () => {
                     </ListExistingItems.Button>
                   </ListExistingItems.Root>
                 </div>
+                <SearchEntity
+                  handleSearch={handleSearch}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  placeholder="Search by denomination or id"
+                  onClearSearch={clearSearch}
+                />
               </CardHeader>
-              <CardBody>
+              <CardBody
+                className="overflow-auto"
+                style={{
+                  flexGrow: 1,
+                }}
+              >
                 <ListExistingItems.Root>
                   {displayUnits.length === 0 && !loading ? (
                     <span> No units found. </span>
@@ -331,7 +341,12 @@ const AddUnit = () => {
             </Card>
           </Col>
           <Col className="order-xl-1" xl="8">
-            <Card className="bg-secondary shadow">
+            <Card
+              className="bg-secondary shadow h-100 d-flex flex-column"
+              style={{
+                maxHeight: "650px",
+              }}
+            >
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
@@ -339,7 +354,12 @@ const AddUnit = () => {
                   </h3>
                 </Col>
               </CardHeader>
-              <CardBody>
+              <CardBody
+                className="overflow-auto"
+                style={{
+                  flexGrow: 1,
+                }}
+              >
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title={"Unit information"}>
                     <RegistrationForm.Field
