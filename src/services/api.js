@@ -30,7 +30,7 @@ api.interceptors.response.use(
             !originalRequest.url?.includes('/auth/refresh')
         ) {
             originalRequest._retry = true;
-            console.log( process.env.REACT_APP_API_URL);
+           /*  console.log( process.env.REACT_APP_API_URL); */
             try {
                 const res = await api.post('/auth/refresh', {}, { withCredentials: true });
                 const newAccessToken = res.data.access_token;
