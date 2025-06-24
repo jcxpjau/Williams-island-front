@@ -752,9 +752,6 @@ const SetupMember = () => {
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
-              style={{
-                maxHeight: "1500px",
-              }}
             >
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4 position-relative">
                 <h3 className="mb-0">Edit member information</h3>
@@ -888,9 +885,6 @@ const SetupMember = () => {
           <Col className="order-xl-1" xl="8">
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
-              style={{
-                maxHeight: "1500px",
-              }}
             >
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
