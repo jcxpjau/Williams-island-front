@@ -16,21 +16,12 @@
 
 */
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 // reactstrap components
 import {
-  Badge,
   Card,
   CardHeader,
-  CardFooter,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  DropdownToggle,
-  Media,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
-  Progress,
   Table,
   Container,
   Row,
@@ -44,6 +35,7 @@ import "../custom.css";
 import api from "services/api";
 import { BsPencil } from "react-icons/bs";
 const Tables = () => {
+  const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState([]);
   const [units, setUnits] = useState([]);
@@ -159,6 +151,7 @@ const Tables = () => {
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
+                    <th scope="col"> </th>
                     <th scope="col">Member number</th>
                     <th scope="col">Member</th>
                     <th scope="col"> Unit(s) </th>
@@ -170,7 +163,7 @@ const Tables = () => {
                 <tbody className="table-hover-effect">
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-5">
+                      <td colSpan={6} className="text-center py-5">
                         <div className="d-flex flex-column align-items-center justify-content-center">
                           <Spinner />
                           <p className="mt-2"> Loading members </p>
@@ -187,6 +180,28 @@ const Tables = () => {
                     members.map((member) => (
                       <>
                         <tr key={member.id}>
+                          <td>
+                            <span key={member.id}>
+                              <a
+                                className="avatar avatar-sm"
+                                href="#pablo"
+                                id={`tooltip-${member.id}`}
+                                onClick={(e) => e.preventDefault()}
+                              >
+                                <img
+                                  alt="..."
+                                  className="rounded-circle"
+                                  src={require("../../assets/img/theme/team-1-800x800.jpg")}
+                                />
+                              </a>
+                              <UncontrolledTooltip
+                                delay={0}
+                                target={`tooltip-${member.id}`}
+                              >
+                                {member.name} {member.surname}
+                              </UncontrolledTooltip>
+                            </span>
+                          </td>
                           <td> {member.memberNumber} </td>
                           <td>
                             {member.name} {member.surname}
@@ -213,30 +228,26 @@ const Tables = () => {
                             <div className="avatar-group">
                               {member.dependants.length > 0 ? (
                                 member.dependants.map((dependant, depIndex) => {
-                                  // Added depIndex here
-                                  // Create a unique ID for each tooltip and its target
                                   const tooltipId = `tooltip-${member.id}-${
                                     dependant.id || depIndex
                                   }`;
                                   return (
                                     <span key={dependant.id || depIndex}>
-                                      {" "}
-                                      {/* Use a span or React.Fragment */}
                                       <a
                                         className="avatar avatar-sm"
                                         href="#pablo"
-                                        id={tooltipId} // Use the unique ID here
+                                        id={tooltipId}
                                         onClick={(e) => e.preventDefault()}
                                       >
                                         <img
                                           alt="..."
                                           className="rounded-circle"
-                                          src={require("../../assets/img/theme/placeholder-pfp.jpg")}
+                                          src={require("../../assets/img/theme/team-2-800x800.jpg")}
                                         />
                                       </a>
                                       <UncontrolledTooltip
                                         delay={0}
-                                        target={tooltipId} 
+                                        target={tooltipId}
                                       >
                                         {dependant.name} {dependant.surname} (
                                         {dependant.relationship})
@@ -250,7 +261,7 @@ const Tables = () => {
                             </div>
                           </td>
                           <td>
-                            <button className="btn">
+                            <button className="btn"  onClick={() => navigate("/admin/membership/add", { state: { member } })}>
                               <BsPencil />
                             </button>
                           </td>

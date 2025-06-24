@@ -53,6 +53,7 @@ import {
 
 //import UserHeader from "components/Headers/UserHeader.js";
 import Header from "components/Headers/Header";
+import { useLocation, useNavigate } from "react-router-dom";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { FaChild } from "react-icons/fa";
@@ -106,6 +107,10 @@ const getIconForType = (type) => {
 };
 
 const SetupMember = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const externalMemberState = location.state?.member;
+
   const [activeTab, setActiveTab] = useState("member");
 
   // shows existing units
@@ -191,6 +196,29 @@ const SetupMember = () => {
   // loading
   const [loading, setLoading] = useState(false);
 
+  // try to first initialize with data from other pages
+  useEffect(()=>{
+    if (externalMemberState) {
+      const loadedMember = {
+        id: externalMemberState.id,
+        dateJoined: externalMemberState.dateJoined,
+        dateOfBirth: externalMemberState.dateOfBirth,
+        email: externalMemberState.email,
+        address: externalMemberState.address,
+        memberNumber: externalMemberState.memberNumber,
+        name: externalMemberState.name,
+        surname: externalMemberState.surname,
+        tel: externalMemberState.tel,
+        zipCode: externalMemberState.zipCode,
+      }
+      setMemberForm(loadedMember);
+      setLoadedDependants(externalMemberState.dependants)
+      setLoadedProperties(externalMemberState.properties)
+      setPropertiesForm(externalMemberState.properties)
+      setLoadedMember(loadedMember)
+    }
+  }, [])
+  
   //Modal controls
   const resetModal = () => {
     setModal(!modal);
@@ -750,9 +778,7 @@ const SetupMember = () => {
       <Container className="mt--7" fluid>
         <Row className="h-100 d-flex align-items-stretch">
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
-            <Card
-              className="bg-secondary shadow h-100 d-flex flex-column"
-            >
+            <Card className="bg-secondary shadow h-100 d-flex flex-column">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4 position-relative">
                 <h3 className="mb-0">Edit member information</h3>
                 <div className="d-flex justify-content-end">
@@ -883,9 +909,7 @@ const SetupMember = () => {
           </Col>
 
           <Col className="order-xl-1" xl="8">
-            <Card
-              className="bg-secondary shadow h-100 d-flex flex-column"
-            >
+            <Card className="bg-secondary shadow h-100 d-flex flex-column">
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
                   <Nav tabs>
