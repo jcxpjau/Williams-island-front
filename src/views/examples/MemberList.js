@@ -40,19 +40,23 @@ import {
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
-import '../custom.css'
+import "../custom.css";
 import api from "services/api";
-import { BsPencil, BsTrash } from "react-icons/bs";
+import { BsPencil } from "react-icons/bs";
 const Tables = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState([]);
+  const [units, setUnits] = useState([]);
 
   useEffect(() => {
     const fetchAllMemberData = async () => {
       setLoading(true);
 
       try {
-        const { data: membersData } = await api.get("members");
+        const [membersData, unitsData] = await Promise.all([
+          api.get("members"),
+          api.get("units"),
+        ]);
 
         if (!membersData || membersData.length === 0) {
           setMembers([]);
@@ -60,7 +64,7 @@ const Tables = () => {
           return;
         }
         const membersWithFullData = await Promise.all(
-          membersData.map(async (member) => {
+          membersData.data.map(async (member) => {
             try {
               const mappedMember = {
                 id: member.id,
@@ -108,8 +112,22 @@ const Tables = () => {
             }
           })
         );
-
         setMembers(membersWithFullData);
+
+        if (unitsData.data && unitsData.data.length > 0) {
+          const mappedUnitsData = unitsData.data.map((item) => ({
+            id: item.id,
+            address: item.address,
+            denomination: item.denomination,
+            numberOfInhabitants: item.numberOfInhabitants,
+            numberOfStores: item.numberOfStores,
+            numberOfApartments: item.numberOfApartments,
+            color: item.color,
+          }));
+          setUnits(mappedUnitsData);
+        } else {
+          setUnits([]);
+        }
       } catch (err) {
         console.error("Erro ao buscar membros ou dados adicionais:", err);
         setMembers([]);
@@ -149,7 +167,7 @@ const Tables = () => {
                   </tr>
                 </thead>
 
-                <tbody  className="table-hover-effect">
+                <tbody className="table-hover-effect">
                   {loading ? (
                     <tr>
                       <td colSpan={5} className="text-center py-5">
@@ -167,20 +185,77 @@ const Tables = () => {
                     </tr>
                   ) : (
                     members.map((member) => (
-                      <tr key={member.id}>
-                        <td> {member.memberNumber} </td>
-                        <td> {member.name} {member.surname} </td>
-                        <td> {member.properties.length}</td>
-                        <td> {member.dependants.length}</td>
-                        <td> 
-                          <button className="btn">
-                            <BsPencil/> 
-                          </button>
-                          <button className="btn">
-                            <BsTrash/> 
-                          </button>
+                      <>
+                        <tr key={member.id}>
+                          <td> {member.memberNumber} </td>
+                          <td>
+                            {member.name} {member.surname}
                           </td>
-                      </tr>
+                          <td>
+                            {member.properties.map((prop, index) => {
+                              const associatedUnit = units.find(
+                                (unit) => unit.id === prop.unitId
+                              );
+                              return (
+                                <span
+                                  key={index}
+                                  style={{ color: associatedUnit.color }}
+                                >
+                                  {associatedUnit.denomination}
+                                  {index < member.properties.length - 1
+                                    ? ", "
+                                    : ""}
+                                </span>
+                              );
+                            })}
+                          </td>
+                          <td>
+                            <div className="avatar-group">
+                              {member.dependants.length > 0 ? (
+                                member.dependants.map((dependant, depIndex) => {
+                                  // Added depIndex here
+                                  // Create a unique ID for each tooltip and its target
+                                  const tooltipId = `tooltip-${member.id}-${
+                                    dependant.id || depIndex
+                                  }`;
+                                  return (
+                                    <span key={dependant.id || depIndex}>
+                                      {" "}
+                                      {/* Use a span or React.Fragment */}
+                                      <a
+                                        className="avatar avatar-sm"
+                                        href="#pablo"
+                                        id={tooltipId} // Use the unique ID here
+                                        onClick={(e) => e.preventDefault()}
+                                      >
+                                        <img
+                                          alt="..."
+                                          className="rounded-circle"
+                                          src={require("../../assets/img/theme/placeholder-pfp.jpg")}
+                                        />
+                                      </a>
+                                      <UncontrolledTooltip
+                                        delay={0}
+                                        target={tooltipId} 
+                                      >
+                                        {dependant.name} {dependant.surname} (
+                                        {dependant.relationship})
+                                      </UncontrolledTooltip>
+                                    </span>
+                                  );
+                                })
+                              ) : (
+                                <span> No dependants </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <button className="btn">
+                              <BsPencil />
+                            </button>
+                          </td>
+                        </tr>
+                      </>
                     ))
                   )}
                 </tbody>
