@@ -7,32 +7,36 @@ import {
   Row,
   Col,
   Table,
+  Spinner,
 } from "reactstrap";
 import Header from "components/Headers/Header";
+import api from "services/api";
+import moment from "moment";
 
 const Dashboard = () => {
-  /*   async function getBookings() {
-    try {
-      const res = await fetch(
-        process.env.REACT_APP_API_URL + "bookings?limit=5",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const json = await res.json();
-      if (json.error) {
-        console.log(json.error);
-      } else {
-        setBookings(json);
-      }
-    } catch (err) {
-      console.error("Erro na requisição:", err);
-    }
-  } */
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setLoading(true);
+    const fetchBookings = async () => {
+      try {
+        const { data } = await api.get("bookings");
+        if (!data || data.length == 0) {
+          setLoading(false);
+          return;
+        }
+        setBookings(data);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  console.log(bookings);
   const maintenanceRequests = [
     { date: "Apr 22, 2024", resident: "John Smith", status: "In Progress" },
     { date: "Apr 22, 2024", resident: "Mary Johnson", status: "Pending" },
@@ -53,7 +57,7 @@ const Dashboard = () => {
     { resident: "Patricia Lee", issue: "Improper Trash Disposal" },
   ];
 
-  async function updateChatBaseSource() {
+  /*  async function updateChatBaseSource() {
     await fetch("https://www.chatbase.co/api/v1/update-chatbot-data", {
       method: "POST",
       headers: {
@@ -70,7 +74,7 @@ const Dashboard = () => {
       .then((res) => res.json())
       .then((json) => console.log(json))
       .catch((err) => console.log(err));
-  }
+  } */
 
   /*    useEffect(() => {
         getBookings();
@@ -94,23 +98,36 @@ const Dashboard = () => {
                     <tr>
                       <th>Date</th>
                       <th>Time</th>
-                      <th>Venue</th>
+                      <th>Experience</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* {bookings.map((booking, index) => (
-                      <tr key={index}>
-                        <td>{moment(booking.date).format("l")}</td>
-                        <td>
-                          {moment("1900-01-01T" + booking.startTime).format(
-                            "LT"
-                          )}{" "}
-                          -{" "}
-                          {moment("1900-01-01T" + booking.endTime).format("LT")}
+                    {loading ? (
+                      <tr>
+                        <td colSpan={3} className="text-center py-5">
+                          <div className="d-flex flex-column align-items-center justify-content-center">
+                            <Spinner />
+                            <p className="mt-2"> Loading members </p>
+                          </div>
                         </td>
-                        <td>{booking.venueId.name}</td>
                       </tr>
-                    ))} */}
+                    ) : bookings.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4">
+                          No members found.
+                        </td>
+                      </tr>
+                    ) : (
+                      bookings.map((booking) => {
+                        return (
+                          <tr>
+                            <td> {booking.date}</td>
+                            <td> {booking.startTime}</td>
+                            <td> {booking.experience.name}</td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </Table>
               </CardBody>
