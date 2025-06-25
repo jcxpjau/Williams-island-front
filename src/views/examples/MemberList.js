@@ -131,7 +131,6 @@ const Tables = () => {
     fetchAllMemberData();
   }, []);
 
-  console.log(members);
   return (
     <>
       <Header />

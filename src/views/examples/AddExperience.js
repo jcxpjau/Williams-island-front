@@ -125,6 +125,7 @@ const AddExperience = () => {
       try {
         const { data } = await api.get("experiences");
         if (!data || data.length == 0) {
+          setLoading(false);
           return;
         }
         const mappedData = data.map((item) => ({
@@ -161,6 +162,7 @@ const AddExperience = () => {
     setForm(initialState);
   };
 
+  // API requests
   const getChangedFields = (original, updated) => {
     const changes = {};
     for (const key in updated) {
@@ -171,7 +173,6 @@ const AddExperience = () => {
     return changes;
   };
 
-  console.log(form);
   const handleSaveExperience = () => {
     if (!form.address || !form.name) {
       setModal(true);
@@ -233,10 +234,43 @@ const AddExperience = () => {
     }
   };
 
-  const handleEditExperience = (experienceToEdit, index) => {
+  const handleEditExperience = (experienceToEdit) => {
     setForm(experienceToEdit);
     setEditingExperienceId(experienceToEdit.id);
   };
+
+  const handleConfirmDeleteExperience = (experienceToEdit, id) => {
+    setModal(true);
+    setModalTitle("Delete experience");
+    setDeletingExperienceId(id);
+    setModalBtnTitle("Confirm");
+    setModalBody(
+      `Are you sure you want to delete experience ${experienceToEdit.name}? This may impact other registers`
+    );
+  };
+
+  const handleDeleteExperience = () => {
+    const deleteExperience = async () => {
+      try {
+        await api.delete(`experiences/${deletingExperienceId}`);
+        const updatedExperiences = experiences.filter((exp) => exp.id !== deletingExperienceId);
+        setExperiences(updatedExperiences);
+
+        const updatedDisplay = displayExperiences.filter(
+          (exp) => exp.id !== deletingExperienceId
+        );
+        setDisplayExperiences(updatedDisplay);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    deleteExperience();
+    setModal(false);
+    setDeletingExperienceId(null);
+    setForm(initialState);
+    resetModal();
+  };
+
   // form handlers
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -293,7 +327,9 @@ const AddExperience = () => {
                         key={index}
                         highlight={exp.id === editingExperienceId}
                         onEdit={() => handleEditExperience(exp, index)}
-                        //onDelete={() => handleConfirmDeleteUnit(unit, unit.id)}
+                        onDelete={() =>
+                          handleConfirmDeleteExperience(exp, exp.id)
+                        }
                       >
                         {exp.name}
                       </ListExistingItems.Item>
@@ -447,7 +483,7 @@ const AddExperience = () => {
         {modalBtnTitle && (
           <Modal.Footer
             label={modalBtnTitle}
-            //onClick={handleDeleteUnit}
+            onClick={handleDeleteExperience}
           ></Modal.Footer>
         )}
       </Modal.Root>

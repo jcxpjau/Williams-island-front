@@ -77,6 +77,7 @@ const AddUnit = () => {
       try {
         const { data } = await api.get("units");
         if (!data || data.length == 0) {
+          setLoading(false);
           return;
         }
         const mappedData = data.map((item) => ({

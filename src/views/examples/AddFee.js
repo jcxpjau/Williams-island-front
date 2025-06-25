@@ -109,6 +109,7 @@ const AddFee = () => {
       try {
         const { data } = await api.get("fees");
         if (!data || data.length === 0) {
+          setLoading(false);
           return;
         }
         const mappedData = data.map((item) => ({
