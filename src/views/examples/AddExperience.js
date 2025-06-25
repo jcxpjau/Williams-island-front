@@ -253,7 +253,9 @@ const AddExperience = () => {
     const deleteExperience = async () => {
       try {
         await api.delete(`experiences/${deletingExperienceId}`);
-        const updatedExperiences = experiences.filter((exp) => exp.id !== deletingExperienceId);
+        const updatedExperiences = experiences.filter(
+          (exp) => exp.id !== deletingExperienceId
+        );
         setExperiences(updatedExperiences);
 
         const updatedDisplay = displayExperiences.filter(
@@ -280,6 +282,36 @@ const AddExperience = () => {
     }));
   };
 
+  // search controls
+  const handleSearch = (searchTerm) => {
+    const trimmedTerm = searchTerm.trim();
+
+    if (trimmedTerm === "") {
+      setDisplayExperiences(experiences);
+      return;
+    }
+
+    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
+
+    const filteredExperiences = experiences.filter((exp) => {
+      const name = exp.name ? exp.name.toLowerCase() : "";
+      const id = exp.id ? exp.id.toString().toLowerCase() : "";
+
+      return (
+        name.includes(lowerCaseSearchTerm) || id.includes(lowerCaseSearchTerm)
+      );
+    });
+
+    setDisplayExperiences(filteredExperiences);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setEditingExperienceId(null);
+    setForm(initialState);
+    setDisplayExperiences(experiences);
+  };
+
   return (
     <>
       <UserHeader
@@ -291,7 +323,7 @@ const AddExperience = () => {
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="bg-secondary shadow h-100 d-flex flex-column">
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
-                <h3 className="mb-0">Edit unit information</h3>
+                <h3 className="mb-0">Edit experience information</h3>
                 <div className="d-flex justify-content-end">
                   <ListExistingItems.Root>
                     <ListExistingItems.Button className="mt-4">
@@ -304,13 +336,13 @@ const AddExperience = () => {
                     </ListExistingItems.Button>
                   </ListExistingItems.Root>
                 </div>
-                {/*  <SearchEntity
+                <SearchEntity
                   handleSearch={handleSearch}
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
-                  placeholder="Search by denomination or id"
+                  placeholder="Search by name or id"
                   onClearSearch={clearSearch}
-                /> */}
+                />
               </CardHeader>
               <CardBody
                 className="overflow-auto"
@@ -331,7 +363,12 @@ const AddExperience = () => {
                           handleConfirmDeleteExperience(exp, exp.id)
                         }
                       >
-                        {exp.name}
+                        {
+                          CATEGORY_OPTIONS.find(
+                            (option) => option.value === exp.category
+                          )?.icon
+                        }
+                        <span className="ml-2"> {exp.name} </span>
                       </ListExistingItems.Item>
                     ))
                   )}
@@ -351,8 +388,8 @@ const AddExperience = () => {
                 <Col className="p-0" xs="12">
                   <h3 className="mb-0">
                     {editingExperienceId !== null
-                      ? "Edit Unit"
-                      : "Unit Registration"}
+                      ? "Edit Experience"
+                      : "Experience Registration"}
                   </h3>
                 </Col>
               </CardHeader>
