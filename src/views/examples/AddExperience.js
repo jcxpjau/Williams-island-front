@@ -44,6 +44,36 @@ import { ListExistingItems } from "components/ListExisting";
 import { ModalCustom as Modal } from "components/MessagePopUp";
 import api from "services/api";
 import SearchEntity from "./SearchEntity";
+import { FaCocktail, FaCoffee, FaHome, FaSpa } from "react-icons/fa";
+import {
+  MdFastfood,
+  MdOutlineFitnessCenter,
+  MdPets,
+  MdSportsFootball,
+} from "react-icons/md";
+import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Select a category" },
+  {
+    value: "poa",
+    label: "Property Owners Association",
+    icon: <FaHome size={16} />,
+  },
+  { value: "sports", label: "Sports", icon: <MdSportsFootball size={16} /> },
+  { value: "restaurant", label: "Restaurant", icon: <MdFastfood size={16} /> },
+  { value: "cafe", label: "Cafe", icon: <FaCoffee size={16} /> },
+  { value: "bar", label: "Bar", icon: <FaCocktail size={16} /> },
+  { value: "pet", label: "Pets", icon: <MdPets size={16} /> },
+  { value: "spa", label: "Spa", icon: <FaSpa size={16} /> },
+  { value: "pool", label: "Pool", icon: <FaPersonSwimming size={16} /> },
+  {
+    value: "fitness",
+    label: "Fitness",
+    icon: <MdOutlineFitnessCenter size={16} />,
+  },
+  { value: "marina", label: "Marina", icon: <FaSailboat size={16} /> },
+];
 
 const AddExperience = () => {
   const initialState = {
@@ -89,6 +119,43 @@ const AddExperience = () => {
     setModalBtnTitle(null);
   };
 
+  useEffect(() => {
+    setLoading(true);
+    const fetchExperiences = async () => {
+      try {
+        const { data } = await api.get("experiences");
+        if (!data || data.length == 0) {
+          return;
+        }
+        const mappedData = data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          address: item.address,
+          postalCode: item.postalCode,
+          phone: item.phone,
+          email: item.email,
+          category: item.category,
+          capacity: item.capacity,
+          startTimeOperation: item.startTimeOperation,
+          endTimeOperation: item.endTimeOperation,
+          price: item.price,
+          isActive: true,
+          city: "Aventura",
+          state: "Florida",
+          country: "USA",
+        }));
+        setExperiences(mappedData);
+        setDisplayExperiences(mappedData);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
+
   const handleResetForm = () => {
     setEditingExperienceId(null);
     setForm(initialState);
@@ -104,6 +171,72 @@ const AddExperience = () => {
     return changes;
   };
 
+  console.log(form);
+  const handleSaveExperience = () => {
+    if (!form.address || !form.name) {
+      setModal(true);
+      setModalTitle("Incomplete register");
+      setModalBody("Please fill in all required fields.");
+      return;
+    }
+
+    if (editingExperienceId !== null) {
+      const putExperiences = async () => {
+        try {
+          const originalExperience = experiences.find(
+            (exp) => exp.id === editingExperienceId
+          );
+          const changedFields = getChangedFields(originalExperience, form);
+          await api.put(`experiences/${form.id}`, changedFields);
+          const updatedExperiences = experiences.map((exp) =>
+            exp.id === editingExperienceId ? form : exp
+          );
+          setExperiences(updatedExperiences);
+          const filteredExperiences = updatedExperiences.filter((exp) =>
+            displayExperiences.some((de) => de.id === exp.id)
+          );
+          setDisplayExperiences(filteredExperiences);
+          setModal(true);
+          setModalTitle("Experience successfully updated!");
+          setModalBody(`Experience '${form.name}' was successfully updated.`);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      putExperiences();
+    } else {
+      const isDuplicate = experiences.some(
+        (experience) => experience.name === form.name
+      );
+      if (isDuplicate) {
+        setModal(true);
+        setModalTitle("Experience unit");
+        setModalBody("An experience with this name already exists.");
+        return;
+      } else {
+        const postExperiences = async () => {
+          try {
+            const { data } = await api.post("experiences", form);
+            setDisplayExperiences((prev) => [...prev, data]);
+            setExperiences((prev) => [...prev, data]);
+            setModal(true);
+            setModalTitle("Experience sucessfully registered!");
+            setModalBody(
+              "You can edit its details by clicking the pencil icon next to its name if you need"
+            );
+          } catch (err) {
+            console.log(err);
+          }
+        };
+        postExperiences();
+      }
+    }
+  };
+
+  const handleEditExperience = (experienceToEdit, index) => {
+    setForm(experienceToEdit);
+    setEditingExperienceId(experienceToEdit.id);
+  };
   // form handlers
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -159,9 +292,11 @@ const AddExperience = () => {
                       <ListExistingItems.Item
                         key={index}
                         highlight={exp.id === editingExperienceId}
-                        //onEdit={() => handleEditUnit(unit, index)}
+                        onEdit={() => handleEditExperience(exp, index)}
                         //onDelete={() => handleConfirmDeleteUnit(unit, unit.id)}
-                      ></ListExistingItems.Item>
+                      >
+                        {exp.name}
+                      </ListExistingItems.Item>
                     ))
                   )}
                   {loading && (
@@ -221,11 +356,12 @@ const AddExperience = () => {
                     <RegistrationForm.Field
                       id="category"
                       label="Category"
-                      type="text"
+                      type="select"
                       lg={4}
                       placeholder="Category"
                       value={form.category}
                       onChange={handleChange}
+                      options={CATEGORY_OPTIONS}
                     />
                     <RegistrationForm.Field
                       id="capacity"
@@ -298,7 +434,7 @@ const AddExperience = () => {
                       onChange={handleChange}
                     />
                   </RegistrationForm.Section>
-                  <RegistrationForm.SubmitBtn /* onClick={handleSaveUnit} */ />
+                  <RegistrationForm.SubmitBtn onClick={handleSaveExperience} />
                 </RegistrationForm.Root>
               </CardBody>
             </Card>
