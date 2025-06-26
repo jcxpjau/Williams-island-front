@@ -33,8 +33,6 @@ import {
   BsCurrencyDollar,
   BsEnvelope,
   BsPeopleFill,
-  BsPhone,
-  BsPin,
   BsPinMap,
   BsTelephone,
 } from "react-icons/bs";
@@ -124,7 +122,7 @@ const AddExperience = () => {
     const fetchExperiences = async () => {
       try {
         const { data } = await api.get("experiences");
-        if (!data || data.length == 0) {
+        if (!data || data.length === 0) {
           setLoading(false);
           return;
         }
@@ -396,11 +394,21 @@ const AddExperience = () => {
               <CardBody>
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title="Location">
+                    {editingExperienceId && (
+                      <RegistrationForm.Field
+                        label="Id"
+                        id="id"
+                        value={form.id}
+                        type="text"
+                        lg={1}
+                        readOnly={true}
+                      />
+                    )}
                     <RegistrationForm.Field
                       id="name"
                       label="Name"
                       type="text"
-                      lg={12}
+                      lg={editingExperienceId ? 11 : 12}
                       placeholder="Name"
                       icon={<BsCardText size={18} />}
                       value={form.name}
