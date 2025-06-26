@@ -97,10 +97,8 @@ const AddUser = () => {
           type: item.type,
         }));
 
-        // Remove o usuário logado da lista de users, caso ele já esteja lá
         const filteredUsers = mappedUsers.filter((user) => user.id !== me.id);
 
-        // Agora, adiciona o usuário logado no topo
         const finalUsers = [
           {
             id: me.id,

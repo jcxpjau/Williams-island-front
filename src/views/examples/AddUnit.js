@@ -77,6 +77,7 @@ const AddUnit = () => {
       try {
         const { data } = await api.get("units");
         if (!data || data.length == 0) {
+          setLoading(false);
           return;
         }
         const mappedData = data.map((item) => ({
@@ -281,9 +282,6 @@ const AddUnit = () => {
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
-              style={{
-                maxHeight: "650px",
-              }}
             >
               <CardHeader className="border-0 pt-4 pb-0 pb-md-4">
                 <h3 className="mb-0">Edit unit information</h3>
@@ -344,9 +342,6 @@ const AddUnit = () => {
           <Col className="order-xl-1" xl="8">
             <Card
               className="bg-secondary shadow h-100 d-flex flex-column"
-              style={{
-                maxHeight: "650px",
-              }}
             >
               <CardHeader className="bg-white border-0">
                 <Col className="p-0" xs="12">
@@ -356,10 +351,6 @@ const AddUnit = () => {
                 </Col>
               </CardHeader>
               <CardBody
-                className="overflow-auto"
-                style={{
-                  flexGrow: 1,
-                }}
               >
                 <RegistrationForm.Root>
                   <RegistrationForm.Section title={"Unit information"}>

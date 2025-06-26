@@ -20,10 +20,11 @@ import AddUnit from "views/examples/AddUnit.js";
 import AddFee from "views/examples/AddFee.js";
 import AddUser from "views/examples/AddUser.js";
 import Profile from "views/examples/Profile.js";
+import AddExperience from "views/examples/AddExperience";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
-import Tables from "views/examples/Tables.js";
+import Tables from "views/examples/MemberList.js";
 import Icons from "views/examples/Icons.js";
 import EditMember from "views/examples/EditMember";
 import MemberPasses from "views/examples/MemberPasses";
@@ -52,7 +53,7 @@ var routes = [
     icon: "ni ni-tv-2",
     component: <Index />,
     layout: "/admin",
-    active: true
+    active: true,
   },
   {
     name: "Membership",
@@ -66,7 +67,7 @@ var routes = [
         name: "Members List",
         layout: "/admin",
         component: <Tables />,
-        active: false,
+        active: true,
       },
       {
         path: "/membership/add",
@@ -174,6 +175,36 @@ var routes = [
     ],
   },
   {
+    name: "Activities",
+    icon: "ni ni-calendar-grid-58",
+    collapse: true,
+    state: "activitiesCollapse",
+    active: true,
+    views: [
+      {
+        path: "/booking",
+        name: "Bookings",
+        layout: "/admin",
+        component: <Booking />,
+        active: false,
+      },
+      {
+        path: "/experience/add",
+        name: "Add Experience",
+        layout: "/admin",
+        component: <AddExperience />,
+        active: true,
+      },
+      {
+        path: "/experience/list",
+        name: "Experience List",
+        layout: "/admin",
+        component: <VenueList />,
+        active: false,
+      },
+    ],
+  },
+  {
     name: "Accounting",
     icon: "ni ni-collection",
     collapse: true,
@@ -251,33 +282,6 @@ var routes = [
         layout: "/admin",
         component: <Report />,
         active: false,
-      },
-    ],
-  },
-  {
-    name: "Activities",
-    icon: "ni ni-calendar-grid-58",
-    collapse: true,
-    state: "activitiesCollapse",
-    active: false,
-    views: [
-      {
-        path: "/booking",
-        name: "Bookings",
-        layout: "/admin",
-        component: <Booking />,
-      },
-      {
-        path: "/experience/list",
-        name: "Experience List",
-        layout: "/admin",
-        component: <VenueList />,
-      },
-      {
-        path: "/experience/add",
-        name: "Add Experience",
-        layout: "/admin",
-        component: <AddVenue />,
       },
     ],
   },
