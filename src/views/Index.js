@@ -37,7 +37,6 @@ const Dashboard = () => {
     fetchBookings();
   }, []);
 
-  console.log(bookings);
   const maintenanceRequests = [
     { date: "Apr 22, 2024", resident: "John Smith", status: "In Progress" },
     { date: "Apr 22, 2024", resident: "Mary Johnson", status: "Pending" },
