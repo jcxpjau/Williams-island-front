@@ -26,7 +26,8 @@ const Dashboard = () => {
           setLoading(false);
           return;
         }
-        setBookings(data);
+        const lastFive = data.slice(-5);
+        setBookings(lastFive);
         setLoading(false);
       } catch (err) {
         console.log(err);
@@ -107,7 +108,7 @@ const Dashboard = () => {
                         <td colSpan={3} className="text-center py-5">
                           <div className="d-flex flex-column align-items-center justify-content-center">
                             <Spinner />
-                            <p className="mt-2"> Loading members </p>
+                            <p className="mt-2"> Loading bookings </p>
                           </div>
                         </td>
                       </tr>
