@@ -56,6 +56,8 @@ const BookingClient = ({ user, setUser }) => {
     }));
   };
 
+  //console.log(user);
+
   const FindExperiences = async () => {
     if (!category || !date) {
       console.warn("Please fill the following fields: category, date and time");
@@ -88,8 +90,29 @@ const BookingClient = ({ user, setUser }) => {
     }
   }
 
-  /*   async function Booking() {
+  async function Booking(expId) {
     if (!date || Object.keys(selectedHours).length === 0) {
+      return;
+    }
+
+    const payload = {
+      experienceId: expId,
+      memberId: user.id,
+      date: new Date(date).toISOString().split("T")[0],
+      startTime: Object.values(selectedHours)[0],
+      endTime: moment(Object.values(selectedHours)[0], "HH:mm")
+        .add(1, "hour")
+        .format("HH:mm"),
+      status: "pending",
+      notes: "",
+    };
+
+    console.log(payload)
+    const { data } = await api.post(`bookings`, payload);
+    getNotification(data);
+    setSelectedHours({});
+    setBookingConfirm(true);
+    /*  if (!date || Object.keys(selectedHours).length === 0) {
       return;
     }
     const payload = {
@@ -115,9 +138,9 @@ const BookingClient = ({ user, setUser }) => {
       getNotification(json);
       setSelectedHours({});
       setBookingConfirm(true);
-    } catch (err) {}
-  } */
-
+    } catch (err) {} */
+  }
+/* 
   async function getNotification(booking) {
     const message =
       `*Booking Confirmation*\n\n` +
@@ -151,7 +174,7 @@ const BookingClient = ({ user, setUser }) => {
       });
       const json = await res.json();
     } catch (err) {}
-  }
+  } */
 
   const handleLoginForm = (e) => {
     const { id, value } = e.target;
@@ -177,10 +200,16 @@ const BookingClient = ({ user, setUser }) => {
     }
 
     try {
+      console.log("tentando login")
       const { data } = await api.post("members-auth/login", loginForm);
       setLoginModalOpen(false);
       setLoginMsg(null);
-      //console.log(data);
+      if (data) {
+        const { data } = await api.get(`members`, {
+          params: { email: loginForm.email.trim() },
+        });
+        setUser(data);
+      }
     } catch (err) {
       setLoginMsg("Incorrect email or password");
     }
@@ -536,7 +565,7 @@ const BookingClient = ({ user, setUser }) => {
                                     backgroundColor: "#11cdef",
                                     color: "white",
                                   }}
-                                  //onClick={Booking}
+                                  onClick={()=>Booking(experience.id)}
                                 >
                                   Book
                                 </button>
