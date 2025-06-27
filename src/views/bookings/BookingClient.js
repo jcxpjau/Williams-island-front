@@ -56,8 +56,6 @@ const BookingClient = ({ user, setUser }) => {
     }));
   };
 
-  //console.log(user);
-
   const FindExperiences = async () => {
     if (!category || !date) {
       console.warn("Please fill the following fields: category, date and time");
@@ -107,9 +105,9 @@ const BookingClient = ({ user, setUser }) => {
       notes: "",
     };
 
-    console.log(payload)
+    
     const { data } = await api.post(`bookings`, payload);
-    getNotification(data);
+   // getNotification(data);
     setSelectedHours({});
     setBookingConfirm(true);
     /*  if (!date || Object.keys(selectedHours).length === 0) {
@@ -200,7 +198,7 @@ const BookingClient = ({ user, setUser }) => {
     }
 
     try {
-      console.log("tentando login")
+
       const { data } = await api.post("members-auth/login", loginForm);
       setLoginModalOpen(false);
       setLoginMsg(null);
@@ -264,7 +262,7 @@ const BookingClient = ({ user, setUser }) => {
         setLoginMsg("Incorrect email and/or date of birth");
       }
     } catch {
-      console.log("Something went wrong");
+     
     }
   }
 
