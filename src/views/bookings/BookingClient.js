@@ -63,8 +63,6 @@ const BookingClient = ({ user, setUser }) => {
     }
   };
 
-  console.log(availableExperiences);
-
   async function GetBookings() {
     try {
       const { data } = await api.get("bookings");
@@ -89,7 +87,7 @@ const BookingClient = ({ user, setUser }) => {
     }
     const payload = {
       experienceId: Object.keys(selectedHours)[0],
-      userId: user._id,
+      memberId: user.id,
       date: date,
       startTime: Object.values(selectedHours)[0],
       endTime: moment(Object.values(selectedHours)[0], "HH:mm")

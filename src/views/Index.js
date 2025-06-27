@@ -31,6 +31,7 @@ const Dashboard = () => {
         setLoading(false);
       } catch (err) {
         console.log(err);
+        setLoading(false);
       }
     };
 
@@ -114,7 +115,7 @@ const Dashboard = () => {
                     ) : bookings.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-4">
-                          No members found.
+                          No bookings found.
                         </td>
                       </tr>
                     ) : (
