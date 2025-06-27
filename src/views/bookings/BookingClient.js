@@ -23,11 +23,13 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import "animate.css";
+import "../custom.css";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import api from "services/api";
 
 const BookingClient = ({ user, setUser }) => {
+  const initialLogin = { email: null, password: null };
   const [availableExperiences, setAvailableExperiences] = useState([]);
   const [searching, setSearching] = useState(false);
   const [category, setCategory] = useState("");
@@ -37,8 +39,14 @@ const BookingClient = ({ user, setUser }) => {
   const [bookingsByVenue, setBookingsByVenue] = useState({});
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [bookingConfirm, setBookingConfirm] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [loginForm, setLoginForm] = useState(initialLogin);
+  const [setupForm, setSetupForm] = useState({
+    email: null,
+    dateOfBirth: null,
+    password: null,
+  });
+  const [loginMsg, setLoginMsg] = useState(null);
   const navigate = useNavigate();
 
   const handleHourClick = (experienceId, hour) => {
@@ -66,11 +74,10 @@ const BookingClient = ({ user, setUser }) => {
   async function GetBookings() {
     try {
       const { data } = await api.get("bookings");
-      const grouped = {}; //marcar horas ocupadas
+      const grouped = {};
       data.forEach((booking) => {
-        //pegar booking de cada venue
-        const experienceId = booking.experience.id ;
-        const hour = moment("1970-01-01T" + booking.startTime).format("HH:00"); //date time completo
+        const experienceId = booking.experience.id;
+        const hour = moment("1970-01-01T" + booking.startTime).format("HH:00");
         if (!grouped[experienceId]) grouped[experienceId] = new Set();
         grouped[experienceId].add(hour);
       });
@@ -81,7 +88,7 @@ const BookingClient = ({ user, setUser }) => {
     }
   }
 
-/*   async function Booking() {
+  /*   async function Booking() {
     if (!date || Object.keys(selectedHours).length === 0) {
       return;
     }
@@ -146,18 +153,38 @@ const BookingClient = ({ user, setUser }) => {
     } catch (err) {}
   }
 
+  const handleLoginForm = (e) => {
+    const { id, value } = e.target;
+    setLoginForm((prevForm) => ({
+      ...prevForm,
+      [id]: value,
+    }));
+  };
+
+  const handleSetUpForm = (e) => {
+    setLoginMsg(null);
+    const { id, value } = e.target;
+    setSetupForm((prevForm) => ({
+      ...prevForm,
+      [id]: value,
+    }));
+  };
+
   async function handleLogin() {
-    if (!email || !password) {
-      alert("Fill in all fields");
+    if (!loginForm.email || !loginForm.password) {
+      setLoginMsg("Fill in all fields");
       return;
     }
 
-    const payload = {
-      email: email,
-      password: password,
-    };
-
     try {
+      const { data } = await api.post("members-auth/login", loginForm);
+      setLoginModalOpen(false);
+      setLoginMsg(null);
+      //console.log(data);
+    } catch (err) {
+      setLoginMsg("Incorrect email or password");
+    }
+    /*   try {
       const res = await fetch(process.env.REACT_APP_API_URL + "auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,6 +201,41 @@ const BookingClient = ({ user, setUser }) => {
     } catch (err) {
       console.error(err);
       alert("Login failed, please try again");
+    } */
+  }
+
+  async function handleSetup() {
+    if (!setupForm.email || !setupForm.password || !setupForm.dateOfBirth) {
+      setLoginMsg("Please fill in all fields");
+      return;
+    }
+    let memberToSetup = null;
+    try {
+      const { data } = await api.get(`members`, {
+        params: { email: setupForm.email.trim() },
+      });
+      memberToSetup = data;
+      if (memberToSetup) {
+        if (memberToSetup.dateOfBirth === setupForm.dateOfBirth) {
+          const response = await api.post(
+            `/members/${memberToSetup.id}/password`,
+            { password: setupForm.password }
+          );
+          setLoginForm({
+            email: setupForm.email,
+            password: setupForm.password,
+          });
+          setSetupForm(false);
+          setLoginForm(true);
+          setLoginMsg(null);
+        } else {
+          setLoginMsg("Incorrect email and/or date of birth");
+        }
+      } else {
+        setLoginMsg("Incorrect email and/or date of birth");
+      }
+    } catch {
+      console.log("Something went wrong");
     }
   }
 
@@ -334,7 +396,6 @@ const BookingClient = ({ user, setUser }) => {
           )}
           <Col xl="12" className="mt-4">
             {availableExperiences.map((experience) => {
-              console.log("experience", experience);
               const startHour = parseInt(
                 experience.startTimeOperation.split(":")[0],
                 10
@@ -375,7 +436,7 @@ const BookingClient = ({ user, setUser }) => {
                               objectFit: "cover",
                             }}
                           />
-                        </Col> 
+                        </Col>
                         <Col xl="8">
                           <CardBody className="position-relative px-4">
                             <CardTitle tag="h4" className="fw-bold mb-1">
@@ -510,8 +571,11 @@ const BookingClient = ({ user, setUser }) => {
             <Input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={loginForm.email}
+              onChange={(e) => {
+                handleLoginForm(e);
+                setLoginMsg(null);
+              }}
               placeholder="Enter your email"
             />
           </FormGroup>
@@ -520,23 +584,51 @@ const BookingClient = ({ user, setUser }) => {
             <Input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={loginForm.password}
+              onChange={(e) => {
+                handleLoginForm(e);
+                setLoginMsg(null);
+              }}
               placeholder="Enter your password"
             />
           </FormGroup>
         </ModalBody>
         <ModalFooter>
-          <Button
-            color="primary"
-            style={{ backgroundColor: "#525f7f", border: "none" }}
-            onClick={handleLogin}
-          >
-            Login
-          </Button>
-          <Button color="secondary" onClick={() => setLoginModalOpen(false)}>
-            Cancel
-          </Button>
+          <div className="d-flex flex-column w-100">
+            <a
+              className="mb-4 text-dark ml-auto link-hover"
+              onClick={() => {
+                setLoginModalOpen(false);
+                setSetupOpen(true);
+              }}
+            >
+              First time logging in?
+            </a>
+            <div className="d-flex align-items-end ms-auto justify-content-end w-100">
+              {loginMsg && (
+                <span className="text-center mr-3 my-auto">{loginMsg}</span>
+              )}
+              <div className="ms-auto">
+                <Button
+                  color="primary"
+                  style={{ backgroundColor: "#525f7f", border: "none" }}
+                  onClick={handleLogin}
+                  className="me-2"
+                >
+                  Login
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    setLoginModalOpen(false);
+                    setLoginForm(initialLogin);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
         </ModalFooter>
       </Modal>
       <Modal
@@ -570,6 +662,80 @@ const BookingClient = ({ user, setUser }) => {
           >
             Close
           </Button>
+        </ModalFooter>
+      </Modal>
+      <Modal isOpen={setupOpen} toggle={() => setSetupOpen(!setupOpen)}>
+        <Row className="d-flex justify-content-center align-items-center mt-5">
+          <img
+            src={require("../../assets/img/brand/WI_Logo.png")}
+            alt="logo"
+            width={60}
+            height={60}
+          />
+        </Row>
+        <ModalBody>
+          <span className="d-flex justify-content-center mb-5">
+            {" "}
+            Set up your member account{" "}
+          </span>
+          <FormGroup>
+            <Label for="email">Email</Label>
+            <Input
+              type="email"
+              id="email"
+              value={setupForm.email}
+              onChange={(e) => {
+                handleSetUpForm(e);
+              }}
+              placeholder="Enter your email"
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="email"> Date of birth </Label>
+            <Input
+              type="date"
+              id="dateOfBirth"
+              value={setupForm.dateOfBirth}
+              onChange={(e) => {
+                handleSetUpForm(e);
+              }}
+              placeholder="Enter your date of birth"
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="password">Password</Label>
+            <Input
+              type="password"
+              id="password"
+              value={setupForm.password}
+              onChange={(e) => {
+                handleSetUpForm(e);
+              }}
+              placeholder="Enter your password"
+            />
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter>
+          <div className="d-flex flex-column w-100">
+            <div className="d-flex align-items-end ms-auto justify-content-end w-100">
+              {loginMsg && (
+                <span className="text-center mr-3 my-auto">{loginMsg}</span>
+              )}
+              <div className="ms-auto">
+                <Button
+                  color="primary"
+                  style={{ backgroundColor: "#525f7f", border: "none" }}
+                  onClick={handleSetup}
+                  className="me-2"
+                >
+                  Login
+                </Button>
+                <Button color="secondary" onClick={() => setSetupOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
         </ModalFooter>
       </Modal>
     </Container>
