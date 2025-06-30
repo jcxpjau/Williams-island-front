@@ -11,23 +11,45 @@ import {
 } from "reactstrap";
 import Header from "components/Headers/Header";
 import api from "services/api";
-import moment from "moment";
+import { BsBuilding, BsCurrencyDollar, BsImage, BsPeople, BsPersonFill } from "react-icons/bs";
 
 const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
+  const [dependantsLen, setDependantsLen] = useState(0);
+  const [ownersLen, setOwnersLen] = useState(0);
+  const [experiencesLen, setExperiencesLen] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [cards, setCards] = useState([]);
 
   useEffect(() => {
     setLoading(true);
     const fetchBookings = async () => {
       try {
-        const { data } = await api.get("bookings");
-        if (!data || data.length == 0) {
+        const [bookings, owners, dependants, experiences] = await Promise.all([
+          api.get("bookings"),
+          api.get("members"),
+          api.get("dependants"),
+          api.get("experiences"),
+        ]);
+
+        if (
+          !bookings.data ||
+          bookings.data.length == 0 ||
+          !owners.data ||
+          owners.data.length == 0 ||
+          !dependants.data ||
+          dependants.data.length == 0 ||
+          experiences.data.length == 0 ||
+          !experiences
+        ) {
           setLoading(false);
           return;
         }
-        const lastFive = data.slice(-5);
+        const lastFive = bookings.data.slice(-5);
         setBookings(lastFive);
+        setDependantsLen(dependants.data.length);
+        setOwnersLen(owners.data.length);
+        setExperiencesLen(experiences.data.length);
         setLoading(false);
       } catch (err) {
         console.log(err);
@@ -58,6 +80,38 @@ const Dashboard = () => {
     { resident: "Patricia Lee", issue: "Improper Trash Disposal" },
   ];
 
+  useEffect(() => {
+    setCards([
+      {
+        title: "Active property owners",
+        value: ownersLen,
+        Icon: BsPersonFill,
+        iconBg: "bg-warning",
+        footerText: false,
+      },
+      {
+        title: "Total members",
+        value: ownersLen + dependantsLen,
+        Icon: BsPeople,
+        iconBg: "bg-primary",
+        footerText: false,
+      },
+      {
+        title: "Registered experiences",
+        value: experiencesLen,
+        Icon: BsBuilding,
+        iconBg: "bg-danger",
+        footerText: false,
+      },
+       {
+        title: "Total expenses",
+        value: '$ 45738.42',
+        Icon: BsCurrencyDollar,
+        iconBg: "bg-success",
+        footerText: false,
+      },
+    ]);
+  }, [bookings, ownersLen, dependantsLen]);
   /*  async function updateChatBaseSource() {
     await fetch("https://www.chatbase.co/api/v1/update-chatbot-data", {
       method: "POST",
@@ -85,7 +139,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <Header cards={true} />
+      <Header cards={cards} />
       <Container className="mt--7" fluid>
         <Row>
           <Col md="6" xl="6">

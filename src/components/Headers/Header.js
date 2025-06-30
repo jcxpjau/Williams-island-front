@@ -34,7 +34,7 @@ const Header = ({
               <Row>
                 {cards.map((card, index) => (
                   <Col lg="6" xl="3" key={index}>
-                    <Card className="card-stats mb-4 mb-xl-0">
+                    <Card className="card-stats my-4 mb-xl-0">
                       <CardBody>
                         <Row>
                           <div className="col">
