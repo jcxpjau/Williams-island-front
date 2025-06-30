@@ -11,7 +11,7 @@ const Login = () => {
                 © {new Date().getFullYear()}{" "}
                 <a
                   className="font-weight-bold ml-1"
-                  href="https://www.avent7.com.br"
+                  href="https://www.avent7.com"
                   target="_blank"
                 >
                   Avent7
@@ -22,7 +22,7 @@ const Login = () => {
               <Nav className="nav-footer justify-content-center justify-content-xl-end">
                 <NavItem>
                   <NavLink
-                    href="https://www.avent7.com.br"
+                    href="https://www.avent7.com"
                     target="_blank"
                   >
                     Avent7
@@ -30,7 +30,7 @@ const Login = () => {
                 </NavItem>
                 <NavItem>
                   <NavLink
-                    href="https://www.avent7.com.br"
+                    href="https://www.avent7.com"
                     target="_blank"
                   >
                     About Us

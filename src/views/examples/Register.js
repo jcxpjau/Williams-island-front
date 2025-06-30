@@ -96,7 +96,7 @@ const Register = () => {
                       <span className="text-muted">
                         I agree with the{" "}
                         <a
-                          href="https://avent7.com.br/#privacy-policy"
+                          href="https://avent7.com/#privacy-policy"
                           target="_blank"
                         >
                           Privacy Policy

@@ -79,7 +79,7 @@ const AdminNavbar = (props) => {
                   <i className="ni ni-calendar-grid-58" />
                   <span>Activity</span>
                 </DropdownItem>
-                <DropdownItem href="https://www.avent7.com.br">
+                <DropdownItem href="https://www.avent7.com">
                   <i className="ni ni-support-16" />
                   <span>Support</span>
                 </DropdownItem>

@@ -29,7 +29,7 @@ const Footer = () => {
             © {new Date().getFullYear()}{" "}
             <a
               className="font-weight-bold ml-1"
-              href="https://www.avent7.com.br"
+              href="https://www.avent7.com"
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -42,7 +42,7 @@ const Footer = () => {
           <Nav className="nav-footer justify-content-center justify-content-xl-end">
             <NavItem>
               <NavLink
-                href="https://www.avent7.com.br"
+                href="https://www.avent7.com"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -51,7 +51,7 @@ const Footer = () => {
             </NavItem>
             <NavItem>
               <NavLink
-                href="https://www.avent7.com.br"
+                href="https://www.avent7.com"
                 rel="noopener noreferrer"
                 target="_blank"
               >
