@@ -31,13 +31,13 @@ const Dashboard = () => {
         setLoading(false);
       } catch (err) {
         console.log(err);
+        setLoading(false);
       }
     };
 
     fetchBookings();
   }, []);
 
-  console.log(bookings);
   const maintenanceRequests = [
     { date: "Apr 22, 2024", resident: "John Smith", status: "In Progress" },
     { date: "Apr 22, 2024", resident: "Mary Johnson", status: "Pending" },
@@ -115,7 +115,7 @@ const Dashboard = () => {
                     ) : bookings.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-4">
-                          No members found.
+                          No bookings found.
                         </td>
                       </tr>
                     ) : (
