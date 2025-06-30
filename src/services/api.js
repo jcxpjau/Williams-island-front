@@ -9,7 +9,6 @@ const api = axios.create({
   },
   withCredentials: true,
 });
-
 api.interceptors.request.use((config) => {
   const token = store.getState().auth.token;
   const currentPath = window.location.pathname;
@@ -21,7 +20,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
