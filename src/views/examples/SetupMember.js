@@ -772,7 +772,7 @@ const SetupMember = () => {
       <Header
         title="Add Member"
         description="In this page you can add a new member or change their information."
-        height="600px"
+        height="300px"
         cards={headerCards}
       />
       <Container className="mt--7" fluid>

@@ -30,7 +30,7 @@ import { MdPets } from "react-icons/md";
 import { FaCocktail, FaCoffee, FaHome, FaSpa } from "react-icons/fa";
 import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
 
-import UserHeader from "components/Headers/UserHeader.js";
+import Header from "components/Headers/Header.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { BsCurrencyDollar, BsFillTagFill } from "react-icons/bs";
@@ -285,7 +285,7 @@ const AddFee = () => {
 
   return (
     <>
-      <UserHeader
+      <Header
         title="Add Fee"
         description="In this page you can register and set up new fees."
       />

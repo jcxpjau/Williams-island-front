@@ -36,7 +36,7 @@ import {
   BsPinMap,
   BsTelephone,
 } from "react-icons/bs";
-import UserHeader from "components/Headers/UserHeader.js";
+import Header from "components/Headers/Header.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { ModalCustom as Modal } from "components/MessagePopUp";
@@ -313,7 +313,7 @@ const AddExperience = () => {
 
   return (
     <>
-      <UserHeader
+      <Header
         title="Add Experience"
         description="In this page you can add experience or edit their information."
       />

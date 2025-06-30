@@ -28,7 +28,7 @@ import {
   Spinner,
 } from "reactstrap";
 import { BsBuilding, BsPeopleFill, BsEnvelope } from "react-icons/bs";
-import UserHeader from "components/Headers/UserHeader.js";
+import Header from "components/Headers/Header.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ColorPicker } from "components/RegistrationForm/FormColorPicker";
 import { ListExistingItems } from "components/ListExisting";
@@ -274,7 +274,7 @@ const AddUnit = () => {
 
   return (
     <>
-      <UserHeader
+      <Header
         title="Add Unit"
         description="In this page you can add residential units or edit their information."
       />

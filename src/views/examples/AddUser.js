@@ -27,7 +27,7 @@ import {
   Spinner,
 } from "reactstrap";
 
-import UserHeader from "components/Headers/UserHeader.js";
+import Header from "components/Headers/Header.js";
 import { RegistrationForm } from "components/RegistrationForm";
 import { ListExistingItems } from "components/ListExisting";
 import { BsAt, BsPersonVcard, BsShield, BsTelephone } from "react-icons/bs";
@@ -386,7 +386,7 @@ const AddUser = () => {
 
   return (
     <>
-      <UserHeader
+      <Header
         title="Add User"
         description="In this page you can add a new user or change their information."
       />

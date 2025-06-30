@@ -10,7 +10,7 @@ const Header = ({
   return (
     <>
       <div
-        className="header pb-8 pt-5 pt-lg-8 d-flex align-items-center"
+        className="header pb-8 d-flex align-items-center"
         style={{
           minHeight: height,
           backgroundImage: `url(${require("../../assets/img/theme/WI2.png")})`,
@@ -24,7 +24,7 @@ const Header = ({
           <div className="header-body">
             <Row className="align-items-center py-4">
               <Col lg="12" md="12">
-                <h1 className="display-2 text-white">{title}</h1>
+                <h1 className="display-3 text-white">{title}</h1>
                 {description && (
                   <p className="text-white mt-0 mb-5">{description}</p>
                 )}
