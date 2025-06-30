@@ -4,28 +4,37 @@ import {
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Form,
-  FormGroup,
-  InputGroupAddon,
-  InputGroupText,
-  Input,
-  InputGroup,
   Navbar,
   Nav,
   Container,
   Media,
 } from "reactstrap";
 import { useAuth } from "context/auth/authHooks";
-import { useNavigate} from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import api from "services/api";
 
 const AdminNavbar = (props) => {
   const { logout } = useAuth();
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const meResponse = await api.get("users/me");
+        const me = meResponse.data;
+        setUserData(me);
+      } catch {}
+    };
+    fetchMe();
+  });
   const handleLogout = () => {
     logout();
     navigate("/auth/login");
   };
-  
+
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -53,12 +62,12 @@ const AdminNavbar = (props) => {
                   <span className="avatar avatar-sm rounded-circle">
                     <img
                       alt="..."
-                      src={require("../../assets/img/theme/team-4-800x800.jpg")}
+                      src={require("../../assets/img/theme/default-pfp.jpg")}
                     />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
                     <span className="mb-0 text-sm font-weight-bold">
-                      Jessica Williams
+                      {userData.name} {userData.surname}
                     </span>
                   </Media>
                 </Media>

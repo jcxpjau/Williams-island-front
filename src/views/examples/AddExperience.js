@@ -53,11 +53,6 @@ import { FaPersonSwimming, FaSailboat } from "react-icons/fa6";
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Select a category" },
-  {
-    value: "poa",
-    label: "Property Owners Association",
-    icon: <FaHome size={16} />,
-  },
   { value: "sports", label: "Sports", icon: <MdSportsFootball size={16} /> },
   { value: "restaurant", label: "Restaurant", icon: <MdFastfood size={16} /> },
   { value: "cafe", label: "Cafe", icon: <FaCoffee size={16} /> },

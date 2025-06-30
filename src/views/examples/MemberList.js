@@ -190,7 +190,7 @@ const Tables = () => {
                                 <img
                                   alt="..."
                                   className="rounded-circle"
-                                  src={require("../../assets/img/theme/team-1-800x800.jpg")}
+                                  src={require("../../assets/img/theme/default-pfp.jpg")}
                                 />
                               </a>
                               <UncontrolledTooltip
@@ -241,7 +241,7 @@ const Tables = () => {
                                         <img
                                           alt="..."
                                           className="rounded-circle"
-                                          src={require("../../assets/img/theme/team-2-800x800.jpg")}
+                                          src={require("../../assets/img/theme/default-pfp.jpg")}
                                         />
                                       </a>
                                       <UncontrolledTooltip
