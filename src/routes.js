@@ -43,7 +43,7 @@ import AddVenue from "views/examples/AddVenue";
 import EmployeeAcess from "views/examples/EmployeeAcess";
 import Ads from "./components/Ads/Ads";
 import VenueList from "views/examples/VenueList";
-import Booking from "views/examples/Booking";
+import Booking from "views/examples/BookingList";
 import SetupMember from "views/examples/SetupMember";
 
 var routes = [
@@ -186,7 +186,7 @@ var routes = [
         name: "Bookings",
         layout: "/admin",
         component: <Booking />,
-        active: false,
+        active: true,
       },
       {
         path: "/experience/add",

@@ -86,7 +86,6 @@ const Logs = () => {
     fetchLogs();
   }, []);
 
-  console.log(logs)
   const handleSearch = (searchTerm) => {
     const trimmedTerm = searchTerm.trim();
 
