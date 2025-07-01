@@ -1,7 +1,7 @@
 import { Card, CardHeader, Table, Container, Row, Spinner } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
-import { useEffect } from "react";
+import { act, useEffect } from "react";
 import { useState } from "react";
 import api from "services/api";
 import SearchEntity from "./SearchEntity";
@@ -34,6 +34,7 @@ const levelColor = (level) => {
 
 const Logs = () => {
   const [logs, setLogs] = useState(null);
+  const [displayLogs, setDisplayLogs] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -74,6 +75,7 @@ const Logs = () => {
         );
 
         setLogs(logsWithUser);
+        setDisplayLogs(logsWithUser);
       } catch (err) {
         console.log(err);
       } finally {
@@ -83,6 +85,38 @@ const Logs = () => {
 
     fetchLogs();
   }, []);
+
+  console.log(logs)
+  const handleSearch = (searchTerm) => {
+    const trimmedTerm = searchTerm.trim();
+
+    if (trimmedTerm === "") {
+      setDisplayLogs(logs);
+      return;
+    }
+
+    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
+
+    const filteredLogs = logs.filter((log) => {
+      const action = log.action.toLowerCase();
+      const entity = log.entity.toLowerCase();
+      const context = log.context.toLowerCase();
+      const name = log.userName;
+      return (
+        action.includes(lowerCaseSearchTerm) ||
+        entity.includes(lowerCaseSearchTerm) ||
+        context.includes(lowerCaseSearchTerm) ||
+        name.includes(lowerCaseSearchTerm)
+      );
+    });
+
+    setDisplayLogs(filteredLogs);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setDisplayLogs(logs);
+  };
 
   return (
     <>
@@ -97,7 +131,13 @@ const Logs = () => {
                 <div className="d-flex justify-content-between align-items-center">
                   <h3 className="mb-0">System Logs</h3>
                   <div className="w-25">
-                    <SearchEntity handleSearch={()=>{}} searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+                    <SearchEntity
+                      handleSearch={handleSearch}
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      placeholder="Search by action, entity, context or user"
+                      onClearSearch={clearSearch}
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -123,14 +163,14 @@ const Logs = () => {
                         </div>
                       </td>
                     </tr>
-                  ) : !logs || logs.length === 0 ? (
+                  ) : !displayLogs || displayLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-4">
+                      <td colSpan={7} className="text-center py-4">
                         No logs found.
                       </td>
                     </tr>
                   ) : (
-                    logs.map((log) => (
+                    displayLogs.map((log) => (
                       <>
                         <tr key={log.id}>
                           <td>
