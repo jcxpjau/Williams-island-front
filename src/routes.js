@@ -24,7 +24,7 @@ import AddExperience from "views/examples/AddExperience";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
-import Tables from "views/examples/MemberList.js";
+import MemberList from "views/examples/MemberList.js";
 import Icons from "views/examples/Icons.js";
 import EditMember from "views/examples/EditMember";
 import MemberPasses from "views/examples/MemberPasses";
@@ -66,7 +66,7 @@ var routes = [
         path: "/membership/list",
         name: "Members List",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList/>,
         active: true,
       },
       {
@@ -215,28 +215,28 @@ var routes = [
         path: "/accounting/fees",
         name: "Membership Fees",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {
         path: "/accounting/poa",
         name: "POA Fees",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {
         path: "/accounting/spending",
         name: "Spending Minimus",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {
         path: "/accounting/estoppel",
         name: "Estoppel",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
     ],
@@ -252,7 +252,7 @@ var routes = [
         path: "/inventory/list",
         name: "Items List",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {
@@ -266,14 +266,14 @@ var routes = [
         path: "/inventory/count",
         name: "Inventory Count",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {
         path: "/inventory/departments",
         name: "By Departments",
         layout: "/admin",
-        component: <Tables />,
+        component: <MemberList />,
         active: false,
       },
       {

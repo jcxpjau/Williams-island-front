@@ -34,7 +34,8 @@ import Header from "components/Headers/Header.js";
 import "../custom.css";
 import api from "services/api";
 import { BsPencil } from "react-icons/bs";
-const Tables = () => {
+
+const MemberList = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState([]);
@@ -278,4 +279,4 @@ const Tables = () => {
   );
 };
 
-export default Tables;
+export default MemberList;
