@@ -1,20 +1,10 @@
-import {
-  Card,
-  CardHeader,
-  CardFooter,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
-  Table,
-  Container,
-  Row,
-  Spinner,
-} from "reactstrap";
+import { Card, CardHeader, Table, Container, Row, Spinner } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
 import { useEffect } from "react";
 import { useState } from "react";
 import api from "services/api";
+import SearchEntity from "./SearchEntity";
 
 const actionColor = (action) => {
   switch (action) {
@@ -44,6 +34,7 @@ const levelColor = (level) => {
 
 const Logs = () => {
   const [logs, setLogs] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -93,7 +84,6 @@ const Logs = () => {
     fetchLogs();
   }, []);
 
-  console.log(logs);
   return (
     <>
       <Header cards={true} />
@@ -104,7 +94,12 @@ const Logs = () => {
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0">
-                <h3 className="mb-0">System Logs</h3>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3 className="mb-0">System Logs</h3>
+                  <div className="w-25">
+                    <SearchEntity handleSearch={()=>{}} searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+                  </div>
+                </div>
               </CardHeader>
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
