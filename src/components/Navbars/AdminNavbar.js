@@ -58,9 +58,7 @@ const AdminNavbar = (props) => {
           <Nav className="align-items-center d-none d-md-flex" navbar>
             <UncontrolledDropdown nav>
               <DropdownToggle className="pr-0" nav>
-                {
-                  userData && (
-
+                {userData && (
                   <Media className="align-items-center">
                     <span className="avatar avatar-sm rounded-circle">
                       <img
@@ -74,30 +72,51 @@ const AdminNavbar = (props) => {
                       </span>
                     </Media>
                   </Media>
-                  )
-                }
+                )}
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-arrow" right>
                 <DropdownItem className="noti-title" header tag="div">
                   <h6 className="text-overflow m-0">Welcome!</h6>
                 </DropdownItem>
-                <DropdownItem to="/admin/profile" tag={Link}>
+
+                <DropdownItem
+                  disabled
+                  className="text-muted"
+                  style={{ pointerEvents: "none" }}
+                >
                   <i className="ni ni-single-02" />
                   <span>My profile</span>
                 </DropdownItem>
-                <DropdownItem to="/admin/user-profile" tag={Link}>
+
+                <DropdownItem
+                  disabled
+                  className="text-muted"
+                  style={{ pointerEvents: "none" }}
+                >
                   <i className="ni ni-settings-gear-65" />
                   <span>Settings</span>
                 </DropdownItem>
-                <DropdownItem to="/admin/user-profile" tag={Link}>
+
+                <DropdownItem
+                  disabled
+                  className="text-muted"
+                  style={{ pointerEvents: "none" }}
+                >
                   <i className="ni ni-calendar-grid-58" />
                   <span>Activity</span>
                 </DropdownItem>
-                <DropdownItem href="https://www.avent7.com">
+
+                <DropdownItem
+                  disabled
+                  className="text-muted"
+                  style={{ pointerEvents: "none" }}
+                >
                   <i className="ni ni-support-16" />
                   <span>Support</span>
                 </DropdownItem>
+
                 <DropdownItem divider />
+
                 <DropdownItem
                   to="/auth/login"
                   tag={Link}

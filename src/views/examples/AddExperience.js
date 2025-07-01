@@ -73,7 +73,6 @@ const AddExperience = () => {
     name: "",
     description: "",
     address: "",
-    postalCode: "",
     phone: "",
     email: "",
     category: "",
@@ -82,9 +81,6 @@ const AddExperience = () => {
     endTimeOperation: "",
     price: "",
     isActive: true,
-    city: "Aventura",
-    state: "Florida",
-    country: "USA",
   };
 
   const [loading, setLoading] = useState(false);
@@ -126,7 +122,6 @@ const AddExperience = () => {
           name: item.name,
           description: item.description,
           address: item.address,
-          postalCode: item.postalCode,
           phone: item.phone,
           email: item.email,
           category: item.category,
@@ -421,16 +416,6 @@ const AddExperience = () => {
                       onChange={handleChange}
                     />
                     <RegistrationForm.Field
-                      id="postalCode"
-                      label="Postal Code"
-                      type="number"
-                      lg={4}
-                      placeholder="Postal Code"
-                      icon={<BsPinMap size={18} />}
-                      value={form.postalCode}
-                      onChange={handleChange}
-                    />
-                    <RegistrationForm.Field
                       id="category"
                       label="Category"
                       type="select"
@@ -444,7 +429,7 @@ const AddExperience = () => {
                       id="capacity"
                       label="Capacity"
                       type="number"
-                      lg={2}
+                      lg={3}
                       placeholder="X"
                       value={form.capacity}
                       icon={<BsPeopleFill size={18} />}
@@ -454,7 +439,7 @@ const AddExperience = () => {
                       id="startTimeOperation"
                       label="Opening hour"
                       type="time"
-                      lg={2}
+                      lg={3}
                       placeholder="08:00"
                       value={form.startTimeOperation}
                       onChange={handleChange}
@@ -463,7 +448,7 @@ const AddExperience = () => {
                       id="endTimeOperation"
                       label="Closing hour"
                       type="time"
-                      lg={2}
+                      lg={3}
                       placeholder="22:00"
                       value={form.endTimeOperation}
                       onChange={handleChange}
@@ -472,7 +457,7 @@ const AddExperience = () => {
                       id="price"
                       label="Price"
                       type="number"
-                      lg={2}
+                      lg={3}
                       placeholder=""
                       value={form.price}
                       icon={<BsCurrencyDollar size={18} />}

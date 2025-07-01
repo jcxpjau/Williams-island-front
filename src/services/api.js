@@ -11,10 +11,6 @@ const api = axios.create({
 });
 api.interceptors.request.use((config) => {
   const token = store.getState().auth.token;
-  const currentPath = window.location.pathname;
-  if (currentPath === "/booking") {
-    return config;
-  }
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,15 +19,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const currentPath = window.location.pathname;
     console.log(process.env.REACT_APP_API_URL);
     const originalRequest = error.config;
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh") &&
-      !currentPath.startsWith("/booking")
+      !originalRequest.url?.includes("/auth/refresh")
     ) {
       originalRequest._retry = true;
       console.log(process.env.REACT_APP_API_URL);
