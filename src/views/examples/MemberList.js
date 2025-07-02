@@ -342,10 +342,10 @@ const MemberList = () => {
                       {!filter && (
                         <input
                           type="text"
-                          className="form-control flex-fill"
+                          className="form-control"
                           placeholder="Select a filter"
                           disabled
-                          style={{ width: "250px" }}
+                          style={{ width: "250px", flex: "0 0 250px" }}
                         />
                       )}
 
