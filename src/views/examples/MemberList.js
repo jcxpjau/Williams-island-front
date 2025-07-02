@@ -28,6 +28,9 @@ import {
   UncontrolledTooltip,
   Col,
   Spinner,
+  Pagination,
+  PaginationLink,
+  PaginationItem,
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
@@ -38,99 +41,146 @@ import { BsPencil } from "react-icons/bs";
 const MemberList = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState([]);
   const [units, setUnits] = useState([]);
 
-  useEffect(() => {
-    const fetchAllMemberData = async () => {
-      setLoading(true);
+  const fetchMemberPage = async () => {
+    setLoading(true);
 
-      try {
-        const [membersData, unitsData] = await Promise.all([
-          api.get("members"),
-          api.get("units"),
-        ]);
+    try {
+      const [membersData, unitsData] = await Promise.all([
+        api.get("members", {
+          params: {
+            limit: 10,
+            skip: (currentPage - 1) * 10,
+          },
+        }),
+        api.get("units"),
+      ]);
 
-        if (!membersData || membersData.length === 0) {
-          setMembers([]);
-          setLoading(false);
-          return;
-        }
-        const membersWithFullData = await Promise.all(
-          membersData.data.map(async (member) => {
-            try {
-              const mappedMember = {
-                id: member.id,
-                name: member.name,
-                surname: member.surname,
-                email: member.email,
-                memberNumber: member.memberNumber,
-                address: member.address,
-                tel: member.tel,
-                zipCode: member.zipCode,
-                dateOfBirth: member.dateOfBirth,
-                dateJoined: member.dateJoined,
-              };
-
-              const [propertiesResponse, dependantsResponse] =
-                await Promise.all([
-                  api.get(`properties/member/${member.id}`),
-                  api.get(`dependants/member/${member.id}`),
-                ]);
-
-              return {
-                ...mappedMember,
-                properties: propertiesResponse.data || [],
-                dependants: dependantsResponse.data || [],
-              };
-            } catch (innerError) {
-              console.error(
-                `Erro ao buscar dados adicionais para o membro ${member.id}:`,
-                innerError
-              );
-              return {
-                id: member.id,
-                name: member.name,
-                surname: member.surname,
-                email: member.email,
-                memberNumber: member.memberNumber,
-                address: member.address,
-                tel: member.tel,
-                zipCode: member.zipCode,
-                dateOfBirth: member.dateOfBirth,
-                dateJoined: member.dateJoined,
-                properties: [],
-                dependants: [],
-              };
-            }
-          })
-        );
-        setMembers(membersWithFullData);
-
-        if (unitsData.data && unitsData.data.length > 0) {
-          const mappedUnitsData = unitsData.data.map((item) => ({
-            id: item.id,
-            address: item.address,
-            denomination: item.denomination,
-            numberOfInhabitants: item.numberOfInhabitants,
-            numberOfStores: item.numberOfStores,
-            numberOfApartments: item.numberOfApartments,
-            color: item.color,
-          }));
-          setUnits(mappedUnitsData);
-        } else {
-          setUnits([]);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar membros ou dados adicionais:", err);
+      setLastPage(membersData.data.lastPage);
+      if (!membersData.data.data || membersData.data.data.length === 0) {
         setMembers([]);
-      } finally {
         setLoading(false);
+        return;
       }
-    };
+      const membersWithFullData = await Promise.all(
+        membersData.data.data.map(async (member) => {
+          try {
+            const mappedMember = {
+              id: member.id,
+              name: member.name,
+              surname: member.surname,
+              email: member.email,
+              memberNumber: member.memberNumber,
+              address: member.address,
+              tel: member.tel,
+              zipCode: member.zipCode,
+              dateOfBirth: member.dateOfBirth,
+              dateJoined: member.dateJoined,
+            };
 
-    fetchAllMemberData();
-  }, []);
+            const [propertiesResponse, dependantsResponse] = await Promise.all([
+              api.get(`properties/member/${member.id}`),
+              api.get(`dependants/member/${member.id}`),
+            ]);
+
+            return {
+              ...mappedMember,
+              properties: propertiesResponse.data || [],
+              dependants: dependantsResponse.data || [],
+            };
+          } catch (innerError) {
+            console.error(
+              `Erro ao buscar dados adicionais para o membro ${member.id}:`,
+              innerError
+            );
+            return {
+              id: member.id,
+              name: member.name,
+              surname: member.surname,
+              email: member.email,
+              memberNumber: member.memberNumber,
+              address: member.address,
+              tel: member.tel,
+              zipCode: member.zipCode,
+              dateOfBirth: member.dateOfBirth,
+              dateJoined: member.dateJoined,
+              properties: [],
+              dependants: [],
+            };
+          }
+        })
+      );
+      setMembers(membersWithFullData);
+
+      if (unitsData.data && unitsData.data.length > 0) {
+        const mappedUnitsData = unitsData.data.map((item) => ({
+          id: item.id,
+          address: item.address,
+          denomination: item.denomination,
+          numberOfInhabitants: item.numberOfInhabitants,
+          numberOfStores: item.numberOfStores,
+          numberOfApartments: item.numberOfApartments,
+          color: item.color,
+        }));
+        setUnits(mappedUnitsData);
+      } else {
+        setUnits([]);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar membros ou dados adicionais:", err);
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= lastPage) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+
+    items.push(
+      <PaginationItem key="previous" disabled={currentPage === 1}>
+        <PaginationLink
+          previous
+          onClick={() => handlePageChange(currentPage - 1)}
+        />
+      </PaginationItem>
+    );
+
+    for (let i = 1; i <= lastPage; i++) {
+      items.push(
+        <PaginationItem key={i} active={i === currentPage}>
+          <PaginationLink onClick={() => handlePageChange(i)}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    items.push(
+      <PaginationItem key="next" disabled={currentPage === lastPage}>
+        <PaginationLink
+          next
+          onClick={() => handlePageChange(currentPage + 1)}
+        />
+      </PaginationItem>
+    );
+
+    return items;
+  };
+
+  useEffect(() => {
+    fetchMemberPage();
+  }, [currentPage]);
 
   return (
     <>
@@ -172,7 +222,7 @@ const MemberList = () => {
                     </tr>
                   ) : members.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-4">
+                      <td colSpan={6} className="text-center py-4">
                         No members found.
                       </td>
                     </tr>
@@ -261,7 +311,14 @@ const MemberList = () => {
                             </div>
                           </td>
                           <td>
-                            <button className="btn"  onClick={() => navigate("/admin/membership/add", { state: { member } })}>
+                            <button
+                              className="btn"
+                              onClick={() =>
+                                navigate("/admin/membership/add", {
+                                  state: { member },
+                                })
+                              }
+                            >
                               <BsPencil />
                             </button>
                           </td>
@@ -271,6 +328,9 @@ const MemberList = () => {
                   )}
                 </tbody>
               </Table>
+              <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+                {renderPaginationItems()}
+              </Pagination>
             </Card>
           </div>
         </Row>

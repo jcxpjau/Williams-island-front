@@ -32,11 +32,12 @@ const Dashboard = () => {
           api.get("experiences"),
         ]);
 
+        console.log(owners.data.data)
         if (
           !bookings.data ||
           bookings.data.length == 0 ||
-          !owners.data ||
-          owners.data.length == 0 ||
+          !owners.data.data ||
+          owners.data.data.length == 0 ||
           !dependants.data ||
           dependants.data.length == 0 ||
           experiences.data.length == 0 ||
@@ -48,7 +49,7 @@ const Dashboard = () => {
         const lastFive = bookings.data.slice(-5);
         setBookings(lastFive);
         setDependantsLen(dependants.data.length);
-        setOwnersLen(owners.data.length);
+        setOwnersLen(owners.data.data.length);
         setExperiencesLen(experiences.data.length);
         setLoading(false);
       } catch (err) {
