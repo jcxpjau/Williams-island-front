@@ -13,6 +13,7 @@ function SearchEntity({
   setSearchTerm,
   placeholder = "Search...",
   onClearSearch,
+  width
 }) {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const inputRef = useRef(null);
@@ -43,9 +44,12 @@ function SearchEntity({
     }
   };
 
-  return (
-    <div className="mt-3">
-      <InputGroup className="input-group-alternative">
+   return (
+    <div className="flex-fill">
+      <InputGroup
+        className="input-group-alternative"
+        style={{ width: width|| "auto" }}
+      >
         <InputGroupAddon addonType="prepend">
           <InputGroupText>
             <BsSearch />
@@ -74,5 +78,4 @@ function SearchEntity({
     </div>
   );
 }
-
 export default SearchEntity;

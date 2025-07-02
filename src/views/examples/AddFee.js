@@ -304,7 +304,7 @@ const AddFee = () => {
                   <ListExistingItems.Root>
                     <ListExistingItems.Button className="mt-4">
                       <Button
-                        className="border-0 shadow-0 m-0"
+                        className="border-0 shadow-0 mx-0 mb-3"
                         onClick={handleResetForm}
                       >
                         + New fee

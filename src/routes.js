@@ -175,7 +175,7 @@ var routes = [
     ],
   },
   {
-    name: "Activities",
+    name: "Experiences",
     icon: "ni ni-calendar-grid-58",
     collapse: true,
     state: "activitiesCollapse",

@@ -31,33 +31,42 @@ import {
   Pagination,
   PaginationLink,
   PaginationItem,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
 import "../custom.css";
 import api from "services/api";
 import { BsPencil } from "react-icons/bs";
+import SearchEntity from "./SearchEntity";
 
 const MemberList = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
+  const [displayMembers, setDisplayMembers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState([]);
+  const [filter, setFilter] = useState(null);
+  const [filterLabel, setFilterLabel] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState("");
+  const [filterTerm, setFilterTerm] = useState("");
   const [units, setUnits] = useState([]);
 
   const fetchMemberPage = async () => {
     setLoading(true);
 
     try {
-      const [membersData, unitsData] = await Promise.all([
+      const [membersData] = await Promise.all([
         api.get("members", {
           params: {
             limit: 10,
             skip: (currentPage - 1) * 10,
           },
         }),
-        api.get("units"),
       ]);
 
       setLastPage(membersData.data.lastPage);
@@ -115,21 +124,7 @@ const MemberList = () => {
         })
       );
       setMembers(membersWithFullData);
-
-      if (unitsData.data && unitsData.data.length > 0) {
-        const mappedUnitsData = unitsData.data.map((item) => ({
-          id: item.id,
-          address: item.address,
-          denomination: item.denomination,
-          numberOfInhabitants: item.numberOfInhabitants,
-          numberOfStores: item.numberOfStores,
-          numberOfApartments: item.numberOfApartments,
-          color: item.color,
-        }));
-        setUnits(mappedUnitsData);
-      } else {
-        setUnits([]);
-      }
+      setDisplayMembers(membersWithFullData);
     } catch (err) {
       console.error("Erro ao buscar membros ou dados adicionais:", err);
       setMembers([]);
@@ -179,9 +174,132 @@ const MemberList = () => {
   };
 
   useEffect(() => {
+    const fetchUnits = async () => {
+      const { data: unitsData } = await api.get("units");
+      if (unitsData && unitsData.length > 0) {
+        const mappedUnitsData = unitsData.map((item) => ({
+          id: item.id,
+          address: item.address,
+          denomination: item.denomination,
+          numberOfInhabitants: item.numberOfInhabitants,
+          numberOfStores: item.numberOfStores,
+          numberOfApartments: item.numberOfApartments,
+          color: item.color,
+        }));
+        setUnits(mappedUnitsData);
+      } else {
+        setUnits([]);
+      }
+    };
+
+    fetchUnits();
+  }, []);
+
+  useEffect(() => {
     fetchMemberPage();
   }, [currentPage]);
 
+  useEffect(() => {
+    if (!filter) {
+      setDisplayMembers(members);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    const fetchFilteredData = async () => {
+      if (!filter) {
+        setDisplayMembers(members);
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        let filteredMembers = [];
+
+        if (filter === "name") {
+          const { data } = await api.get(`members`, {
+            params: { name: filterTerm.trim() },
+          });
+          filteredMembers = data;
+        }
+
+        if (filter === "email") {
+          const { data } = await api.get(`members`, {
+            params: { email: filterTerm.trim() },
+          });
+          filteredMembers = data;
+        }
+
+        if (filter === "unit" && selectedUnit) {
+          const { data } = await api.get(`members/unit/${selectedUnit}`);
+          filteredMembers = data;
+        }
+
+        const membersWithFullData = await Promise.all(
+          filteredMembers.map(async (member) => {
+            const mappedMember = {
+              id: member.id,
+              name: member.name,
+              surname: member.surname,
+              email: member.email,
+              memberNumber: member.memberNumber,
+              address: member.address,
+              tel: member.tel,
+              zipCode: member.zipCode,
+              dateOfBirth: member.dateOfBirth,
+              dateJoined: member.dateJoined,
+            };
+
+            try {
+              const [propertiesResponse, dependantsResponse] =
+                await Promise.all([
+                  api.get(`properties/member/${member.id}`),
+                  api.get(`dependants/member/${member.id}`),
+                ]);
+
+              return {
+                ...mappedMember,
+                properties: propertiesResponse.data || [],
+                dependants: dependantsResponse.data || [],
+              };
+            } catch (innerError) {
+              console.error(
+                `Erro ao buscar dados adicionais para o membro ${member.id}:`,
+                innerError
+              );
+              return {
+                ...mappedMember,
+                properties: [],
+                dependants: [],
+              };
+            }
+          })
+        );
+
+        setDisplayMembers(membersWithFullData);
+      } catch (error) {
+        console.error("Erro ao buscar membros filtrados:", error);
+        setDisplayMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilteredData();
+  }, [filterTerm, selectedUnit, members]);
+
+  const handleFilterChange = (e) => {
+    const newFilter = e.target.value;
+    setFilter(newFilter);
+    setSelectedUnit("");
+  };
+
+  const handleUnitSelectChange = (e) => {
+    setSelectedUnit(e.target.value);
+  };
+
+  console.log(selectedUnit);
   return (
     <>
       <Header />
@@ -195,6 +313,65 @@ const MemberList = () => {
                 <Row className="align-items-center">
                   <Col xs="6">
                     <h3 className="mb-0">Members List</h3>
+                  </Col>
+
+                  <Col xs="6" className="d-flex justify-content-end gap-3">
+                    <div className="d-flex flex-row gap-2 mt-3">
+                      <select
+                        className="custom-select btn btn-secondary"
+                        value={filter}
+                        onChange={handleFilterChange}
+                        style={{ textAlign: "left" }}
+                      >
+                        <option value="">Filter by</option>
+                        <option value="unit">Unit</option>
+                        <option value="email">Email</option>
+                        <option value="name">First name</option>
+                      </select>
+
+                      {!filter && (
+                        <input
+                          type="text"
+                          className="form-control flex-fill"
+                          placeholder="Select a filter"
+                          disabled
+                          style={{ width: "250px" }}
+                        />
+                      )}
+
+                      {(filter === "name" || filter === "email") && (
+                        <SearchEntity
+                          handleSearch={() => {}}
+                          searchTerm={filterTerm}
+                          setSearchTerm={setFilterTerm}
+                          onClearSearch={() => {setFilterTerm(""); setFilter(null)}}
+                          placeholder={`Filter by ${filter}`}
+                          width={"250px"}
+                        />
+                      )}
+
+                      {filter === "unit" && (
+                        <div style={{ flex: "0 0 auto" }}>
+                          <select
+                            className="form-control"
+                            value={selectedUnit}
+                            onChange={handleUnitSelectChange}
+                            style={{ width: "250px" }}
+                          >
+                            <option value="">Filter by Unit</option>
+                            {units.map((unit) => (
+                              <option
+                                key={unit.denomination}
+                                value={unit.id}
+                                style={{ color: unit.color }}
+                              >
+                                {unit.denomination}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
                   </Col>
                 </Row>
               </CardHeader>
@@ -220,14 +397,14 @@ const MemberList = () => {
                         </div>
                       </td>
                     </tr>
-                  ) : members.length === 0 ? (
+                  ) : displayMembers.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="text-center py-4">
                         No members found.
                       </td>
                     </tr>
                   ) : (
-                    members.map((member) => (
+                    displayMembers.map((member) => (
                       <>
                         <tr key={member.id}>
                           <td>
@@ -258,20 +435,22 @@ const MemberList = () => {
                           </td>
                           <td>
                             {member.properties.map((prop, index) => {
-                              const associatedUnit = units.find(
+                              const associatedUnit = units?.find(
                                 (unit) => unit.id === prop.unitId
                               );
-                              return (
-                                <span
-                                  key={index}
-                                  style={{ color: associatedUnit.color }}
-                                >
-                                  {associatedUnit.denomination}
-                                  {index < member.properties.length - 1
-                                    ? ", "
-                                    : ""}
-                                </span>
-                              );
+                              if (associatedUnit) {
+                                return (
+                                  <span
+                                    key={index}
+                                    style={{ color: associatedUnit.color }}
+                                  >
+                                    {associatedUnit.denomination}
+                                    {index < member.properties.length - 1
+                                      ? ", "
+                                      : ""}
+                                  </span>
+                                );
+                              }
                             })}
                           </td>
                           <td>
