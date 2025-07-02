@@ -207,8 +207,12 @@ const MemberList = () => {
         return;
       }
 
+      if ((filter === "name" || filter === "email") && !filterTerm.trim()) {
+        setDisplayMembers(members);
+        return;
+      }
+
       setLoading(true);
-      console.log(filterTerm);
       try {
         let filteredMembers = [];
 
@@ -309,7 +313,6 @@ const MemberList = () => {
     setSelectedUnit(e.target.value);
   };
 
-  console.log(displayMembers);
   return (
     <>
       <Header />
@@ -371,7 +374,7 @@ const MemberList = () => {
                             onChange={handleUnitSelectChange}
                             style={{ width: "250px" }}
                           >
-                            <option value="">Filter by Unit</option>
+                            <option value="" disabled>Filter by Unit</option>
                             {units.map((unit) => (
                               <option
                                 key={unit.denomination}
@@ -520,7 +523,7 @@ const MemberList = () => {
                   )}
                 </tbody>
               </Table>
-              {!filter && (
+              {(!filter || !filterTerm.trim())&& (
                 <Pagination className="border pt-4 px-4 d-flex justify-content-end">
                   {renderPaginationItems()}
                 </Pagination>
