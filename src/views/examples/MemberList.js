@@ -31,10 +31,6 @@ import {
   Pagination,
   PaginationLink,
   PaginationItem,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
 } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
@@ -212,7 +208,7 @@ const MemberList = () => {
       }
 
       setLoading(true);
-
+      console.log(filterTerm);
       try {
         let filteredMembers = [];
 
@@ -220,6 +216,10 @@ const MemberList = () => {
           const { data } = await api.get(`members`, {
             params: { name: filterTerm.trim() },
           });
+          if (!data) {
+            setDisplayMembers([]);
+            return;
+          }
           filteredMembers = data;
         }
 
@@ -227,14 +227,25 @@ const MemberList = () => {
           const { data } = await api.get(`members`, {
             params: { email: filterTerm.trim() },
           });
+          if (!data) {
+            setDisplayMembers([]);
+            return;
+          }
           filteredMembers = data;
         }
 
         if (filter === "unit" && selectedUnit) {
           const { data } = await api.get(`members/unit/${selectedUnit}`);
           filteredMembers = data;
+          if (!data) {
+            setDisplayMembers([]);
+            return;
+          }
         }
 
+        filteredMembers = Array.isArray(filteredMembers)
+          ? filteredMembers
+          : [filteredMembers];
         const membersWithFullData = await Promise.all(
           filteredMembers.map(async (member) => {
             const mappedMember = {
@@ -279,7 +290,7 @@ const MemberList = () => {
         setDisplayMembers(membersWithFullData);
       } catch (error) {
         console.error("Erro ao buscar membros filtrados:", error);
-        setDisplayMembers([]);
+        setDisplayMembers(null);
       } finally {
         setLoading(false);
       }
@@ -298,6 +309,7 @@ const MemberList = () => {
     setSelectedUnit(e.target.value);
   };
 
+  console.log(displayMembers);
   return (
     <>
       <Header />
@@ -342,7 +354,10 @@ const MemberList = () => {
                           handleSearch={() => {}}
                           searchTerm={filterTerm}
                           setSearchTerm={setFilterTerm}
-                          onClearSearch={() => {setFilterTerm(""); setFilter(null)}}
+                          onClearSearch={() => {
+                            setFilterTerm("");
+                            setFilter("");
+                          }}
                           placeholder={`Filter by ${filter}`}
                           width={"250px"}
                         />
@@ -505,9 +520,11 @@ const MemberList = () => {
                   )}
                 </tbody>
               </Table>
-              <Pagination className="border pt-4 px-4 d-flex justify-content-end">
-                {renderPaginationItems()}
-              </Pagination>
+              {!filter && (
+                <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+                  {renderPaginationItems()}
+                </Pagination>
+              )}
             </Card>
           </div>
         </Row>

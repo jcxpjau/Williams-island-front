@@ -38,7 +38,7 @@ import api from "services/api";
 import "../custom.css";
 
 const Settings = () => {
-  const tabs = [{ id: "logs", label: "Logs" }];
+  const tabs = [{ id: "logs", label: "Logs" }, {id: "roles", label:"Roles"}];
   const [activeTab, setActiveTab] = useState('logs')
 
   return (
