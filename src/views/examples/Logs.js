@@ -4,6 +4,7 @@ import Header from "components/Headers/Header.js";
 import { act, useEffect } from "react";
 import { useState } from "react";
 import api from "services/api";
+import { Pagination, PaginationItem, PaginationLink } from "reactstrap";
 import SearchEntity from "./SearchEntity";
 
 const actionColor = (action) => {
@@ -37,15 +38,28 @@ const Logs = () => {
   const [displayLogs, setDisplayLogs] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
 
       try {
-        const { data: logs } = await api.get("logs");
+        const { data } = await api.get("logs", {
+          params: {
+            limit: 10,
+            skip: (currentPage - 1) * 10,
+          },
+        });
+
+        setLastPage(data.lastPage || 1);
+
+        const logs = data.data;
 
         if (!logs || logs.length === 0) {
+          setLogs([]);
+          setDisplayLogs([]);
           setLoading(false);
           return;
         }
@@ -84,7 +98,13 @@ const Logs = () => {
     };
 
     fetchLogs();
-  }, []);
+  }, [currentPage]);
+
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= lastPage) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   const handleSearch = (searchTerm) => {
     const trimmedTerm = searchTerm.trim();
@@ -112,6 +132,40 @@ const Logs = () => {
     setDisplayLogs(filteredLogs);
   };
 
+  const renderPaginationItems = () => {
+    const items = [];
+
+    items.push(
+      <PaginationItem key="previous" disabled={currentPage === 1}>
+        <PaginationLink
+          previous
+          onClick={() => handlePageChange(currentPage - 1)}
+        />
+      </PaginationItem>
+    );
+
+    for (let i = 1; i <= lastPage; i++) {
+      items.push(
+        <PaginationItem key={i} active={i === currentPage}>
+          <PaginationLink onClick={() => handlePageChange(i)}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    items.push(
+      <PaginationItem key="next" disabled={currentPage === lastPage}>
+        <PaginationLink
+          next
+          onClick={() => handlePageChange(currentPage + 1)}
+        />
+      </PaginationItem>
+    );
+
+    return items;
+  };
+
   const clearSearch = () => {
     setSearchTerm("");
     setDisplayLogs(logs);
@@ -120,7 +174,7 @@ const Logs = () => {
   return (
     <Card className="bg-transparent">
       <CardHeader className="border-0">
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex justify-content-end align-items-center">
           <div className="w-25">
             <SearchEntity
               handleSearch={handleSearch}
@@ -179,6 +233,9 @@ const Logs = () => {
           )}
         </tbody>
       </Table>
+      <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+        {renderPaginationItems()}
+      </Pagination>
     </Card>
   );
 };

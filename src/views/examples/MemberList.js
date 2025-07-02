@@ -51,7 +51,6 @@ const MemberList = () => {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState([]);
   const [filter, setFilter] = useState(null);
-  const [filterLabel, setFilterLabel] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState("");
   const [filterTerm, setFilterTerm] = useState("");
   const [units, setUnits] = useState([]);
@@ -299,7 +298,6 @@ const MemberList = () => {
     setSelectedUnit(e.target.value);
   };
 
-  console.log(selectedUnit);
   return (
     <>
       <Header />
