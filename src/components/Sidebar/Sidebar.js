@@ -392,7 +392,7 @@ const Sidebar = (props) => {
                         </NavItem> */}
             <NavItem>
               <NavLink
-                href="/admin/membership/list"
+                href="/admin/settings"
                 style={{
                   ...(activeRoute("/admin/settings") === "active" && {
                     backgroundColor: "#f6f9fc",
@@ -406,7 +406,7 @@ const Sidebar = (props) => {
                 Settings
               </NavLink>
             </NavItem>
-            <NavItem>
+            {/* <NavItem>
               <NavLink
                 to="/admin/logs"
                 tag={NavLinkRRD}
@@ -422,7 +422,7 @@ const Sidebar = (props) => {
                 <i className="ni ni-single-copy-04" />
                 Logs
               </NavLink>
-            </NavItem>
+            </NavItem> */}
           </Nav>
         </Collapse>
       </Container>

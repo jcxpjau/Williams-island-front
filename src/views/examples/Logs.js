@@ -118,82 +118,68 @@ const Logs = () => {
   };
 
   return (
-    <>
-      <Header cards={true} />
-      {/* Page content */}
-      <Container className="mt--7" fluid>
-        {/* Table */}
-        <Row>
-          <div className="col">
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h3 className="mb-0">System Logs</h3>
-                  <div className="w-25">
-                    <SearchEntity
-                      handleSearch={handleSearch}
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
-                      placeholder="Search by action, entity, context or user"
-                      onClearSearch={clearSearch}
-                    />
-                  </div>
-                </div>
-              </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col"> User </th>
-                    <th scope="col"> Level </th>
-                    <th scope="col"> Context </th>
-                    <th scope="col"> Entity </th>
-                    <th scope="col"> Action </th>
-                    <th scope="col"> Message </th>
-                    <th scope="col"> Data </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-5">
-                        <div className="d-flex flex-column align-items-center justify-content-center">
-                          <Spinner />
-                          <p className="mt-2"> Loading logs </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : !displayLogs || displayLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-4">
-                        No logs found.
-                      </td>
-                    </tr>
-                  ) : (
-                    displayLogs.map((log) => (
-                      <>
-                        <tr key={log.id}>
-                          <td>
-                            {log.userName} {log.userSurname}
-                          </td>
-                          <td className={levelColor(log.level)}>{log.level}</td>
-                          <td> {log.context} </td>
-                          <td> {log.entity} </td>
-                          <td className={actionColor(log.action)}>
-                            {log.action}
-                          </td>
-                          <td> {log.message} </td>
-                          <td> {log.createdAt} </td>
-                        </tr>
-                      </>
-                    ))
-                  )}
-                </tbody>
-              </Table>
-            </Card>
+    <Card className="bg-transparent">
+      <CardHeader className="border-0">
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="w-25">
+            <SearchEntity
+              handleSearch={handleSearch}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              placeholder="Search by action, entity, context or user"
+              onClearSearch={clearSearch}
+            />
           </div>
-        </Row>
-      </Container>
-    </>
+        </div>
+      </CardHeader>
+      <Table className="align-items-center table-flush" responsive>
+        <thead className="thead-light">
+          <tr>
+            <th scope="col"> User </th>
+            <th scope="col"> Level </th>
+            <th scope="col"> Context </th>
+            <th scope="col"> Entity </th>
+            <th scope="col"> Action </th>
+            <th scope="col"> Message </th>
+            <th scope="col"> Data </th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={7} className="text-center py-5">
+                <div className="d-flex flex-column align-items-center justify-content-center">
+                  <Spinner />
+                  <p className="mt-2"> Loading logs </p>
+                </div>
+              </td>
+            </tr>
+          ) : !displayLogs || displayLogs.length === 0 ? (
+            <tr>
+              <td colSpan={7} className="text-center py-4">
+                No logs found.
+              </td>
+            </tr>
+          ) : (
+            displayLogs.map((log) => (
+              <>
+                <tr key={log.id}>
+                  <td>
+                    {log.userName} {log.userSurname}
+                  </td>
+                  <td className={levelColor(log.level)}>{log.level}</td>
+                  <td> {log.context} </td>
+                  <td> {log.entity} </td>
+                  <td className={actionColor(log.action)}>{log.action}</td>
+                  <td> {log.message} </td>
+                  <td> {log.createdAt} </td>
+                </tr>
+              </>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </Card>
   );
 };
 
