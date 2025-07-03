@@ -76,7 +76,6 @@ const BookingClient = ({ user, setUser }) => {
       const { data } = await api.get("bookings", {
         params: { date: formattedDate },
       });
-      console.log(data)
       const grouped = {};
       data.forEach((booking) => {
         const experienceId = booking.experienceId;
