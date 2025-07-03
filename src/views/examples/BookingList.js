@@ -14,31 +14,45 @@ import Header from "components/Headers/Header";
 import SearchEntity from "./SearchEntity";
 
 const Booking = () => {
-  const [bookings, setBookings] = useState(null);
-  const [displayBookings, setDisplayBookings] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [displayBookings, setDisplayBookings] = useState([]);
+  const [filter, setFilter] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filterTerm, setFilterTerm] = useState("");
+  const [experiences, setExperiences] = useState([]);
+  const [selectedExperience, setSelectedExperience] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
       try {
-        const { data: bookings } = await api.get("bookings");
+        const [bookingsRes, experiencesRes] = await Promise.all([
+          api.get("bookings"),
+          api.get("experiences"),
+        ]);
+
+        const bookings = bookingsRes.data;
+        const experiences = experiencesRes.data;
 
         if (!bookings || bookings.length === 0) {
-          setLoading(false);
-          return;
+          setBookings([]);
+          setDisplayBookings([]);
+        } else {
+          setBookings(bookings);
+          setDisplayBookings(bookings);
         }
-        setBookings(bookings);
-        setDisplayBookings(bookings);
+
+        setExperiences(experiences || []);
       } catch (err) {
         console.log(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBookings();
+
+    fetchData();
   }, []);
 
   const handleSearch = (searchTerm) => {
@@ -66,9 +80,101 @@ const Booking = () => {
   };
 
   const clearSearch = () => {
-    setSearchTerm("");
+    setFilterTerm("");
     setDisplayBookings(bookings);
   };
+
+  const handleFilterChange = (e) => {
+    const newFilter = e.target.value;
+    setFilter(newFilter);
+    setSelectedExperience("");
+  };
+
+  useEffect(() => {
+    if (!filter) {
+      setDisplayBookings(bookings);
+      setFilterTerm("");
+      setSelectedDate(null);
+      setSelectedExperience(null);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    const enrichBookings = async (bookings) => {
+      return Promise.all(
+        bookings.map(async (booking) => {
+          let member = null;
+          try {
+            const { data: memberData } = await api.get(
+              `members/${booking.memberId}`
+            );
+            member = memberData;
+          } catch (err) {
+            console.error(`Erro buscando member ${booking.memberId}:`, err);
+          }
+
+          return {
+            ...booking,
+            experience:
+              experiences.find((exp) => exp.id === booking.experienceId) ||
+              null,
+            member: member,
+          };
+        })
+      );
+    };
+
+    const fetchFilteredData = async () => {
+      if (!filter) {
+        setDisplayBookings(bookings);
+      }
+
+      if (!filterTerm.trim() && !selectedExperience && !selectedDate) {
+        setDisplayBookings(bookings);
+        return;
+      }
+
+      const trimmedTerm = filterTerm.trim();
+      setLoading(true);
+      try {
+        if (filter === "experience" && selectedExperience) {
+          const { data } = await api.get(`bookings`, {
+            params: { experienceId: selectedExperience },
+          });
+
+          const bookingsWithDetails = await enrichBookings(data);
+          setDisplayBookings(bookingsWithDetails);
+          setLoading(false);
+        }
+
+        if (filter === "memberId" && trimmedTerm) {
+          const { data } = await api.get(`bookings`, {
+            params: { memberId: trimmedTerm },
+          });
+
+          const bookingsWithDetails = await enrichBookings(data);
+          setDisplayBookings(bookingsWithDetails);
+          setLoading(false);
+        }
+
+        if (filter === "date" && selectedDate) {
+          console.log("search");
+          const { data } = await api.get(`bookings`, {
+            params: { date: selectedDate },
+          });
+          console.log(data);
+          const bookingsWithDetails = await enrichBookings(data);
+          setDisplayBookings(bookingsWithDetails);
+          setLoading(false);
+        }
+      } catch {
+        setLoading(false);
+        setDisplayBookings(bookings);
+      }
+    };
+
+    fetchFilteredData();
+  }, [filterTerm, selectedExperience, selectedDate]);
 
   return (
     <>
@@ -78,18 +184,80 @@ const Booking = () => {
           <Col md="12">
             <Card className="shadow mb-4">
               <CardHeader className="border-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h3 className="mb-0">Booking list </h3>
-                  <div className="w-25">
-                    <SearchEntity
-                      handleSearch={handleSearch}
-                      searchTerm={searchTerm}
-                      setSearchTerm={setSearchTerm}
-                      placeholder="Search by experience or member name"
-                      onClearSearch={clearSearch}
-                    />
-                  </div>
-                </div>
+                <Row className="align-items-center">
+                  <Col xs="6">
+                    <h3 className="mb-0">Bookings List</h3>
+                  </Col>
+
+                  <Col xs="6" className="d-flex justify-content-end gap-3">
+                    <div className="d-flex flex-row gap-2 mt-3">
+                      <select
+                        className="custom-select btn btn-secondary"
+                        value={filter}
+                        onChange={handleFilterChange}
+                        style={{ textAlign: "left" }}
+                      >
+                        <option value="">Filter by</option>
+                        <option value="memberId"> Member ID </option>
+                        <option value="experience"> Experience </option>
+                        <option value="date"> Date </option>
+                      </select>
+
+                      {!filter && (
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Select a filter"
+                          disabled
+                          style={{ width: "250px", flex: "0 0 250px" }}
+                        />
+                      )}
+
+                      {filter && filter === "memberId" && (
+                        <SearchEntity
+                          handleSearch={handleSearch}
+                          searchTerm={filterTerm}
+                          setSearchTerm={setFilterTerm}
+                          placeholder="Search by experience or member name"
+                          onClearSearch={clearSearch}
+                          width={"250px"}
+                        />
+                      )}
+
+                      {filter === "date" && (
+                        <input
+                          className="form-control"
+                          type="date"
+                          style={{ width: "250px", flex: "0 0 250px" }}
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                        />
+                      )}
+
+                      {filter === "experience" && (
+                        <div style={{ flex: "0 0 auto" }}>
+                          <select
+                            className="form-control"
+                            value={selectedExperience}
+                            onChange={(e) =>
+                              setSelectedExperience(e.target.value)
+                            }
+                            style={{ width: "250px" }}
+                          >
+                            <option value="" disabled>
+                              Filter by Unit
+                            </option>
+                            {experiences.map((experience) => (
+                              <option key={experience.id} value={experience.id}>
+                                {experience.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody>
                 <Table className="table-flush" responsive>
@@ -107,7 +275,7 @@ const Booking = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loading && (
+                    {loading ? (
                       <tr>
                         <td colSpan={9} className="text-center py-5">
                           <div className="d-flex flex-column align-items-center justify-content-center">
@@ -116,9 +284,14 @@ const Booking = () => {
                           </div>
                         </td>
                       </tr>
-                    )}
-                    {!loading && displayBookings?.length > 0 ? (
-                      displayBookings.map((booking, index) => (
+                    ) : displayBookings.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="text-center py-4">
+                          <span> No bookings found </span>
+                        </td>
+                      </tr>
+                    ) : (
+                      displayBookings?.map((booking, index) => (
                         <tr key={index}>
                           <td> {booking.experience.name}</td>
                           <td>
@@ -135,12 +308,6 @@ const Booking = () => {
                           <td className="text-right"></td>
                         </tr>
                       ))
-                    ) : (
-                      <tr>
-                        <td colSpan={9} className="text-center py-4">
-                          <span> No bookings found </span>
-                        </td>
-                      </tr>
                     )}
                   </tbody>
                 </Table>

@@ -146,31 +146,6 @@ const Logs = () => {
 
     fetchFilteredData();
   }, [filterTerm, logs]);
-  /*  const handleSearch = (searchTerm) => {
-    const trimmedTerm = searchTerm.trim();
-
-    if (trimmedTerm === "") {
-      setDisplayLogs(logs);
-      return;
-    }
-
-    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
-
-    const filteredLogs = logs.filter((log) => {
-      const action = log.action.toLowerCase();
-      const entity = log.entity.toLowerCase();
-      const context = log.context.toLowerCase();
-      const name = log.userName;
-      return (
-        action.includes(lowerCaseSearchTerm) ||
-        entity.includes(lowerCaseSearchTerm) ||
-        context.includes(lowerCaseSearchTerm) ||
-        name.includes(lowerCaseSearchTerm)
-      );
-    });
-
-    setDisplayLogs(filteredLogs);
-  }; */
 
   const renderPaginationItems = () => {
     const items = [];
