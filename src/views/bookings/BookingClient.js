@@ -47,7 +47,6 @@ const BookingClient = ({ user, setUser }) => {
     password: null,
   });
   const [loginMsg, setLoginMsg] = useState(null);
-  const navigate = useNavigate();
 
   const handleHourClick = (experienceId, hour) => {
     setSelectedHours((prev) => ({
@@ -62,7 +61,7 @@ const BookingClient = ({ user, setUser }) => {
       return;
     }
     try {
-      const { data } = await api.get("experiences"); //TODO: acrescentar filtro de category
+      const { data } = await api.get(`experiences/category/${category}`);
       setAvailableExperiences(data);
       setSearching(true);
       GetBookings();
@@ -73,10 +72,14 @@ const BookingClient = ({ user, setUser }) => {
 
   async function GetBookings() {
     try {
-      const { data } = await api.get("bookings");
+      const formattedDate = date.toISOString().split("T")[0];
+      const { data } = await api.get("bookings", {
+        params: { date: formattedDate },
+      });
+      console.log(data)
       const grouped = {};
       data.forEach((booking) => {
-        const experienceId = booking.experience.id;
+        const experienceId = booking.experienceId;
         const hour = moment("1970-01-01T" + booking.startTime).format("HH:00");
         if (!grouped[experienceId]) grouped[experienceId] = new Set();
         grouped[experienceId].add(hour);
@@ -105,9 +108,8 @@ const BookingClient = ({ user, setUser }) => {
       notes: "",
     };
 
-    
     const { data } = await api.post(`bookings`, payload);
-   // getNotification(data);
+    // getNotification(data);
     setSelectedHours({});
     setBookingConfirm(true);
     /*  if (!date || Object.keys(selectedHours).length === 0) {
@@ -138,7 +140,7 @@ const BookingClient = ({ user, setUser }) => {
       setBookingConfirm(true);
     } catch (err) {} */
   }
-/* 
+  /* 
   async function getNotification(booking) {
     const message =
       `*Booking Confirmation*\n\n` +
@@ -198,7 +200,6 @@ const BookingClient = ({ user, setUser }) => {
     }
 
     try {
-
       const { data } = await api.post("members-auth/login", loginForm);
       setLoginModalOpen(false);
       setLoginMsg(null);
@@ -261,9 +262,7 @@ const BookingClient = ({ user, setUser }) => {
       } else {
         setLoginMsg("Incorrect email and/or date of birth");
       }
-    } catch {
-     
-    }
+    } catch {}
   }
 
   function clear() {
@@ -274,15 +273,15 @@ const BookingClient = ({ user, setUser }) => {
   }
 
   const indices = {
-    sports: 1,
-    spa: 2,
-    pet: 2,
-    fitness: 3,
-    pool: 3,
-    marina: 3,
-    restaurant: 4,
-    cafe: 4,
-    bar: 4,
+    Sports: 1,
+    Spa: 2,
+    Pet: 2,
+    Fitness: 3,
+    Pool: 3,
+    Marina: 3,
+    Restaurant: 4,
+    Cafe: 4,
+    Bar: 4,
   };
 
   return (
@@ -319,10 +318,15 @@ const BookingClient = ({ user, setUser }) => {
               value={category ?? null}
               onChange={(selected) => setCategory(selected.target.value)}
             >
-              <MenuItem value="tennis">Tennis</MenuItem>
-              <MenuItem value="spa">SPA</MenuItem>
-              <MenuItem value="fitness">Fitness</MenuItem>
-              <MenuItem value="fb">Food & Beverage</MenuItem>
+              <MenuItem value="Sports">Sports</MenuItem>
+              <MenuItem value="Restaurant">Restaurants</MenuItem>
+              <MenuItem value="Cafe">Cafe</MenuItem>
+              <MenuItem value="Bar">Bar</MenuItem>
+              <MenuItem value="Pets">Pets</MenuItem>
+              <MenuItem value="Spa">Spa</MenuItem>
+              <MenuItem value="Pool">Pool</MenuItem>
+              <MenuItem value="Fitness">Fitness</MenuItem>
+              <MenuItem value="Marina">Marina</MenuItem>
             </Select>
           </FormControl>
         </Col>
@@ -423,29 +427,32 @@ const BookingClient = ({ user, setUser }) => {
           )}
           <Col xl="12" className="mt-4">
             {availableExperiences.map((experience) => {
-              const startHour = parseInt(
-                experience.startTimeOperation.split(":")[0],
-                10
-              );
-              const endHour = parseInt(
-                experience.endTimeOperation.split(":")[0],
-                10
-              );
-              const availableHours = Array.from(
-                { length: endHour - startHour },
-                (_, i) => {
-                  const hour = startHour + i;
-                  return `${hour.toString().padStart(2, "0")}:00`;
+              const generateHours = (start, end) => {
+                let slots = [];
+                let [startHour] = start.split(":").map(Number);
+                let [endHour] = end.split(":").map(Number);
+
+                if (endHour === 0) endHour = 24;
+
+                for (let hour = startHour; hour < endHour; hour++) {
+                  slots.push(`${hour.toString().padStart(2, "0")}:00`);
                 }
+
+                return slots;
+              };
+
+              const availableHours = generateHours(
+                experience.startTimeOperation,
+                experience.endTimeOperation
               );
 
-              const selectedHour = selectedHours[experience.id];
               const bookedHours = bookingsByVenue[experience.id] || new Set();
+              const selectedHour = selectedHours[experience.id];
 
               return (
                 <Row className="mb-4 px-0 g-0" key={experience.id}>
                   <Col xl="12">
-                    <Card className="border-0 shadow-lg animate__animated animate__fadeIn overflow-hidden shadow-lg">
+                    <Card className="border-0 shadow-lg animate__animated animate__fadeIn overflow-hidden">
                       <Row className="g-0">
                         <Col
                           xl="4"
@@ -472,11 +479,11 @@ const BookingClient = ({ user, setUser }) => {
                             <CardText className="mb-3 text-muted">
                               <i className="fa fa-clock mr-1"></i>
                               {moment(
-                                "1970-01-01T" + experience.startTimeOperation
-                              ).format("LT")}{" "}
-                              -{" "}
+                                `1970-01-01T${experience.startTimeOperation}`
+                              ).format("LT")}
+                              {" - "}
                               {moment(
-                                "1970-01-01T" + experience.endTimeOperation
+                                `1970-01-01T${experience.endTimeOperation}`
                               ).format("LT")}
                               <i
                                 className="fa fa-dollar-sign ml-2"
@@ -490,7 +497,8 @@ const BookingClient = ({ user, setUser }) => {
                             <Row className="mb-3">
                               {availableHours.map((hour) => {
                                 const isBooked = bookedHours.has(hour);
-                                if (isBooked) return null;
+                                const isSelected = selectedHour === hour;
+
                                 return (
                                   <Col
                                     key={hour}
@@ -502,34 +510,33 @@ const BookingClient = ({ user, setUser }) => {
                                   >
                                     <button
                                       onClick={() =>
+                                        !isBooked &&
                                         handleHourClick(experience.id, hour)
                                       }
                                       className={`btn btn-sm w-100 ${
-                                        selectedHour === hour
-                                          ? "text-white"
-                                          : ""
+                                        isSelected ? "text-white" : ""
                                       }`}
                                       style={{
                                         borderColor: isBooked
                                           ? "#ccc"
                                           : "#11cdef",
-                                        backgroundColor:
-                                          selectedHour === hour
-                                            ? "#11cdef"
-                                            : isBooked
-                                            ? "#eee"
-                                            : "transparent",
+                                        backgroundColor: isBooked
+                                          ? "#eee"
+                                          : isSelected
+                                          ? "#11cdef"
+                                          : "transparent",
                                         color: isBooked
                                           ? "#999"
-                                          : selectedHour === hour
+                                          : isSelected
                                           ? "#fff"
                                           : "#11cdef",
                                         cursor: isBooked
                                           ? "not-allowed"
                                           : "pointer",
                                       }}
+                                      disabled={isBooked}
                                     >
-                                      {moment("1970-01-01T" + hour).format(
+                                      {moment(`1970-01-01T${hour}`).format(
                                         "LT"
                                       )}
                                     </button>
@@ -563,7 +570,7 @@ const BookingClient = ({ user, setUser }) => {
                                     backgroundColor: "#11cdef",
                                     color: "white",
                                   }}
-                                  onClick={()=>Booking(experience.id)}
+                                  onClick={() => Booking(experience.id)}
                                 >
                                   Book
                                 </button>
