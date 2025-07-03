@@ -1,4 +1,4 @@
-import { Card, CardHeader, Table, Container, Row, Spinner } from "reactstrap";
+import { Card, CardHeader, Table, Col, Row, Spinner } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
 import { act, useEffect } from "react";
@@ -36,7 +36,8 @@ const levelColor = (level) => {
 const Logs = () => {
   const [logs, setLogs] = useState(null);
   const [displayLogs, setDisplayLogs] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState(null);
+  const [filterTerm, setFilterTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -106,7 +107,46 @@ const Logs = () => {
     }
   };
 
-  const handleSearch = (searchTerm) => {
+  useEffect(() => {
+    if (!filter) {
+      setDisplayLogs(logs);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    const fetchFilteredData = async () => {
+      if (!filter) {
+        setDisplayLogs(logs);
+        return;
+      }
+
+      if (!filterTerm.trim()) {
+        setDisplayLogs(logs);
+        return;
+      }
+      const trimmedTerm = filterTerm.trim();
+      setLoading(true);
+      try {
+        if (filter === "userId") {
+          const { data } = await api.get(`logs/user/${trimmedTerm}`);
+          setDisplayLogs(data);
+          setLoading(false);
+        }
+      /*   if (filter === "entity"){
+          const {data} = await api.get(`logs/entity`, {params:{'entity': trimmedTerm}});
+          setDisplayLogs(data);
+          setLoading(false);
+
+        } */
+      } catch {
+        setDisplayLogs([]);
+        setLoading(false);
+      }
+    };
+
+    fetchFilteredData();
+  }, [filterTerm, logs]);
+  /*  const handleSearch = (searchTerm) => {
     const trimmedTerm = searchTerm.trim();
 
     if (trimmedTerm === "") {
@@ -130,7 +170,7 @@ const Logs = () => {
     });
 
     setDisplayLogs(filteredLogs);
-  };
+  }; */
 
   const renderPaginationItems = () => {
     const items = [];
@@ -167,24 +207,57 @@ const Logs = () => {
   };
 
   const clearSearch = () => {
-    setSearchTerm("");
+    setFilter("");
+    setFilterTerm("");
     setDisplayLogs(logs);
+  };
+
+  const handleFilterChange = (e) => {
+    const newFilter = e.target.value;
+    setFilter(newFilter);
+    setFilterTerm("");
   };
 
   return (
     <Card className="bg-transparent">
       <CardHeader className="border-0">
-        <div className="d-flex justify-content-end align-items-center">
-          <div className="w-25">
-            <SearchEntity
-              handleSearch={handleSearch}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              placeholder="Search by action, entity, context or user"
-              onClearSearch={clearSearch}
-            />
-          </div>
-        </div>
+        <Row className="align-items-center d-flex justify-content-end">
+          <Col xs="6" className="d-flex justify-content-end gap-3">
+            <div className="d-flex flex-row gap-2 mt-3">
+              <select
+                className="custom-select btn btn-secondary"
+                value={filter}
+                onChange={handleFilterChange}
+                style={{ textAlign: "left" }}
+              >
+                <option value="">Filter by</option>
+                <option value="userId"> User id </option>
+                <option value="entity"> Entity </option>
+              </select>
+
+              {!filter && (
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Select a filter"
+                  disabled
+                  style={{ width: "250px", flex: "0 0 250px" }}
+                />
+              )}
+
+              {filter && (
+                <SearchEntity
+                  handleSearch={() => {}}
+                  searchTerm={filterTerm}
+                  setSearchTerm={setFilterTerm}
+                  onClearSearch={clearSearch}
+                  placeholder={`Filter by ${filter}`}
+                  width={"250px"}
+                />
+              )}
+            </div>
+          </Col>
+        </Row>
       </CardHeader>
       <Table className="align-items-center table-flush" responsive>
         <thead className="thead-light">
@@ -233,9 +306,11 @@ const Logs = () => {
           )}
         </tbody>
       </Table>
-      <Pagination className="border pt-4 px-4 d-flex justify-content-end">
-        {renderPaginationItems()}
-      </Pagination>
+      {(!filter || !filterTerm) && (
+        <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+          {renderPaginationItems()}
+        </Pagination>
+      )}
     </Card>
   );
 };

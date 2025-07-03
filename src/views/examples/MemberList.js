@@ -523,7 +523,7 @@ const MemberList = () => {
                   )}
                 </tbody>
               </Table>
-              {(!filter || !filterTerm.trim())&& (
+              {((!filter && !selectedUnit) || !filterTerm)&& (
                 <Pagination className="border pt-4 px-4 d-flex justify-content-end">
                   {renderPaginationItems()}
                 </Pagination>
