@@ -47,49 +47,55 @@ const MemberList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [maxPages, setMaxPages] = useState(1);
-  const [loading, setLoading] = useState([]);
-  const [filter, setFilter] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [filterTerm, setFilterTerm] = useState("");
   const [units, setUnits] = useState([]);
 
-  console.log(lastPage);
+  const [params, setParams] = useState({
+    limit: 10,
+    skip: 0,
+    name: null,
+    email: null,
+    unitId: null,
+  });
+
   const fetchMemberPage = async () => {
     setLoading(true);
 
     try {
       const { data: membersData } = await api.get("members", {
-        params: {
-          limit: 10,
-          skip: (currentPage - 1) * 10,
-        },
+        params: params,
       });
 
-      setLastPage(membersData.lastPage);
-      setMaxPages(membersData.lastPage);
+      setLastPage(membersData.lastPage || 1);
+      if (!filter) {
+        setMaxPages(membersData.lastPage || 1);
+      }
 
       if (!membersData.data || membersData.data.length === 0) {
         setMembers([]);
-        setLoading(false);
+        setDisplayMembers([]);
         return;
       }
 
       const membersWithFullData = await Promise.all(
         membersData.data.map(async (member) => {
-          try {
-            const mappedMember = {
-              id: member.id,
-              name: member.name,
-              surname: member.surname,
-              email: member.email,
-              memberNumber: member.memberNumber,
-              address: member.address,
-              tel: member.tel,
-              zipCode: member.zipCode,
-              dateOfBirth: member.dateOfBirth,
-              dateJoined: member.dateJoined,
-            };
+          const mappedMember = {
+            id: member.id,
+            name: member.name,
+            surname: member.surname,
+            email: member.email,
+            memberNumber: member.memberNumber,
+            address: member.address,
+            tel: member.tel,
+            zipCode: member.zipCode,
+            dateOfBirth: member.dateOfBirth,
+            dateJoined: member.dateJoined,
+          };
 
+          try {
             const [propertiesResponse, dependantsResponse] = await Promise.all([
               api.get(`properties/member/${member.id}`),
               api.get(`dependants/member/${member.id}`),
@@ -100,33 +106,22 @@ const MemberList = () => {
               properties: propertiesResponse.data || [],
               dependants: dependantsResponse.data || [],
             };
-          } catch (innerError) {
-            console.error(
-              `Erro ao buscar dados adicionais para o membro ${member.id}:`,
-              innerError
-            );
+          } catch {
             return {
-              id: member.id,
-              name: member.name,
-              surname: member.surname,
-              email: member.email,
-              memberNumber: member.memberNumber,
-              address: member.address,
-              tel: member.tel,
-              zipCode: member.zipCode,
-              dateOfBirth: member.dateOfBirth,
-              dateJoined: member.dateJoined,
+              ...mappedMember,
               properties: [],
               dependants: [],
             };
           }
         })
       );
+
       setMembers(membersWithFullData);
       setDisplayMembers(membersWithFullData);
     } catch (err) {
-      console.error("Erro ao buscar membros ou dados adicionais:", err);
+      console.error(err);
       setMembers([]);
+      setDisplayMembers([]);
     } finally {
       setLoading(false);
     }
@@ -135,6 +130,10 @@ const MemberList = () => {
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= lastPage) {
       setCurrentPage(pageNumber);
+      setParams((prev) => ({
+        ...prev,
+        skip: (pageNumber - 1) * prev.limit,
+      }));
     }
   };
 
@@ -196,118 +195,7 @@ const MemberList = () => {
 
   useEffect(() => {
     fetchMemberPage();
-  }, [currentPage]);
-
-  useEffect(() => {
-    if (!filter) {
-      setDisplayMembers(members);
-    }
-  }, [filter]);
-
-  useEffect(() => {
-    const fetchFilteredData = async () => {
-      if (!filter) {
-        setDisplayMembers(members);
-        setLastPage(maxPages);
-        return;
-      }
-
-      if ((filter === "name" || filter === "email") && !filterTerm.trim()) {
-        setDisplayMembers(members);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        let filteredMembers = [];
-        let response;
-        if (filter === "name") {
-          const { data } = await api.get(`members`, {
-            params: { name: filterTerm.trim() },
-          });
-          if (!data) {
-            setDisplayMembers([]);
-            return;
-          }
-          response = data;
-        }
-
-        if (filter === "email") {
-          const { data } = await api.get(`members`, {
-            params: { email: filterTerm.trim() },
-          });
-          if (!data) {
-            setDisplayMembers([]);
-            return;
-          }
-          response = data;
-        }
-
-        if (filter === "unit" && selectedUnit) {
-          const { data } = await api.get(`members`, {
-            params: { unitId: selectedUnit },
-          });
-          response = data;
-          if (!data) {
-            setDisplayMembers([]);
-            return;
-          }
-        }
-        filteredMembers = response.data;
-        const membersWithFullData = await Promise.all(
-          filteredMembers.map(async (member) => {
-            const mappedMember = {
-              id: member.id,
-              name: member.name,
-              surname: member.surname,
-              email: member.email,
-              memberNumber: member.memberNumber,
-              address: member.address,
-              tel: member.tel,
-              zipCode: member.zipCode,
-              dateOfBirth: member.dateOfBirth,
-              dateJoined: member.dateJoined,
-            };
-
-            try {
-              const [propertiesResponse, dependantsResponse] =
-                await Promise.all([
-                  api.get(`properties/member/${member.id}`),
-                  api.get(`dependants/member/${member.id}`),
-                ]);
-
-              return {
-                ...mappedMember,
-                properties: propertiesResponse.data || [],
-                dependants: dependantsResponse.data || [],
-              };
-            } catch (innerError) {
-              console.error(
-                `Erro ao buscar dados adicionais para o membro ${member.id}:`,
-                innerError
-              );
-              return {
-                ...mappedMember,
-                properties: [],
-                dependants: [],
-              };
-            }
-          })
-        );
-
-        setDisplayMembers(membersWithFullData);
-        setLastPage(response.lastPage);
-      } catch (error) {
-        console.error("Erro ao buscar membros filtrados:", error);
-        setDisplayMembers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFilteredData();
-  }, [filterTerm, selectedUnit, members]);
-
+  }, [params]);
 
   const handleFilterChange = (e) => {
     const newFilter = e.target.value;
@@ -318,6 +206,52 @@ const MemberList = () => {
   const handleUnitSelectChange = (e) => {
     setSelectedUnit(e.target.value);
   };
+
+  const clearFilter = () => {
+    setFilter("");
+    setFilterTerm("");
+    setSelectedUnit("");
+    setCurrentPage(1);
+    setParams({
+      limit: 10,
+      skip: 0,
+      name: null,
+      email: null,
+      unitId: null,
+    });
+  };
+
+  useEffect(() => {
+    if (!filter) {
+      clearFilter();
+      return;
+    }
+
+    let updated = { ...params, skip: 0 };
+
+    if (filter === "name" && filterTerm.trim()) {
+      updated = {
+        ...updated,
+        name: filterTerm.trim(),
+        email: null,
+        unitId: null,
+      };
+    } else if (filter === "email" && filterTerm.trim()) {
+      updated = {
+        ...updated,
+        email: filterTerm.trim(),
+        name: null,
+        unitId: null,
+      };
+    } else if (filter === "unit" && selectedUnit) {
+      updated = { ...updated, unitId: selectedUnit, name: null, email: null };
+    } else {
+      updated = { ...updated, name: null, email: null, unitId: null };
+    }
+
+    setParams(updated);
+    setCurrentPage(1);
+  }, [filterTerm, selectedUnit]);
 
   return (
     <>
@@ -363,10 +297,7 @@ const MemberList = () => {
                           handleSearch={() => {}}
                           searchTerm={filterTerm}
                           setSearchTerm={setFilterTerm}
-                          onClearSearch={() => {
-                            setFilterTerm("");
-                            setFilter("");
-                          }}
+                          onClearSearch={clearFilter}
                           placeholder={`Filter by ${filter}`}
                           width={"250px"}
                         />
