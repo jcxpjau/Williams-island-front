@@ -112,7 +112,7 @@ const AddFee = () => {
           setLoading(false);
           return;
         }
-        const mappedData = data.map((item) => ({
+        const mappedData = data.data.map((item) => ({
           id: item.id,
           identifier: item.identifier,
           category: item.category,

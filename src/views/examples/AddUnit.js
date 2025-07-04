@@ -76,11 +76,11 @@ const AddUnit = () => {
     const fetchUnits = async () => {
       try {
         const { data } = await api.get("units");
-        if (!data || data.length == 0) {
+        if (!data || data.data.length == 0) {
           setLoading(false);
           return;
         }
-        const mappedData = data.map((item) => ({
+        const mappedData = data.data.map((item) => ({
           id: item.id,
           address: item.address,
           denomination: item.denomination,

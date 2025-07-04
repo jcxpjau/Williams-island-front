@@ -113,11 +113,11 @@ const AddExperience = () => {
     const fetchExperiences = async () => {
       try {
         const { data } = await api.get("experiences");
-        if (!data || data.length === 0) {
+        if (!data || data.data.length === 0) {
           setLoading(false);
           return;
         }
-        const mappedData = data.map((item) => ({
+        const mappedData = data.data.map((item) => ({
           id: item.id,
           name: item.name,
           description: item.description,

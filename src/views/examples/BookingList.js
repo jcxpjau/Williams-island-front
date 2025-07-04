@@ -20,50 +20,48 @@ const Booking = () => {
   const [bookings, setBookings] = useState([]);
   const [displayBookings, setDisplayBookings] = useState([]);
   const [filter, setFilter] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [maxPages, setMaxPages] = useState(1);
+
   const [loading, setLoading] = useState(false);
+
   const [filterTerm, setFilterTerm] = useState("");
   const [experiences, setExperiences] = useState([]);
   const [selectedExperience, setSelectedExperience] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  const [params, setParams] = useState({
+    limit: 10,
+    skip: 0,
+    experienceId: null,
+    memberId: null,
+    date: null,
+  });
+
   const fetchBookingsPage = async () => {
     setLoading(true);
-
     try {
-      const { data: bookingRes } = await api.get("bookings", {
-        params: {
-          limit: 10,
-          skip: (currentPage - 1) * 10,
-        },
-      });
+      const { data: bookingRes } = await api.get("bookings", { params });
 
       setLastPage(bookingRes.lastPage);
-      setMaxPages(bookingRes.lastPage); // ✅ Atualiza maxPages também!
-
-      if (!bookingRes.data || bookingRes.data.length === 0) {
-        setBookings([]);
-        setLoading(false);
-        return;
+      if (!filter) {
+        setMaxPages(bookingRes.lastPage);
       }
 
-      const bookingsWithDetails = await Promise.all(
+      const enriched = await Promise.all(
         bookingRes.data.map(async (booking) => {
           const experience = experiences.find(
             (exp) => exp.id === booking.experienceId
           );
-
           let member = null;
           try {
             const { data: memberData } = await api.get(
               `/members/${booking.memberId}`
             );
             member = memberData;
-          } catch (error) {
-            console.error(`Erro ao buscar member ${booking.memberId}`, error);
-          }
+          } catch {}
 
           return {
             ...booking,
@@ -73,8 +71,8 @@ const Booking = () => {
         })
       );
 
-      setBookings(bookingsWithDetails);
-      setDisplayBookings(bookingsWithDetails);
+      setBookings(enriched);
+      setDisplayBookings(enriched);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,6 +83,10 @@ const Booking = () => {
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= lastPage) {
       setCurrentPage(pageNumber);
+      setParams((prev) => ({
+        ...prev,
+        skip: (pageNumber - 1) * prev.limit,
+      }));
     }
   };
 
@@ -147,36 +149,8 @@ const Booking = () => {
     if (experiences && experiences.length > 0) {
       fetchBookingsPage();
     }
-  }, [currentPage, experiences]);
+  }, [params, experiences]);
 
-  const handleSearch = (searchTerm) => {
-    const trimmedTerm = searchTerm.trim();
-
-    if (trimmedTerm === "") {
-      setDisplayBookings(bookings);
-      return;
-    }
-
-    const lowerCaseSearchTerm = trimmedTerm.toLowerCase();
-
-    const filteredBookings = bookings.filter((booking) => {
-      const experience = booking.experience.name.toLowerCase();
-      const name = booking.member.name.toLowerCase();
-      const surname = booking.member.surname.toLowerCase();
-      return (
-        experience.includes(lowerCaseSearchTerm) ||
-        name.includes(lowerCaseSearchTerm) ||
-        surname.includes(lowerCaseSearchTerm)
-      );
-    });
-
-    setDisplayBookings(filteredBookings);
-  };
-
-  const clearSearch = () => {
-    setFilterTerm("");
-    setDisplayBookings(bookings);
-  };
 
   const handleFilterChange = (e) => {
     const newFilter = e.target.value;
@@ -184,91 +158,78 @@ const Booking = () => {
     setSelectedExperience("");
   };
 
+  const clearFilter = () => {
+    setFilter(null);
+    setFilterTerm("");
+    setSelectedExperience(null);
+    setSelectedDate(null);
+    setCurrentPage(1);
+    setParams((prev) => ({
+      ...prev,
+      skip: 0,
+      experienceId: null,
+      memberId: null,
+      date: null,
+    }));
+  };
+
   useEffect(() => {
     if (!filter) {
-      setDisplayBookings(bookings);
-      setFilterTerm("");
-      setSelectedDate(null);
-      setSelectedExperience(null);
+      clearFilter();
     }
   }, [filter]);
 
   useEffect(() => {
-    const enrichBookings = async (bookings) => {
-      return Promise.all(
-        bookings.map(async (booking) => {
-          let member = null;
-          try {
-            const { data: memberData } = await api.get(
-              `members/${booking.memberId}`
-            );
-            member = memberData;
-          } catch (err) {
-            console.error(`Erro buscando member ${booking.memberId}:`, err);
-          }
+    if (!filter) {
+      setParams((prev) => ({
+        ...prev,
+        skip: 0,
+        experienceId: null,
+        memberId: null,
+        date: null,
+      }));
+      setCurrentPage(1);
+      return;
+    }
 
-          return {
-            ...booking,
-            experience:
-              experiences.find((exp) => exp.id === booking.experienceId) ||
-              null,
-            member: member,
-          };
-        })
-      );
+    const applyFilter = async () => {
+      let updated = { ...params, skip: 0 }; 
+
+      if (filter === "experience" && selectedExperience) {
+        updated = {
+          ...updated,
+          experienceId: selectedExperience,
+          memberId: null,
+          date: null,
+        };
+      } else if (filter === "memberId" && filterTerm.trim()) {
+        updated = {
+          ...updated,
+          memberId: filterTerm.trim(),
+          experienceId: null,
+          date: null,
+        };
+      } else if (filter === "date" && selectedDate) {
+        updated = {
+          ...updated,
+          date: selectedDate,
+          experienceId: null,
+          memberId: null,
+        };
+      } else {
+        updated = {
+          ...updated,
+          experienceId: null,
+          memberId: null,
+          date: null,
+        };
+      }
+
+      setCurrentPage(1);
+      setParams(updated);
     };
 
-    const fetchFilteredData = async () => {
-      if (!filter) {
-        setDisplayBookings(bookings);
-        setLastPage(maxPages);
-        return;
-      }
-
-      if (!filterTerm.trim() && !selectedExperience && !selectedDate) {
-        setDisplayBookings(bookings);
-        return;
-      }
-
-      const trimmedTerm = filterTerm.trim();
-      setLoading(true);
-      try {
-        if (filter === "experience" && selectedExperience) {
-          const { data } = await api.get(`bookings`, {
-            params: { experienceId: selectedExperience },
-          });
-
-          const bookingsWithDetails = await enrichBookings(data);
-          setDisplayBookings(bookingsWithDetails);
-          setLoading(false);
-        }
-
-        if (filter === "memberId" && trimmedTerm) {
-          const { data } = await api.get(`bookings`, {
-            params: { memberId: trimmedTerm },
-          });
-
-          const bookingsWithDetails = await enrichBookings(data);
-          setDisplayBookings(bookingsWithDetails);
-          setLoading(false);
-        }
-
-        if (filter === "date" && selectedDate) {
-          const { data } = await api.get(`bookings`, {
-            params: { date: selectedDate },
-          });
-          console.log(data);
-          const bookingsWithDetails = await enrichBookings(data);
-          setDisplayBookings(bookingsWithDetails);
-          setLoading(false);
-        }
-      } catch {
-        setLoading(false);
-        setDisplayBookings(bookings);
-      }
-    };
-
-    fetchFilteredData();
+    applyFilter();
   }, [filterTerm, selectedExperience, selectedDate]);
 
   return (
@@ -310,11 +271,11 @@ const Booking = () => {
 
                       {filter && filter === "memberId" && (
                         <SearchEntity
-                          handleSearch={handleSearch}
+                          handleSearch={()=>{}}
                           searchTerm={filterTerm}
                           setSearchTerm={setFilterTerm}
                           placeholder="Search by experience or member name"
-                          onClearSearch={clearSearch}
+                          onClearSearch={clearFilter}
                           width={"250px"}
                         />
                       )}
