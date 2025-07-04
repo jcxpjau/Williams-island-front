@@ -11,7 +11,13 @@ import {
 } from "reactstrap";
 import Header from "components/Headers/Header";
 import api from "services/api";
-import { BsBuilding, BsCurrencyDollar, BsImage, BsPeople, BsPersonFill } from "react-icons/bs";
+import {
+  BsBuilding,
+  BsCurrencyDollar,
+  BsImage,
+  BsPeople,
+  BsPersonFill,
+} from "react-icons/bs";
 
 const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -32,10 +38,9 @@ const Dashboard = () => {
           api.get("experiences"),
         ]);
 
-        console.log(owners.data.data)
         if (
-          !bookings.data ||
-          bookings.data.length == 0 ||
+          !bookings.data.data ||
+          bookings.data.data.length == 0 ||
           !owners.data.data ||
           owners.data.data.length == 0 ||
           !dependants.data ||
@@ -46,8 +51,31 @@ const Dashboard = () => {
           setLoading(false);
           return;
         }
-        const lastFive = bookings.data.slice(-5);
-        setBookings(lastFive);
+        const lastFive = bookings.data.data.slice(-5);
+        const bookingsWithExperience = await Promise.all(
+          lastFive.map(async (booking) => {
+            try {
+              const { data: experience } = await api.get(
+                `/experiences/${booking.experienceId}`
+              );
+              return {
+                ...booking,
+                experience,
+              };
+            } catch (error) {
+              console.error(
+                `Erro ao buscar experiência ${booking.experienceId}`,
+                error
+              );
+              return {
+                ...booking,
+                experienceDetails: null,
+              };
+            }
+          })
+        );
+
+        setBookings(bookingsWithExperience);
         setDependantsLen(dependants.data.length);
         setOwnersLen(owners.data.data.length);
         setExperiencesLen(experiences.data.length);
@@ -104,9 +132,9 @@ const Dashboard = () => {
         iconBg: "bg-danger",
         footerText: false,
       },
-       {
+      {
         title: "Total expenses",
-        value: '$ 45738.42',
+        value: "$ 45738.42",
         Icon: BsCurrencyDollar,
         iconBg: "bg-success",
         footerText: false,
