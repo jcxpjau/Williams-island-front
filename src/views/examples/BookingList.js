@@ -8,6 +8,9 @@ import {
   Col,
   Table,
   Spinner,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
 import api from "services/api";
 import Header from "components/Headers/Header";
@@ -17,34 +20,117 @@ const Booking = () => {
   const [bookings, setBookings] = useState([]);
   const [displayBookings, setDisplayBookings] = useState([]);
   const [filter, setFilter] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [maxPages, setMaxPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [filterTerm, setFilterTerm] = useState("");
   const [experiences, setExperiences] = useState([]);
   const [selectedExperience, setSelectedExperience] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  const fetchBookingsPage = async () => {
+    setLoading(true);
+
+    try {
+      const { data: bookingRes } = await api.get("bookings", {
+        params: {
+          limit: 10,
+          skip: (currentPage - 1) * 10,
+        },
+      });
+      setLastPage(bookingRes.lastPage);
+      setMaxPages(bookingRes.lastPage)
+      if (!bookingRes.data || bookingRes.data.length === 0) {
+        setBookings([]);
+        setLoading(false);
+        return;
+      }
+
+      const bookingsWithDetails = await Promise.all(
+        bookingRes.data.map(async (booking) => {
+          const experience = experiences.find(
+            (exp) => exp.id === booking.experienceId
+          );
+
+          let member = null;
+          try {
+            const { data: memberData } = await api.get(
+              `/members/${booking.memberId}`
+            );
+            member = memberData;
+          } catch (error) {
+            console.error(`Erro ao buscar member ${booking.memberId}`, error);
+          }
+
+          return {
+            ...booking,
+            experience: experience || null,
+            member: member || null,
+          };
+        })
+      );
+
+      setBookings(bookingsWithDetails);
+      setDisplayBookings(bookingsWithDetails);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= lastPage) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+
+    items.push(
+      <PaginationItem key="previous" disabled={currentPage === 1}>
+        <PaginationLink
+          previous
+          onClick={() => handlePageChange(currentPage - 1)}
+        />
+      </PaginationItem>
+    );
+
+    for (let i = 1; i <= lastPage; i++) {
+      items.push(
+        <PaginationItem key={i} active={i === currentPage}>
+          <PaginationLink onClick={() => handlePageChange(i)}>
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    items.push(
+      <PaginationItem key="next" disabled={currentPage === lastPage}>
+        <PaginationLink
+          next
+          onClick={() => handlePageChange(currentPage + 1)}
+        />
+      </PaginationItem>
+    );
+
+    return items;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
       try {
-        const [bookingsRes, experiencesRes] = await Promise.all([
-          api.get("bookings"),
-          api.get("experiences"),
-        ]);
-
-        const bookings = bookingsRes.data;
-        const experiences = experiencesRes.data;
-
-        if (!bookings || bookings.length === 0) {
-          setBookings([]);
-          setDisplayBookings([]);
-        } else {
-          setBookings(bookings);
-          setDisplayBookings(bookings);
+        const { data: experiencesRes } = await api.get("experiences");
+        if (!experiencesRes.data || experiencesRes.data.length === 0) {
+          setLoading(false);
+          return;
         }
-
-        setExperiences(experiences || []);
+        setExperiences(experiencesRes.data);
       } catch (err) {
         console.log(err);
       } finally {
@@ -54,6 +140,12 @@ const Booking = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (experiences && experiences.length > 0) {
+      fetchBookingsPage();
+    }
+  }, [currentPage, experiences]);
 
   const handleSearch = (searchTerm) => {
     const trimmedTerm = searchTerm.trim();
@@ -158,7 +250,6 @@ const Booking = () => {
         }
 
         if (filter === "date" && selectedDate) {
-          console.log("search");
           const { data } = await api.get(`bookings`, {
             params: { date: selectedDate },
           });
@@ -245,7 +336,7 @@ const Booking = () => {
                             style={{ width: "250px" }}
                           >
                             <option value="" disabled>
-                              Filter by Unit
+                              Filter by Experience
                             </option>
                             {experiences.map((experience) => (
                               <option key={experience.id} value={experience.id}>
@@ -311,6 +402,9 @@ const Booking = () => {
                     )}
                   </tbody>
                 </Table>
+                <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+                  {renderPaginationItems()}
+                </Pagination>
               </CardBody>
             </Card>
           </Col>
