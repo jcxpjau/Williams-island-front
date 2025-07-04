@@ -197,7 +197,7 @@ const Logs = () => {
     <Card className="bg-transparent">
       <CardHeader className="border-0">
         <Row className="align-items-center d-flex justify-content-end">
-          <Col xs="6" className="d-flex justify-content-end gap-3">
+          {/* <Col xs="6" className="d-flex justify-content-end gap-3">
             <div className="d-flex flex-row gap-2 mt-3">
               <select
                 className="custom-select btn btn-secondary"
@@ -231,7 +231,7 @@ const Logs = () => {
                 />
               )}
             </div>
-          </Col>
+          </Col> */}
         </Row>
       </CardHeader>
       <Table className="align-items-center table-flush" responsive>
