@@ -39,8 +39,10 @@ const Booking = () => {
           skip: (currentPage - 1) * 10,
         },
       });
+
       setLastPage(bookingRes.lastPage);
-      setMaxPages(bookingRes.lastPage)
+      setMaxPages(bookingRes.lastPage); // ✅ Atualiza maxPages também!
+
       if (!bookingRes.data || bookingRes.data.length === 0) {
         setBookings([]);
         setLoading(false);
@@ -219,6 +221,8 @@ const Booking = () => {
     const fetchFilteredData = async () => {
       if (!filter) {
         setDisplayBookings(bookings);
+        setLastPage(maxPages);
+        return;
       }
 
       if (!filterTerm.trim() && !selectedExperience && !selectedDate) {
