@@ -151,7 +151,6 @@ const Booking = () => {
     }
   }, [params, experiences]);
 
-
   const handleFilterChange = (e) => {
     const newFilter = e.target.value;
     setFilter(newFilter);
@@ -192,45 +191,26 @@ const Booking = () => {
       return;
     }
 
-    const applyFilter = async () => {
-      let updated = { ...params, skip: 0 }; 
+    const filterReady =
+      (filter === "experience" && selectedExperience) ||
+      (filter === "memberId" && filterTerm.trim()) ||
+      (filter === "date" && selectedDate);
 
-      if (filter === "experience" && selectedExperience) {
-        updated = {
-          ...updated,
-          experienceId: selectedExperience,
-          memberId: null,
-          date: null,
-        };
-      } else if (filter === "memberId" && filterTerm.trim()) {
-        updated = {
-          ...updated,
-          memberId: filterTerm.trim(),
-          experienceId: null,
-          date: null,
-        };
-      } else if (filter === "date" && selectedDate) {
-        updated = {
-          ...updated,
-          date: selectedDate,
-          experienceId: null,
-          memberId: null,
-        };
-      } else {
-        updated = {
-          ...updated,
-          experienceId: null,
-          memberId: null,
-          date: null,
-        };
-      }
+    if (!filterReady) {
+      return;
+    }
 
-      setCurrentPage(1);
-      setParams(updated);
+    const updated = {
+      ...params,
+      skip: 0,
+      experienceId: filter === "experience" ? selectedExperience : null,
+      memberId: filter === "memberId" ? filterTerm.trim() : null,
+      date: filter === "date" ? selectedDate : null,
     };
 
-    applyFilter();
-  }, [filterTerm, selectedExperience, selectedDate]);
+    setCurrentPage(1);
+    setParams(updated);
+  }, [filterTerm, selectedExperience, selectedDate, filter]);
 
   return (
     <>
@@ -271,7 +251,7 @@ const Booking = () => {
 
                       {filter && filter === "memberId" && (
                         <SearchEntity
-                          handleSearch={()=>{}}
+                          handleSearch={() => {}}
                           searchTerm={filterTerm}
                           setSearchTerm={setFilterTerm}
                           placeholder="Search by experience or member name"
