@@ -122,7 +122,7 @@ const SetupMember = () => {
         if (!data || data.length == 0) {
           return;
         }
-        const mappedData = data.map((item) => ({
+        const mappedData = data.data.map((item) => ({
           value: item.id,
           label: item.denomination,
           color: item.color,
@@ -708,7 +708,8 @@ const SetupMember = () => {
           const { data: membersByName } = await api.get(`members`, {
             params: { name: searchTerm.trim() },
           });
-          membersByName.forEach((member) => {
+         
+          membersByName.data.forEach((member) => {
             foundResults.push({ type: "member", ...member });
           });
         } catch (err) {

@@ -38,6 +38,7 @@ import "../custom.css";
 import api from "services/api";
 import { BsPencil } from "react-icons/bs";
 import SearchEntity from "./SearchEntity";
+import { max } from "moment";
 
 const MemberList = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const MemberList = () => {
   const [displayMembers, setDisplayMembers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [maxPages, setMaxPages] = useState(1);
   const [loading, setLoading] = useState([]);
   const [filter, setFilter] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState("");
@@ -171,8 +173,8 @@ const MemberList = () => {
   useEffect(() => {
     const fetchUnits = async () => {
       const { data: unitsData } = await api.get("units");
-      if (unitsData && unitsData.length > 0) {
-        const mappedUnitsData = unitsData.map((item) => ({
+      if (unitsData && unitsData.data.length > 0) {
+        const mappedUnitsData = unitsData.data.map((item) => ({
           id: item.id,
           address: item.address,
           denomination: item.denomination,
@@ -204,6 +206,7 @@ const MemberList = () => {
     const fetchFilteredData = async () => {
       if (!filter) {
         setDisplayMembers(members);
+        setLastPage(maxPages);
         return;
       }
 
@@ -215,7 +218,7 @@ const MemberList = () => {
       setLoading(true);
       try {
         let filteredMembers = [];
-
+        let response;
         if (filter === "name") {
           const { data } = await api.get(`members`, {
             params: { name: filterTerm.trim() },
@@ -224,7 +227,7 @@ const MemberList = () => {
             setDisplayMembers([]);
             return;
           }
-          filteredMembers = data;
+          response = data;
         }
 
         if (filter === "email") {
@@ -235,21 +238,18 @@ const MemberList = () => {
             setDisplayMembers([]);
             return;
           }
-          filteredMembers = data;
+          response = data;
         }
 
         if (filter === "unit" && selectedUnit) {
-          const { data } = await api.get(`members/unit/${selectedUnit}`);
-          filteredMembers = data;
+          const { data } = await api.get(`members`, {params:{'unitId': selectedUnit}});
+          response = data;
           if (!data) {
             setDisplayMembers([]);
             return;
           }
         }
-
-        filteredMembers = Array.isArray(filteredMembers)
-          ? filteredMembers
-          : [filteredMembers];
+        filteredMembers = response.data;
         const membersWithFullData = await Promise.all(
           filteredMembers.map(async (member) => {
             const mappedMember = {
@@ -292,9 +292,10 @@ const MemberList = () => {
         );
 
         setDisplayMembers(membersWithFullData);
+        setLastPage(response.lastPage);
       } catch (error) {
         console.error("Erro ao buscar membros filtrados:", error);
-        setDisplayMembers(null);
+        setDisplayMembers([]);
       } finally {
         setLoading(false);
       }
@@ -302,6 +303,10 @@ const MemberList = () => {
 
     fetchFilteredData();
   }, [filterTerm, selectedUnit, members]);
+
+  useEffect(()=>{
+    setMaxPages(lastPage);
+  }, [])
 
   const handleFilterChange = (e) => {
     const newFilter = e.target.value;
@@ -374,7 +379,9 @@ const MemberList = () => {
                             onChange={handleUnitSelectChange}
                             style={{ width: "250px" }}
                           >
-                            <option value="" disabled>Filter by Unit</option>
+                            <option value="" disabled>
+                              Filter by Unit
+                            </option>
                             {units.map((unit) => (
                               <option
                                 key={unit.denomination}
@@ -523,11 +530,9 @@ const MemberList = () => {
                   )}
                 </tbody>
               </Table>
-              {((!filter && !selectedUnit) || !filterTerm)&& (
-                <Pagination className="border pt-4 px-4 d-flex justify-content-end">
-                  {renderPaginationItems()}
-                </Pagination>
-              )}
+              <Pagination className="border pt-4 px-4 d-flex justify-content-end">
+                {renderPaginationItems()}
+              </Pagination>
             </Card>
           </div>
         </Row>
