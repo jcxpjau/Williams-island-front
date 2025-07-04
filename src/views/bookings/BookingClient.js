@@ -61,8 +61,8 @@ const BookingClient = ({ user, setUser }) => {
       return;
     }
     try {
-      const { data } = await api.get(`experiences/category/${category}`);
-      setAvailableExperiences(data);
+      const { data } = await api.get(`experiences`, {params:{'category': category}});
+      setAvailableExperiences(data.data);
       setSearching(true);
       GetBookings();
     } catch (err) {
@@ -111,33 +111,6 @@ const BookingClient = ({ user, setUser }) => {
     // getNotification(data);
     setSelectedHours({});
     setBookingConfirm(true);
-    /*  if (!date || Object.keys(selectedHours).length === 0) {
-      return;
-    }
-    const payload = {
-      experienceId: Object.keys(selectedHours)[0],
-      memberId: user.id,
-      date: date,
-      startTime: Object.values(selectedHours)[0],
-      endTime: moment(Object.values(selectedHours)[0], "HH:mm")
-        .add(1, "hour")
-        .format("HH:mm"),
-      status: "pending",
-      notes: "",
-    };
-    try {
-      const res = await fetch(process.env.REACT_APP_API_URL + "bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-      getNotification(json);
-      setSelectedHours({});
-      setBookingConfirm(true);
-    } catch (err) {} */
   }
   /* 
   async function getNotification(booking) {
@@ -206,29 +179,11 @@ const BookingClient = ({ user, setUser }) => {
         const { data } = await api.get(`members`, {
           params: { email: loginForm.email.trim() },
         });
-        setUser(data);
+        setUser(data.data[0]);
       }
     } catch (err) {
       setLoginMsg("Incorrect email or password");
     }
-    /*   try {
-      const res = await fetch(process.env.REACT_APP_API_URL + "auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        alert("Invalid credentials, please try again");
-        return;
-      }
-      const data = await res.json();
-      setUser(data);
-      setLoginModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      alert("Login failed, please try again");
-    } */
   }
 
   async function handleSetup() {
@@ -241,25 +196,26 @@ const BookingClient = ({ user, setUser }) => {
       const { data } = await api.get(`members`, {
         params: { email: setupForm.email.trim() },
       });
-      memberToSetup = data;
+      memberToSetup = data.data[0]
+      console.log(memberToSetup)
       if (memberToSetup) {
         if (memberToSetup.dateOfBirth === setupForm.dateOfBirth) {
           const response = await api.post(
             `/members/${memberToSetup.id}/password`,
             { password: setupForm.password }
           );
+          setSetupOpen(false);
+          setLoginModalOpen(true);
           setLoginForm({
             email: setupForm.email,
             password: setupForm.password,
           });
-          setSetupForm(false);
-          setLoginForm(true);
           setLoginMsg(null);
         } else {
-          setLoginMsg("Incorrect email and/or date of birth");
+          setLoginMsg("Incorrect information");
         }
       } else {
-        setLoginMsg("Incorrect email and/or date of birth");
+        setLoginMsg("Incorrect information");
       }
     } catch {}
   }
@@ -321,7 +277,7 @@ const BookingClient = ({ user, setUser }) => {
               <MenuItem value="Restaurant">Restaurants</MenuItem>
               <MenuItem value="Cafe">Cafe</MenuItem>
               <MenuItem value="Bar">Bar</MenuItem>
-              <MenuItem value="Pets">Pets</MenuItem>
+              <MenuItem value="Pet">Pets</MenuItem>
               <MenuItem value="Spa">Spa</MenuItem>
               <MenuItem value="Pool">Pool</MenuItem>
               <MenuItem value="Fitness">Fitness</MenuItem>
@@ -633,6 +589,7 @@ const BookingClient = ({ user, setUser }) => {
               onClick={() => {
                 setLoginModalOpen(false);
                 setSetupOpen(true);
+                setLoginMsg(null);
               }}
             >
               First time logging in?
@@ -655,6 +612,7 @@ const BookingClient = ({ user, setUser }) => {
                   onClick={() => {
                     setLoginModalOpen(false);
                     setLoginForm(initialLogin);
+                    setLoginMsg(null);
                   }}
                 >
                   Cancel
@@ -752,9 +710,9 @@ const BookingClient = ({ user, setUser }) => {
           <div className="d-flex flex-column w-100">
             <div className="d-flex align-items-end ms-auto justify-content-end w-100">
               {loginMsg && (
-                <span className="text-center mr-3 my-auto">{loginMsg}</span>
+                <span className="text-right mr-3 my-auto">{loginMsg}</span>
               )}
-              <div className="ms-auto">
+              <div className="ms-auto d-flex flex-col">
                 <Button
                   color="primary"
                   style={{ backgroundColor: "#525f7f", border: "none" }}
