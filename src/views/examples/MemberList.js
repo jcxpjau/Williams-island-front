@@ -53,27 +53,29 @@ const MemberList = () => {
   const [filterTerm, setFilterTerm] = useState("");
   const [units, setUnits] = useState([]);
 
+  console.log(lastPage);
   const fetchMemberPage = async () => {
     setLoading(true);
 
     try {
-      const [membersData] = await Promise.all([
-        api.get("members", {
-          params: {
-            limit: 10,
-            skip: (currentPage - 1) * 10,
-          },
-        }),
-      ]);
+      const { data: membersData } = await api.get("members", {
+        params: {
+          limit: 10,
+          skip: (currentPage - 1) * 10,
+        },
+      });
 
-      setLastPage(membersData.data.lastPage);
-      if (!membersData.data.data || membersData.data.data.length === 0) {
+      setLastPage(membersData.lastPage);
+      setMaxPages(membersData.lastPage);
+
+      if (!membersData.data || membersData.data.length === 0) {
         setMembers([]);
         setLoading(false);
         return;
       }
+
       const membersWithFullData = await Promise.all(
-        membersData.data.data.map(async (member) => {
+        membersData.data.map(async (member) => {
           try {
             const mappedMember = {
               id: member.id,
@@ -242,7 +244,9 @@ const MemberList = () => {
         }
 
         if (filter === "unit" && selectedUnit) {
-          const { data } = await api.get(`members`, {params:{'unitId': selectedUnit}});
+          const { data } = await api.get(`members`, {
+            params: { unitId: selectedUnit },
+          });
           response = data;
           if (!data) {
             setDisplayMembers([]);
@@ -304,9 +308,6 @@ const MemberList = () => {
     fetchFilteredData();
   }, [filterTerm, selectedUnit, members]);
 
-  useEffect(()=>{
-    setMaxPages(lastPage);
-  }, [])
 
   const handleFilterChange = (e) => {
     const newFilter = e.target.value;
