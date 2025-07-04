@@ -32,7 +32,11 @@ const Dashboard = () => {
     const fetchBookings = async () => {
       try {
         const [bookings, owners, dependants, experiences] = await Promise.all([
-          api.get("bookings"),
+          api.get("bookings", {
+            params:{
+              'limit': 5
+            }
+          }),
           api.get("members"),
           api.get("dependants"),
           api.get("experiences"),
@@ -40,20 +44,16 @@ const Dashboard = () => {
 
         if (
           !bookings.data.data ||
-          bookings.data.data.length == 0 ||
           !owners.data.data ||
-          owners.data.data.length == 0 ||
           !dependants.data ||
-          dependants.data.length == 0 ||
-          experiences.data.length == 0 ||
           !experiences
         ) {
           setLoading(false);
           return;
         }
-        const lastFive = bookings.data.data.slice(-5);
+       
         const bookingsWithExperience = await Promise.all(
-          lastFive.map(async (booking) => {
+          bookings.data.data.map(async (booking) => {
             try {
               const { data: experience } = await api.get(
                 `/experiences/${booking.experienceId}`
@@ -76,9 +76,9 @@ const Dashboard = () => {
         );
 
         setBookings(bookingsWithExperience);
-        setDependantsLen(dependants.data.length);
-        setOwnersLen(owners.data.data.length);
-        setExperiencesLen(experiences.data.length);
+        setDependantsLen(dependants.data.total);
+        setOwnersLen(owners.data.total);
+        setExperiencesLen(experiences.data.total);
         setLoading(false);
       } catch (err) {
         console.log(err);

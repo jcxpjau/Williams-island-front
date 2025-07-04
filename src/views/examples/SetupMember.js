@@ -734,7 +734,7 @@ const SetupMember = () => {
           const { data: dependantsByName } = await api.get(`dependants`, {
             params: { name: searchTerm.trim() },
           });
-          dependantsByName.forEach((dependant) => {
+          dependantsByName.data.forEach((dependant) => {
             foundResults.push({ type: "dependant", ...dependant });
           });
         } catch (err) {
