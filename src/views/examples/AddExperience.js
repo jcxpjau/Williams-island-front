@@ -200,7 +200,7 @@ const AddExperience = () => {
       );
       if (isDuplicate) {
         setModal(true);
-        setModalTitle("Experience unit");
+        setModalTitle("Add experience");
         setModalBody("An experience with this name already exists.");
         return;
       } else {

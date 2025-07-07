@@ -19,6 +19,7 @@ import Index from "views/Index.js";
 import AddUnit from "views/examples/AddUnit.js";
 import AddFee from "views/examples/AddFee.js";
 import AddUser from "views/examples/AddUser.js";
+import AddService from "views/examples/AddServices";
 import Profile from "views/examples/Profile.js";
 import AddExperience from "views/examples/AddExperience";
 import Maps from "views/examples/Maps.js";
@@ -189,10 +190,17 @@ var routes = [
         active: true,
       },
       {
-        path: "/experience/add",
-        name: "Add Experience",
+        path: "/experiences/add",
+        name: "Add experience",
         layout: "/admin",
         component: <AddExperience />,
+        active: true,
+      },
+      {
+        path: "/experiences/services/add",
+        name: "Add service",
+        layout: "/admin",
+        component: <AddService/>,
         active: true,
       },
       {
