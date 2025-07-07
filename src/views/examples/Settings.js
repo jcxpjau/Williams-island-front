@@ -33,6 +33,7 @@ import {
 } from "reactstrap";
 
 import Logs from "./Logs";
+import PermissionPanel from "./PermissionPanel";
 import Header from "components/Headers/Header";
 import api from "services/api";
 import "../custom.css";
@@ -74,6 +75,9 @@ const Settings = () => {
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="logs">
                     <Logs/>
+                  </TabPane>
+                  <TabPane tabId="roles">
+                    <PermissionPanel/>
                   </TabPane>
                 </TabContent>
               </CardBody>
