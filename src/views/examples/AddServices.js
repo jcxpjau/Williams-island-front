@@ -28,14 +28,10 @@ import {
   Spinner,
 } from "reactstrap";
 import {
-  BsAt,
   BsCalendar,
   BsCardText,
   BsCurrencyDollar,
-  BsEnvelope,
   BsPeopleFill,
-  BsPinMap,
-  BsTelephone,
 } from "react-icons/bs";
 import Header from "components/Headers/Header.js";
 import { RegistrationForm } from "components/RegistrationForm";
@@ -130,8 +126,8 @@ function AddService() {
   return (
     <>
       <Header
-        title="Add Experience"
-        description="In this page you can add experience or edit their information."
+        title="Add Service"
+        description="In this page you can add services or edit their information."
       />
       <Container className="mt--7" fluid>
         <Row className="h-100 d-flex align-items-stretch">
